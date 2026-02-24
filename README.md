@@ -9,7 +9,7 @@ This repository is responsible for UI/UX, client-side interactions, and backend 
 
 | Nama Lengkap | NPM | Branch Prefix |
 | :--- | :--- | :--- |
-| **Alica Kinar Deska** | 2306245642 | |
+| **Alica Kinar Deska** | 2306245642 | `dev-kinar` |
 | **Delya Ardiyanti** | 2306245586 | |
 | **Nazwa Arifah Ikhsan** | 2206082625 | |
 | **Orlando Devito** | 2306165950 | `dev-orlando` |
