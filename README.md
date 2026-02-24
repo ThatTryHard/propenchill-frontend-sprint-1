@@ -11,7 +11,7 @@ This repository is responsible for UI/UX, client-side interactions, and backend 
 | :--- | :--- | :--- |
 | **Alica Kinar Deska** | 2306245642 | `dev-kinar` |
 | **Delya Ardiyanti** | 2306245586 | |
-| **Nazwa Arifah Ikhsan** | 2206082625 | |
+| **Nazwa Arifah Ikhsan** | 2206082625 |`dev-nazwa`|
 | **Orlando Devito** | 2306165950 | `dev-orlando` |
 | **Raffi Dary Hibban** | 2306203690 | `dev-raffi` |
 
