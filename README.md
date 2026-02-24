@@ -12,7 +12,7 @@ This repository is responsible for UI/UX, client-side interactions, and backend 
 | **Alica Kinar Deska** | 2306245642 | |
 | **Delya Ardiyanti** | 2306245586 | |
 | **Nazwa Arifah Ikhsan** | 2206082625 | |
-| **Orlando Devito** | 2306165950 | `dev/orlando` |
+| **Orlando Devito** | 2306165950 | `dev-orlando` |
 | **Raffi Dary Hibban** | 2306203690 | |
 
 ---
@@ -80,18 +80,18 @@ Selalu buat *branch* baru dari `main` untuk setiap fitur atau *development* masi
 ```bash
 git checkout main
 git pull origin main
-git checkout -b dev/<nama-kalian>  # Contoh: git checkout -b dev/fio
+git checkout -b dev-<nama-kalian>  # Contoh: git checkout -b dev-fio
 ```
 
 Pastikan Anda sudah berada di *branch* yang tepat dengan menjalankan `git status`.
 
 **2. Commit & Push**
-Lakukan *commit* dan *push* **HANYA** ke *branch* masing-masing (`dev/...`).
+Lakukan *commit* dan *push* **HANYA** ke *branch* masing-masing (`dev-...`).
 
 ```bash
 git add .
 git commit -m "Feat: Menambahkan halaman UI X"
-git push origin dev/<nama-kalian>
+git push origin dev-<nama-kalian>
 ```
 
 **3. Merge ke Main & Conflict Resolution**
