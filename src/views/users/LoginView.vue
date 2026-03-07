@@ -86,12 +86,18 @@ const handleLogin = async () => {
   isLoading.value = true
 
   try {
-    await authStore.login(email.value, password.value)
+    const data = await authStore.login(email.value, password.value)
 
     // Kalau berhasil, kasih toast sukses dan redirect ke dashboard, placeholder dulu karena dashboard belum dibuat
     toast.success('Login berhasil! Mengalihkan...')
+    const role = data.role?.toUpperCase()
+    let redirectPath = '/login' // fallback
+    if (role === 'ADMIN') {
+      redirectPath = '/admin/dashboard'
+    } // Tambahkan kondisi untuk role lain menggunakan if else jika diperlukan, misal guru atau guru bidang 
+
     setTimeout(() => {
-      router.push('/dashboard')
+      router.push(redirectPath)
     }, 1000)
   } catch (error: unknown) {
     // Kalau gagal, warnain kedua field jadi merah

@@ -7,6 +7,7 @@ export const useAuthStore = defineStore('auth', {
     // Inisialisasi token dari LocalStorage
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
+    role: localStorage.getItem('user_role') || null,
   }),
 
   actions: {
@@ -29,8 +30,10 @@ export const useAuthStore = defineStore('auth', {
       // Kalau sukses, simpan ke State Pinia dan LocalStorage
       this.accessToken = data.access
       this.refreshToken = data.refresh
+      this.role = data.role || null
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
+      if (data.role) localStorage.setItem('user_role', data.role)
 
       return data
     },
@@ -39,8 +42,10 @@ export const useAuthStore = defineStore('auth', {
       // Hapus token dari State Pinia dan LocalStorage
       this.accessToken = null
       this.refreshToken = null
+      this.role = null
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user_role')
     },
   },
 })
