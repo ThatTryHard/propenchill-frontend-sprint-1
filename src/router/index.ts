@@ -1,4 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import AdminManagementView from '../views/users/AdminManagementView.vue'
+import AdminCreateView from '../views/users/AdminCreateView.vue'
+import AdminEditView from '../views/users/AdminEditView.vue'
 import StatusView from '@/views/StatusView.vue'
 import LoginView from '@/views/users/LoginView.vue'
 import ParentListView from '@/views/admin/parents/ListView.vue'
@@ -9,7 +12,7 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/login',
+      path: '/',
       name: 'login',
       component: LoginView,
     },
@@ -17,6 +20,18 @@ const router = createRouter({
       path: '/status',
       name: 'status',
       component: StatusView,
+    },
+    {
+      path: '/admin-management',
+      name: 'admin-management',
+      component: AdminManagementView
+    },
+    { path: '/admin-management/create', component: AdminCreateView },
+
+    {
+      path: '/admin-management/edit/:id', 
+      name: 'admin-edit',
+      component: () => import('@/views/users/AdminEditView.vue')
     },
 
     // Admin routes
