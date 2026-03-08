@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', {
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
     role: localStorage.getItem('user_role') || null,
+    user: null as { nama: string; email: string } | null,
   }),
 
   actions: {
@@ -43,6 +44,7 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = null
       this.refreshToken = null
       this.role = null
+      this.user = null
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
       localStorage.removeItem('user_role')
