@@ -8,19 +8,44 @@ import RegisterView from '@/views/users/RegisterView.vue'
 import ParentListView from '@/views/admin/parents/ListView.vue'
 import ParentCreateView from '@/views/admin/parents/CreateView.vue'
 import ParentEditView from '@/views/admin/parents/EditView.vue'
+import ForgetPasswordView from '@/views/users/ForgotPasswordView.vue'
+import VerifyOTPView from '@/views/users/VerifyOTPView.vue'
+import SetNewPasswordView from '@/views/users/SetNewPasswordView.vue'
+import AuthLayout from '@/components/layout/AuthLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/',
-      name: 'login',
-      component: LoginView,
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: RegisterView,
+      path: '/auth',
+      component: AuthLayout,
+      children: [
+        {
+          path: '/login',
+          name: 'login',
+          component: LoginView,
+        },
+        {
+          path: '/register',
+          name: 'register',
+          component: RegisterView,
+        },
+        {
+          path: '/password-reset',
+          name: 'password-reset',
+          component: ForgetPasswordView,
+        },
+        {
+          path: '/verify-otp/',
+          name: 'verify-otp',
+          component: VerifyOTPView,
+        },
+        {
+          path: '/set-new-password',
+          name: 'set-new-password',
+          component: SetNewPasswordView,
+        },
+      ],
     },
     {
       path: '/status',
@@ -30,14 +55,14 @@ const router = createRouter({
     {
       path: '/admin-management',
       name: 'admin-management',
-      component: AdminManagementView
+      component: AdminManagementView,
     },
     { path: '/admin-management/create', component: AdminCreateView },
 
     {
-      path: '/admin-management/edit/:id', 
+      path: '/admin-management/edit/:id',
       name: 'admin-edit',
-      component: () => import('@/views/users/AdminEditView.vue')
+      component: () => import('@/views/users/AdminEditView.vue'),
     },
 
     // Admin routes

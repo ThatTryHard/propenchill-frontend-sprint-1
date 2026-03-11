@@ -95,16 +95,15 @@
       </div>
 
       <VModal
-        :show="formModal.show"
-        :icon="isEdit ? 'default' : 'success'" 
+        v-model:is-open="formModal.show"
         :title="isEdit ? 'Edit Informasi Admin' : 'Tambah Admin Baru'"
         :description="isEdit ? 'Perbarui data pengelola sistem agar tetap akurat.' : 'Daftarkan akun admin baru untuk mengelola sistem SIMP.'"
-        :confirmText="isEdit ? 'Simpan Perubahan' : 'Tambah Admin'"
-        cancelText="Batal"
-        :loading="formModal.loading"
-        @close="closeModal"
-        @confirm="handleSave"
+        :buttons="formButtons"
       >
+        <template #icon>
+          <component :is="isEdit ? UserCheck : UserPlus" class="w-10 h-10 text-[#3f9760]" />
+        </template>
+
         <div class="w-full flex flex-col gap-5 mt-4 text-left">
           <VInputField
             v-model="form.nama"
@@ -130,6 +129,7 @@
             <select 
               v-model="form.role"
               class="w-full p-[14px] rounded-[12px] border-2 border-[#b2b5ba] focus:border-[#3f9760] outline-none bg-white text-[16px]"
+              :disabled="formModal.loading"
             >
               <option value="ADMIN">ADMIN</option>
               <option value="BIDANG_AGAMA">BIDANG AGAMA</option>
@@ -142,23 +142,22 @@
       </VModal>
 
       <VModal
-        :show="deleteModal.show"
-        icon="delete"
+        v-model:is-open="deleteModal.show"
         title="Nonaktifkan Akun"
         :description="`Apakah Anda yakin ingin menonaktifkan akun ${deleteModal.adminName}? Akses ke sistem akan segera dicabut.`"
-        confirmText="Hapus"
-        confirmVariant="primary"
-        :loading="deleteModal.loading"
-        @close="deleteModal.show = false"
-        @confirm="handleDelete"
-      />
+        :buttons="deleteButtons"
+      >
+        <template #icon>
+          <UserX class="w-10 h-10 text-red-500" />
+        </template>
+      </VModal>
     </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { Plus, Pencil, Trash2, UserPlus, UserCheck, UserX } from 'lucide-vue-next'
 import { useAdminStore } from '@/stores/admin'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
@@ -283,4 +282,42 @@ const closeModal = () => {
   errors.value = {}
   form.value = { nama: '', email: '', role: 'ADMIN' }
 }
+
+// Konfigurasi Tombol Modal Form (Tambah/Edit)
+const formButtons = computed(
+  (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
+  {
+    label: formModal.loading ? 'Memproses...' : (isEdit.value ? 'Simpan Perubahan' : 'Tambah Admin'),
+    variant: 'primary',
+    action: () => {
+      if (!formModal.loading) handleSave()
+    }
+  },
+  {
+    label: 'Batal',
+    variant: 'secondary',
+    action: () => {
+      closeModal()
+    }
+  }
+])
+
+// Konfigurasi Tombol Modal Delete
+const deleteButtons = computed(
+  (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
+  {
+    label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
+    variant: 'primary',
+    action: () => {
+      if (!deleteModal.loading) handleDelete()
+    }
+  },
+  {
+    label: 'Batal',
+    variant: 'secondary',
+    action: () => {
+      deleteModal.show = false
+    }
+  }
+])
 </script>

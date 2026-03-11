@@ -98,7 +98,7 @@
       </template>
 
       <!-- Update Modal -->
-      <VModal
+      <!-- <VModal
         :show="updateModal.show"
         title="Perbarui Wali Murid"
         description="Apakah Anda yakin ingin menyimpan perubahan data wali murid ini?"
@@ -107,10 +107,19 @@
         :loading="isLoading"
         @close="updateModal.show = false"
         @confirm="handleUpdate"
-      />
-
-      <!-- Delete Modal -->
+      /> -->
       <VModal
+        v-model:is-open="updateModal.show"
+        title="Perbarui Wali Murid"
+        description="Apakah Anda yakin ingin menyimpan perubahan data wali murid ini?"
+        :buttons="updateButtons"
+      >
+        <template #icon>
+          <UserCheck class="w-10 h-10 text-[#3f9760]" />
+        </template>
+      </VModal>
+      <!-- Delete Modal -->
+      <!-- <VModal
         :show="deleteModal.show"
         icon="delete"
         title="Hapus Wali Murid"
@@ -120,15 +129,26 @@
         :loading="deleteModal.loading"
         @close="deleteModal.show = false"
         @confirm="handleDelete"
-      />
+      /> -->
+
+      <VModal
+        v-model:is-open="deleteModal.show"
+        title="Hapus Wali Murid"
+        :description="`Apakah Anda yakin ingin menghapus akun ${form.nama}? Tindakan ini tidak dapat dibatalkan.`"
+        :buttons="deleteButtons"
+      >
+        <template #icon>
+          <Trash2 class="w-10 h-10 text-red-500" />
+        </template>
+      </VModal>
     </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, onMounted } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ArrowLeft, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, Trash2, UserCheck } from 'lucide-vue-next'
 import { useParentStore, validateParentForm } from '@/stores/parents'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
@@ -182,6 +202,42 @@ const openUpdateModal = () => {
   if (Object.keys(result).length > 0) return
   updateModal.show = true
 }
+
+const updateButtons = computed(
+  (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
+  {
+    label: isLoading.value ? 'Memproses...' : 'Simpan',
+    variant: 'primary',
+    action: () => {
+      if (!isLoading.value) handleUpdate()
+    }
+  },
+  {
+    label: 'Batal',
+    variant: 'secondary',
+    action: () => {
+      updateModal.show = false
+    }
+  }
+])
+
+const deleteButtons = computed(
+  (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
+  {
+    label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
+    variant: 'primary',
+    action: () => {
+      if (!deleteModal.loading) handleDelete()
+    }
+  },
+  {
+    label: 'Batal',
+    variant: 'secondary',
+    action: () => {
+      deleteModal.show = false
+    }
+  }
+])
 
 const openDeleteModal = () => {
   deleteModal.show = true

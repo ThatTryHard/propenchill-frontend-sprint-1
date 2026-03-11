@@ -102,27 +102,17 @@
             Halaman {{ store.pagination.currentPage }} dari {{ store.pagination.totalPages }}
             ({{ store.pagination.totalData }} data)
           </span>
-          <div class="flex gap-2">
-            <button
-              :disabled="store.pagination.currentPage <= 1"
-              @click="changePage(store.pagination.currentPage - 1)"
-              class="px-3 py-1.5 text-[13px] rounded-lg border border-[#e2e8f0] text-[#4a5568] hover:bg-[#f8fafc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Sebelumnya
-            </button>
-            <button
-              :disabled="store.pagination.currentPage >= store.pagination.totalPages"
-              @click="changePage(store.pagination.currentPage + 1)"
-              class="px-3 py-1.5 text-[13px] rounded-lg border border-[#e2e8f0] text-[#4a5568] hover:bg-[#f8fafc] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
-              Selanjutnya
-            </button>
-          </div>
+          
+          <VPagination 
+            :current-page="store.pagination.currentPage"
+            :total-pages="store.pagination.totalPages"
+            @page-change="changePage"
+          />
         </div>
       </div>
 
       <!-- Delete Modal -->
-      <VModal
+      <!-- <VModal
         :show="deleteModal.show"
         icon="delete"
         title="Hapus Wali Murid"
@@ -132,13 +122,23 @@
         :loading="deleteModal.loading"
         @close="deleteModal.show = false"
         @confirm="handleDelete"
-      />
+      /> -->
+      <VModal
+        v-model:is-open="deleteModal.show"
+        title="Hapus Wali Murid"
+        :description="`Apakah Anda yakin ingin menghapus akun ${deleteModal.parentName}? Tindakan ini tidak dapat dibatalkan.`"
+        :buttons="deleteButtons"
+      >
+        <template #icon>
+          <Trash2 class="w-10 h-10 text-red-500" />
+        </template>
+      </VModal>
     </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { useParentStore, type Parent } from '@/stores/parents'
@@ -195,6 +195,25 @@ const openDeleteModal = (parent: Parent) => {
   deleteModal.parentName = parent.nama
   deleteModal.show = true
 }
+
+// Konfigurasi Tombol Modal Delete
+const deleteButtons = computed(
+    (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
+  {
+    label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
+    variant: 'primary',
+    action: () => {
+      if (!deleteModal.loading) handleDelete()
+    }
+  },
+  {
+    label: 'Batal',
+    variant: 'secondary',
+    action: () => {
+      deleteModal.show = false
+    }
+  }
+])
 
 const handleDelete = async () => {
   if (!deleteModal.parentId) return

@@ -1,97 +1,112 @@
 <template>
-  <Teleport to="body">
-    <Transition name="alert-slide">
-      <div
-        v-if="visible"
-        class="fixed top-6 right-6 z-[9999] w-[400px] max-w-[calc(100vw-2rem)] shadow-lg"
-      >
-        <div
-          :class="['flex items-start gap-3 p-4 rounded-xl border w-full', containerStyles]"
-        >
-          <!-- Icon -->
-          <div :class="['flex items-center justify-center w-10 h-10 rounded-full shrink-0', iconBgStyles]">
-            <component :is="iconComponent" :size="20" :class="iconColorStyles" />
-          </div>
+  <transition
+    enter-active-class="transition duration-300 ease-out transform"
+    enter-from-class="opacity-0 translate-x-8"
+    enter-to-class="opacity-100 translate-x-0"
+    leave-active-class="transition duration-200 ease-in transform"
+    leave-from-class="opacity-100 translate-x-0"
+    leave-to-class="opacity-0 translate-x-8"
+  >
+    <div
+      v-if="isVisible"
+      :class="[
+        // MAGIC TRICK: 'fixed', 'top-8', 'right-8', 'z-50' buat bikin melayang di kanan atas
+        // 'w-auto max-w-[400px]' biar lebarnya menyesuaikan isi teks tapi ngga kepanjangan
+        'fixed top-8 right-8 z-[100] w-auto max-w-[400px]',
+        'flex items-start justify-between px-[20px] py-[14px]',
+        'rounded-[9px] border-[1.1px] shadow-[0px_8px_8px_rgba(0,0,0,0.25)]',
+        'font-sans text-[12px] text-[#111827]',
+        alertStyles.bgBorder,
+      ]"
+    >
+      <div class="flex items-start gap-[14px] flex-1">
+        <component
+          :is="alertStyles.icon"
+          :class="['w-[32px] h-[32px] flex-shrink-0', alertStyles.iconColor]"
+        />
 
-          <!-- Content -->
-          <div class="flex flex-col gap-0.5 flex-1 min-w-0">
-            <span class="text-[14px] font-bold text-[#1a202c]">{{ title }}</span>
-            <span class="text-[13px] text-[#4a5568]">{{ message }}</span>
-          </div>
-
-          <!-- Close -->
-          <button
-            v-if="dismissible"
-            @click="$emit('close')"
-            class="shrink-0 text-[#1a202c] hover:opacity-70 transition-opacity mt-1"
-          >
-            <X :size="20" :stroke-width="2.5" />
-          </button>
+        <div class="flex flex-col gap-[2px] mt-[2px]">
+          <span v-if="title" class="font-semibold text-[14px] leading-[120%]">{{ title }}</span>
+          <span class="leading-[150%]">{{ message }}</span>
         </div>
       </div>
-    </Transition>
-  </Teleport>
+
+      <button
+        v-if="dismissible"
+        @click="closeAlert"
+        class="ml-[16px] mt-[2px] flex-shrink-0 text-gray-500 hover:text-gray-900 transition-colors focus:outline-none"
+      >
+        <XIcon class="w-[18px] h-[18px]" />
+      </button>
+    </div>
+  </transition>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { XCircle, CheckCircle2, Info, AlertTriangle, X } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import {
+  XIcon,
+  CheckCircle2Icon,
+  AlertCircleIcon,
+  InfoIcon,
+  AlertTriangleIcon,
+} from 'lucide-vue-next'
 
 const props = defineProps({
-  visible: { type: Boolean, default: true },
-  type: { type: String, default: 'info' }, // 'error' | 'success' | 'info' | 'warning'
-  title: { type: String, default: '' },
-  message: { type: String, default: '' },
-  dismissible: { type: Boolean, default: true },
+  type: {
+    type: String,
+    default: 'information', // 'error', 'success', 'information', 'warning'
+  },
+  title: {
+    type: String,
+    default: '',
+  },
+  message: {
+    type: String,
+    required: true,
+  },
+  dismissible: {
+    type: Boolean,
+    default: true,
+  },
 })
 
-defineEmits(['close'])
+const emit = defineEmits(['close'])
 
-const iconComponent = computed(() => {
-  switch (props.type) {
-    case 'error': return XCircle
-    case 'success': return CheckCircle2
-    case 'warning': return AlertTriangle
-    default: return Info
-  }
-})
+const isVisible = ref(true)
 
-const containerStyles = computed(() => {
-  switch (props.type) {
-    case 'error': return 'bg-[#fde8e8] border-[#f8b4b4]'
-    case 'success': return 'bg-[#e8f5e9] border-[#a5d6a7]'
-    case 'warning': return 'bg-[#fef9e7] border-[#f0d78c]'
-    default: return 'bg-[#e8f0fe] border-[#a4c2f4]'
-  }
-})
+const closeAlert = () => {
+  isVisible.value = false
+  emit('close')
+}
 
-const iconBgStyles = computed(() => {
+const alertStyles = computed(() => {
   switch (props.type) {
-    case 'error': return 'bg-[#fde8e8]'
-    case 'success': return 'bg-[#e8f5e9]'
-    case 'warning': return 'bg-[#fef9e7]'
-    default: return 'bg-[#e8f0fe]'
-  }
-})
-
-const iconColorStyles = computed(() => {
-  switch (props.type) {
-    case 'error': return 'text-[#A0453B]'
-    case 'success': return 'text-[#509664]'
-    case 'warning': return 'text-[#b8941b]'
-    default: return 'text-[#4a7ab5]'
+    case 'error':
+      return {
+        bgBorder: 'bg-[#f9eaea] border-[#d97d7d]',
+        icon: AlertCircleIcon,
+        iconColor: 'text-[#d97d7d]',
+      }
+    case 'success':
+      return {
+        bgBorder: 'bg-[#e8f2ec] border-[#6caf85]',
+        icon: CheckCircle2Icon,
+        iconColor: 'text-[#6caf85]',
+      }
+    case 'warning':
+      return {
+        bgBorder: 'bg-[#faf6eb] border-[#c8a23a]',
+        icon: AlertTriangleIcon,
+        iconColor: 'text-[#c8a23a]',
+      }
+    case 'information':
+    default:
+      return {
+        bgBorder: 'bg-[#f0f4f7] border-[#86a1ba]',
+        icon: InfoIcon,
+        iconColor: 'text-[#86a1ba]',
+      }
   }
 })
 </script>
-
-<style scoped>
-.alert-slide-enter-active,
-.alert-slide-leave-active {
-  transition: all 0.3s ease;
-}
-.alert-slide-enter-from,
-.alert-slide-leave-to {
-  opacity: 0;
-  transform: translateX(100%);
-}
-</style>
