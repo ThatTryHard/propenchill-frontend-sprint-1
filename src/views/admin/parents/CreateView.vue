@@ -92,7 +92,7 @@
       </div>
 
       <!-- Confirmation Modal -->
-      <VModal
+      <!-- <VModal
         :show="showConfirm"
         title="Tambah Wali Murid"
         description="Apakah Anda yakin ingin menambahkan akun wali murid baru?"
@@ -101,15 +101,25 @@
         :loading="isLoading"
         @close="showConfirm = false"
         @confirm="handleSubmit"
-      />
+      /> -->
+      <VModal
+        v-model:is-open="showConfirm"
+        title="Tambah Wali Murid"
+        description="Apakah Anda yakin ingin menambahkan akun wali murid baru?"
+        :buttons="modalButtons"
+      >
+        <template #icon>
+          <UserPlus class="w-10 h-10 text-[#3f9760]" />
+        </template>
+      </VModal>
     </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, UserPlus } from 'lucide-vue-next'
 import { useParentStore, validateParentForm } from '@/stores/parents'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
@@ -141,6 +151,25 @@ const openConfirmModal = () => {
   if (Object.keys(result).length > 0) return
   showConfirm.value = true
 }
+
+const modalButtons = computed(
+  (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
+    {
+      label: isLoading.value ? 'Memproses...' : 'Simpan',
+      variant: 'primary',
+      action: () => {
+        if (!isLoading.value) handleSubmit()
+      },
+    },
+    {
+      label: 'Batal',
+      variant: 'secondary',
+      action: () => {
+        showConfirm.value = false
+      },
+    },
+  ],
+)
 
 const handleSubmit = async () => {
   isLoading.value = true

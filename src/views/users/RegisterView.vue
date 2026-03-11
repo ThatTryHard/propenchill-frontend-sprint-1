@@ -88,7 +88,7 @@ const handleRegister = async () => {
     toast.success('Registrasi berhasil! Mengalihkan ke halaman login...')
 
     setTimeout(() => {
-      router.push({ name: '/' })
+      router.push({ name: 'login' })
     }, 1000)
   } catch (error: unknown) {
     const message = (error as Error).message
@@ -102,84 +102,80 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="relative min-h-screen bg-[#FAFAFA] font-sans overflow-y-auto">
-    <div class="absolute top-8 left-8">
+  <div class="w-full max-w-[600px] flex flex-col items-center justify-start pb-10">
+    <div class="absolute top-8 left-8 z-20">
       <img src="@/assets/Inrab_Logo.png" alt="SMA Insan Rabbany" class="h-16 opacity-80" />
     </div>
 
-    <div class="min-h-screen flex flex-col items-center justify-start py-12 px-6">
-      <div class="flex flex-col items-center mb-8 mt-12">
-        <img src="@/assets/SIMP.png" alt="SIMP Box" class="h-32 mb-6" />
-        <h1 class="text-[28px] font-bold text-[#767E86]">Create Account</h1>
-      </div>
-
-      <div class="w-full max-w-[600px] flex flex-col gap-3 pb-10">
-        <VInputField
-          v-model="nama"
-          label="Nama Lengkap"
-          type="text"
-          placeholder="Masukkan nama lengkap"
-          :disabled="isLoading"
-          :state="namaError ? 'error' : 'default'"
-          :message="namaError"
-        />
-
-        <VInputField
-          v-model="email"
-          label="Email"
-          type="email"
-          placeholder="nama@email.com"
-          :disabled="isLoading"
-          :state="emailError ? 'error' : 'default'"
-          :message="emailError"
-        />
-
-        <VInputField
-          v-model="noHp"
-          label="Nomor HP"
-          type="text"
-          placeholder="Contoh: 08123456789"
-          :disabled="isLoading"
-          :state="noHpError ? 'error' : 'default'"
-          :message="noHpError"
-        />
-
-        <VInputField
-          v-model="password"
-          label="Kata Sandi"
-          type="password"
-          placeholder="Masukkan kata sandi"
-          :disabled="isLoading"
-          :state="passwordError ? 'error' : 'default'"
-          :message="passwordError"
-        />
-
-        <VInputField
-          v-model="confirmPassword"
-          label="Konfirmasi Kata Sandi"
-          type="password"
-          placeholder="Masukkan ulang kata sandi"
-          :disabled="isLoading"
-          :state="confirmPasswordError ? 'error' : 'default'"
-          :message="confirmPasswordError"
-        />
-
-        <VButton
-          variant="primary"
-          class="mt-4 w-full h-[52px]"
-          @click="handleRegister"
-          :disabled="isLoading"
-        >
-          {{ isLoading ? 'Memproses...' : 'Daftar' }}
-        </VButton>
-
-        <p class="text-center text-sm text-[#767E86] mt-2">
-          Sudah punya akun?
-          <router-link to="/" class="font-semibold text-[#4F46E5] hover:underline">
-            Login di sini
-          </router-link>
-        </p>
-      </div>
+    <div class="flex flex-col items-center mb-8">
+      <img src="@/assets/SIMP.png" alt="SIMP Box" class="h-32 mb-6" />
+      <h1 class="text-[28px] font-bold text-[#767E86]">Create Account</h1>
     </div>
+
+    <form @submit.prevent="handleRegister" class="w-full flex flex-col gap-3">
+      <VInputField
+        v-model="nama"
+        label="Nama Lengkap"
+        type="text"
+        placeholder="Masukkan nama lengkap"
+        :disabled="isLoading"
+        :state="namaError ? 'error' : 'default'"
+        :message="namaError"
+      />
+
+      <VInputField
+        v-model="email"
+        label="Email"
+        type="email"
+        placeholder="nama@email.com"
+        :disabled="isLoading"
+        :state="emailError ? 'error' : 'default'"
+        :message="emailError"
+      />
+
+      <VInputField
+        v-model="noHp"
+        label="Nomor HP"
+        type="text"
+        placeholder="Contoh: 08123456789"
+        :disabled="isLoading"
+        :state="noHpError ? 'error' : 'default'"
+        :message="noHpError"
+      />
+
+      <VInputField
+        v-model="password"
+        label="Kata Sandi"
+        type="password"
+        placeholder="Masukkan kata sandi"
+        :disabled="isLoading"
+        :state="passwordError ? 'error' : 'default'"
+        :message="passwordError"
+      />
+
+      <VInputField
+        v-model="confirmPassword"
+        label="Konfirmasi Kata Sandi"
+        type="password"
+        placeholder="Masukkan ulang kata sandi"
+        :disabled="isLoading"
+        :state="confirmPasswordError ? 'error' : 'default'"
+        :message="confirmPasswordError"
+      />
+
+      <VButton type="submit" variant="primary" class="mt-4 w-full h-[52px]" :disabled="isLoading">
+        {{ isLoading ? 'Memproses...' : 'Daftar' }}
+      </VButton>
+
+      <p class="text-center text-sm text-[#767E86] mt-2">
+        Sudah punya akun?
+        <router-link
+          to="/login"
+          class="font-semibold text-[#3f9760] hover:text-[#0c4923] hover:underline transition-colors"
+        >
+          Login di sini
+        </router-link>
+      </p>
+    </form>
   </div>
 </template>
