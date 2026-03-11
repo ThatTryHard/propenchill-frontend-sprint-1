@@ -39,6 +39,30 @@ export const useAuthStore = defineStore('auth', {
       return data
     },
 
+    async register(payload: {
+      nama: string
+      email: string
+      password: string
+      confirm_password: string
+      no_hp: string
+    }) {
+      const response = await fetch(VITE_API_URL + '/api/auth/register/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registrasi gagal')
+      }
+
+      return data
+    },
+
     logout() {
       // Hapus token dari State Pinia dan LocalStorage
       this.accessToken = null

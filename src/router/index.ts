@@ -4,6 +4,7 @@ import AdminCreateView from '../views/users/AdminCreateView.vue'
 import AdminEditView from '../views/users/AdminEditView.vue'
 import StatusView from '@/views/StatusView.vue'
 import LoginView from '@/views/users/LoginView.vue'
+import RegisterView from '@/views/users/RegisterView.vue'
 import ParentListView from '@/views/admin/parents/ListView.vue'
 import ParentCreateView from '@/views/admin/parents/CreateView.vue'
 import ParentEditView from '@/views/admin/parents/EditView.vue'
@@ -15,6 +16,11 @@ const router = createRouter({
       path: '/',
       name: 'login',
       component: LoginView,
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: RegisterView,
     },
     {
       path: '/status',
