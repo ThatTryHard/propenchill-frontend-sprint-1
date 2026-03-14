@@ -13,7 +13,6 @@ export interface Admin {
   status?: string
 }
 
-// Fungsi helper untuk menyertakan Token JWT sesuai standar tim
 function authHeaders() {
   const auth = useAuthStore()
   return { Authorization: `Bearer ${auth.accessToken}` }
@@ -23,7 +22,6 @@ export const useAdminStore = defineStore('admin', () => {
   const admins = ref<Admin[]>([])
   const isLoading = ref(false)
 
-  // Mengambil data Admin dengan fitur Search (PBI-MAP5)
   async function fetchAdmins(query = '') {
     isLoading.value = true
     try {
@@ -36,7 +34,6 @@ export const useAdminStore = defineStore('admin', () => {
       if (!res.ok) throw new Error('Gagal memuat data admin')
 
       const result = await res.json()
-      // Map data untuk menambahkan label status agar mudah dibaca di tabel
       admins.value = result.map((a: Admin) => ({
         ...a,
         status: a.is_active ? 'Aktif' : 'Non-Aktif'
@@ -46,7 +43,6 @@ export const useAdminStore = defineStore('admin', () => {
     }
   }
 
-  // Membuat Admin Baru (PBI-MAP4)
   async function addAdmin(body: Record<string, string>) {
     const res = await fetch(`${VITE_API_URL}/api/admin/`, {
       method: 'POST',
@@ -60,7 +56,6 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
   async function updateAdmin(id: number, body: Record<string, string>) {
-    // Pastikan ada tanda '/' setelah ${id}
     const res = await fetch(`${VITE_API_URL}/api/admin/${id}/`, { 
       method: 'PUT',
       headers: { 
@@ -70,7 +65,6 @@ export const useAdminStore = defineStore('admin', () => {
       body: JSON.stringify(body),
     })
 
-    // Proteksi agar tidak muncul SyntaxError JSON lagi
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ error: 'Server Error' }))
       throw { status: res.status, data: errorData }
@@ -79,7 +73,6 @@ export const useAdminStore = defineStore('admin', () => {
     return await res.json()
   }
 
-  // Soft Delete Admin (PBI-MAP7)
   async function deleteAdmin(id: number) {
     const res = await fetch(`${VITE_API_URL}/api/admin/delete/${id}/`, {
       method: 'DELETE',
@@ -99,7 +92,6 @@ export const useAdminStore = defineStore('admin', () => {
     if (!res.ok) throw new Error('Gagal memuat data admin')
 
     const result = await res.json()
-    // Mencari data admin spesifik berdasarkan ID
     const admin = result.find((a: any) => a.id === Number(id))
     if (!admin) throw new Error('Data admin tidak ditemukan')
     return admin

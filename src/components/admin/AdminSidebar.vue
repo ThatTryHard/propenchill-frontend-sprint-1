@@ -17,7 +17,7 @@ import {
   Settings,
   HelpCircle,
   LogOut,
-  ShieldCheck, // Import icon yang konsisten
+  ShieldCheck, 
 } from 'lucide-vue-next'
 
 defineProps<{
@@ -30,7 +30,6 @@ const authStore = useAuthStore()
 
 const navItems = [
   { name: 'parents', label: 'Kelola Wali Murid', path: '/admin/parents', icon: Users },
-  { name: 'placeholder1', label: 'Lorem', path: '/admin/lorem1', icon: BarChart3 },
   { 
     name: 'staff', 
     label: 'Kelola Akun Staff', 

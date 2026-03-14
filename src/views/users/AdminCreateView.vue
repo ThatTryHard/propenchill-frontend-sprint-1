@@ -18,29 +18,41 @@
 
       <div class="bg-white p-8 rounded-2xl border border-[#e2e8f0] shadow-sm max-w-4xl">
         <div class="flex flex-col gap-6">
-          <VInputField
-            v-model="form.nama"
-            label="Nama Lengkap"
-            placeholder="Masukkan nama lengkap"
-            :state="errors.nama ? 'error' : 'default'"
-            :message="errors.nama"
-          />
-          <VInputField
-            v-model="form.email"
-            label="Email"
-            placeholder="nama@email.com"
-            :state="errors.email ? 'error' : 'default'"
-            :message="errors.email"
-          />
-          
-          <div class="flex flex-col gap-2">
-            <label class="text-[16px] font-semibold text-[#111827]">Role</label>
-            <select v-model="form.role" class="w-full p-[14px] rounded-[12px] border-2 border-[#b2b5ba] focus:border-[#3f9760] outline-none bg-white">
+        <VInputField
+          v-model="form.nama"
+          label="Nama Lengkap"
+          placeholder="Masukkan nama lengkap"
+          :state="errors.nama ? 'error' : 'default'"
+          :message="errors.nama"
+        />
+
+        <VInputField
+          v-model="form.email"
+          label="Email"
+          placeholder="nama@email.com"
+          :state="errors.email ? 'error' : 'default'"
+          :message="errors.email"
+        />
+        
+        <div class="flex flex-col gap-2">
+          <label class="text-[16px] font-semibold text-[#111827]">Role</label>
+          <div class="relative">
+            <select 
+              v-model="form.role" 
+              class="w-full p-[14px] rounded-[12px] border-2 border-[#b2b5ba] focus:border-[#3f9760] outline-none bg-white appearance-none cursor-pointer"
+            >
               <option value="ADMIN">ADMIN</option>
               <option value="KEPSEK">KEPALA SEKOLAH</option>
-              <option value="BIDANG_KURIKULUM">KURIKULUM</option>
+              <option value="BIDANG_KURIKULUM">BIDANG KURIKULUM</option>
+              <option value="BIDANG_AGAMA">BIDANG AGAMA</option>
+              <option value="BIDANG_KESISWAAN">BIDANG KESISWAAN</option>
             </select>
+            <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+              <ChevronDown :size="20" />
+            </div>
           </div>
+        </div>
+      </div>
         </div>
 
         <div class="flex gap-4 mt-10">
@@ -48,7 +60,6 @@
           <VButton variant="primary" class="px-8" :loading="isLoading" @click="handleSave">Simpan</VButton>
         </div>
       </div>
-    </div>
   </DashboardLayout>
 </template>
 
