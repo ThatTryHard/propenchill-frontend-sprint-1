@@ -188,7 +188,6 @@ const errors = ref<Record<string, string>>({})
 
 onMounted(() => adminStore.fetchAdmins())
 
-// Debounced Search sesuai ListView.vue
 let searchTimeout: any = null
 const debouncedSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
@@ -241,9 +240,8 @@ const showAlert = (type: string, title: string, message: string) => {
 }
 
 const handleSave = async () => {
-  errors.value = {} // Reset error setiap klik simpan
+  errors.value = {} 
   
-  // Validasi lokal sederhana sebelum tembak API
   if (!form.value.nama.trim()) {
     errors.value.nama = 'Nama wajib diisi!'
     return
@@ -256,19 +254,16 @@ const handleSave = async () => {
   formModal.loading = true
   try {
     if (isEdit.value && selectedId.value) {
-      // PBI-MAP6: Update
       await adminStore.updateAdmin(selectedId.value, form.value)
       showAlert('success', 'Berhasil!', 'Data admin berhasil diperbarui.')
     } else {
-      // PBI-MAP4: Create
       await adminStore.addAdmin(form.value)
       showAlert('success', 'Berhasil!', 'Admin baru berhasil didaftarkan.')
     }
     closeModal()
   } catch (err: any) {
-    // Menangkap error 400/409 dari Django (Misal: email duplikat)
     if (err.data) {
-      errors.value = err.data // Memasukkan error backend ke state UI
+      errors.value = err.data 
     } else {
       showAlert('error', 'Gagal!', 'Terjadi kesalahan pada sistem.')
     }
@@ -283,7 +278,6 @@ const closeModal = () => {
   form.value = { nama: '', email: '', role: 'ADMIN' }
 }
 
-// Konfigurasi Tombol Modal Form (Tambah/Edit)
 const formButtons = computed(
   (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
   {
@@ -302,7 +296,6 @@ const formButtons = computed(
   }
 ])
 
-// Konfigurasi Tombol Modal Delete
 const deleteButtons = computed(
   (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
   {

@@ -52,17 +52,16 @@ import VButton from '@/components/common/VButton.vue'
 const route = useRoute()
 const router = useRouter()
 const adminStore = useAdminStore()
-const authStore = useAuthStore() // WAJIB ADA agar tidak blank
+const authStore = useAuthStore() 
 
 const form = ref({ nama: '', email: '', role: '' })
 const errors = ref<Record<string, string>>({})
 const isLoading = ref(false)
-const showDeleteConfirm = ref(false) // WAJIB ADA untuk tombol hapus
+const showDeleteConfirm = ref(false) 
 
 onMounted(async () => {
   const adminId = route.params.id
   try {
-    // Memastikan ID dikirim sebagai string ke store
     const data = await adminStore.fetchAdminById(adminId as string)
     form.value = { 
       nama: data.nama, 
@@ -74,9 +73,7 @@ onMounted(async () => {
   }
 })
 
-// Di dalam script setup AdminEditView.vue
 const handleUpdate = async () => {
-  // Pastikan form tidak kosong sebelum submit
   if (!form.value.nama || !form.value.email) {
     errors.value = { 
       nama: !form.value.nama ? 'Nama tidak boleh kosong' : '',
@@ -87,14 +84,13 @@ const handleUpdate = async () => {
 
   isLoading.value = true
   try {
-    const adminId = Number(route.params.id) // Konversi ke number
+    const adminId = Number(route.params.id) 
     await adminStore.updateAdmin(adminId, {
       nama: form.value.nama,
       email: form.value.email,
       role: form.value.role
     })
     
-    // Redirect balik ke tabel dengan pesan sukses
     router.push({ 
       path: '/admin-management', 
       query: { success: 'Data admin berhasil diperbarui!' } 
