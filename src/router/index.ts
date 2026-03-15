@@ -12,6 +12,9 @@ import ForgetPasswordView from '@/views/users/ForgotPasswordView.vue'
 import VerifyOTPView from '@/views/users/VerifyOTPView.vue'
 import SetNewPasswordView from '@/views/users/SetNewPasswordView.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
+import StudentManagementView from "@/views/students/StudentManagementView.vue"
+import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,7 +84,17 @@ const router = createRouter({
       name: 'admin-parents-edit',
       component: ParentEditView,
     },
-
+    {
+    path: "/students",
+    name: "student-management",
+    component: StudentManagementView,
+    },
+    {
+      path: '/verify-email',
+      name: 'verify-email',
+      component: VerifyEmailView,
+    }
+    // TODO: Add routes for other roles here
   ],
 })
 

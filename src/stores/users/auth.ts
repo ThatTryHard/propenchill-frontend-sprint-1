@@ -29,12 +29,10 @@ export const useAuthStore = defineStore('auth', {
 
       const data = await response.json()
 
-      // Kalau ada error, lempar error dengan pesan dari backend
       if (!response.ok) {
         throw new Error(data.detail || 'Kredensial tidak valid')
       }
 
-      // Kalau sukses, simpan ke State Pinia dan LocalStorage
       this.accessToken = data.access
       this.refreshToken = data.refresh
       this.role = data.role || null
@@ -69,12 +67,48 @@ export const useAuthStore = defineStore('auth', {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Registrasi gagal')
+        throw new Error(data.error || data.message || 'Registrasi gagal')
+      }
+
+      return data
+    },
+    
+    async sendEmailOtp(payload: { email: string }) {
+      const response = await fetch(VITE_API_URL + '/api/send-email-otp/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Gagal mengirim OTP')
       }
 
       return data
     },
 
+    async verifyEmailOtp(payload: { email: string; otp: string }) {
+      const response = await fetch(VITE_API_URL + '/api/verify-email-otp/', {
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || 'Gagal memverifikasi email')
+      }
+
+      return data
+    },
+    
     logout() {
       // Hapus token dari State Pinia dan LocalStorage
       this.accessToken = null
