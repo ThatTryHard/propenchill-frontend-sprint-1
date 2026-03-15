@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar userName="Matcha Addict" userEmail="matcha.addict@gmail.com" />
+      <AdminSidebar />
     </template>
     <div class="p-8 flex flex-col gap-6 h-full">
       <!-- Header -->
@@ -187,7 +187,7 @@ const debouncedSearch = () => {
 }
 
 const changePage = (page: number) => {
-  store.fetchParents(page, searchQuery.value)
+  store.setParentPage(page)
 }
 
 const openDeleteModal = (parent: Parent) => {

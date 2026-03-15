@@ -8,7 +8,13 @@ export const useAuthStore = defineStore('auth', {
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
     role: localStorage.getItem('user_role') || null,
-    user: null as { nama: string; email: string } | null,
+    user:
+      localStorage.getItem('user_nama') || localStorage.getItem('user_email')
+        ? {
+            nama: localStorage.getItem('user_nama') || '',
+            email: localStorage.getItem('user_email') || '',
+          }
+        : null,
   }),
 
   actions: {
@@ -32,9 +38,15 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = data.access
       this.refreshToken = data.refresh
       this.role = data.role || null
+      this.user = {
+        nama: data.nama || '',
+        email: data.email || email,
+      }
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
       if (data.role) localStorage.setItem('user_role', data.role)
+      localStorage.setItem('user_nama', this.user.nama)
+      localStorage.setItem('user_email', this.user.email)
 
       return data
     },
@@ -72,6 +84,8 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
       localStorage.removeItem('user_role')
+      localStorage.removeItem('user_nama')
+      localStorage.removeItem('user_email')
     },
   },
 })

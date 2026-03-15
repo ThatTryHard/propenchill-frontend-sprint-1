@@ -1,10 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-    <AdminSidebar 
-        :userName="authStore.user?.nama || 'Matcha Addict'" 
-        :userEmail="authStore.user?.email || 'matcha.addict@gmail.com'" 
-      />
+      <AdminSidebar />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full font-sans">
@@ -165,13 +162,11 @@ import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VModal from '@/components/common/VModal.vue'
 import VAlert from '@/components/common/VAlert.vue'
-import { useAuthStore } from '@/stores/users/auth'
 
 const adminStore = useAdminStore()
 const searchQuery = ref('')
 const isEdit = ref(false)
 const selectedId = ref<number | null>(null)
-const authStore = useAuthStore()
 
 const alert = reactive({
   visible: false,

@@ -48,6 +48,7 @@ export function validateParentForm(form: { nama: string; email: string; no_hp: s
 
 export const useParentStore = defineStore('parents', () => {
   const parents = ref<Parent[]>([])
+  const allParents = ref<Parent[]>([])
   const isLoading = ref(false)
   const pagination = reactive<Pagination>({
     currentPage: 1,
@@ -56,40 +57,59 @@ export const useParentStore = defineStore('parents', () => {
     limit: 10,
   })
 
+  function applyPagination(page: number) {
+    pagination.totalData = allParents.value.length
+    pagination.totalPages = Math.max(1, Math.ceil(pagination.totalData / pagination.limit))
+
+    const safePage = Math.min(Math.max(page, 1), pagination.totalPages)
+    pagination.currentPage = safePage
+
+    const startIndex = (safePage - 1) * pagination.limit
+    const endIndex = startIndex + pagination.limit
+    parents.value = allParents.value.slice(startIndex, endIndex)
+  }
+
+  function setParentPage(page: number) {
+    applyPagination(page)
+  }
+
   async function fetchParents(page = 1, query = '') {
     isLoading.value = true
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: String(pagination.limit),
-      })
+      const params = new URLSearchParams()
       if (query.trim()) params.set('q', query.trim())
 
-      const res = await fetch(`${VITE_API_URL}/api/parents/?${params}`, {
+      const queryString = params.toString()
+      const endpoint = queryString
+        ? `${VITE_API_URL}/api/parents/?${queryString}`
+        : `${VITE_API_URL}/api/parents/`
+
+      const res = await fetch(endpoint, {
         headers: authHeaders(),
       })
       if (!res.ok) throw new Error('Gagal memuat data')
 
       const result = await res.json()
-      parents.value = result.data
-      pagination.currentPage = result.pagination.halaman_saat_ini
-      pagination.totalPages = result.pagination.total_halaman
-      pagination.totalData = result.pagination.total_data
+      allParents.value = Array.isArray(result.data) ? result.data : []
+      applyPagination(page)
     } finally {
       isLoading.value = false
     }
   }
 
   async function fetchParentById(id: string | number): Promise<Parent> {
-    const res = await fetch(`${VITE_API_URL}/api/parents/?limit=1000`, {
+    const numericId = Number(id)
+    if (Number.isNaN(numericId)) throw new Error('ID wali murid tidak valid')
+
+    const res = await fetch(`${VITE_API_URL}/api/parents/${numericId}/`, {
       headers: authHeaders(),
     })
     if (!res.ok) throw new Error('Gagal memuat data wali murid')
 
     const result = await res.json()
-    const parent = result.data.find((p: Parent) => p.id === Number(id))
-    if (!parent) throw new Error('Data wali murid tidak ditemukan')
-    return parent
+    const parent = result.data ?? result
+    if (!parent?.id) throw new Error('Data wali murid tidak ditemukan')
+    return parent as Parent
   }
 
   async function createParent(body: Record<string, string>) {
@@ -129,6 +149,7 @@ export const useParentStore = defineStore('parents', () => {
     isLoading,
     pagination,
     fetchParents,
+    setParentPage,
     fetchParentById,
     createParent,
     updateParent,
