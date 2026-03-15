@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar userName="Matcha Addict" userEmail="matcha.addict@gmail.com" />
+      <AdminSidebar />
     </template>
     
     <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[#f8fafc]">

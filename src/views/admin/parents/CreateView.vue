@@ -1,20 +1,22 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar userName="Matcha Addict" userEmail="matcha.addict@gmail.com" />
+      <AdminSidebar />
     </template>
-    <div class="p-8 flex flex-col gap-6 max-w-[800px]">
+    <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[#f8fafc]">
       <!-- Header -->
-      <div>
+      <div class="flex flex-col gap-4">
         <button
           @click="$router.push('/admin/parents')"
-          class="flex items-center gap-1 text-[14px] text-[#718096] hover:text-[#4a5568] transition-colors mb-4"
+          class="flex items-center gap-2 text-[#718096] hover:text-[#1a202c] transition-colors"
         >
-          <ArrowLeft :size="16" />
-          Kembali
+          <ArrowLeft :size="18" />
+          <span class="text-sm">Kembali</span>
         </button>
-        <h1 class="text-2xl font-bold text-[#1a202c]">Tambah Wali Murid</h1>
-        <p class="text-[#718096] text-sm mt-1">Buat akun baru untuk wali murid</p>
+        <div>
+          <h1 class="text-2xl font-bold text-[#1a202c]">Tambah Wali Murid</h1>
+          <p class="text-[#718096] text-sm mt-1">Buat akun baru untuk wali murid</p>
+        </div>
       </div>
 
       <!-- Alert -->
@@ -27,67 +29,69 @@
         @close="alert.visible = false"
       />
 
-      <!-- Form -->
-      <div class="flex flex-col gap-4">
-        <VInputField
-          v-model="form.nama"
-          label="Nama Lengkap"
-          placeholder="Masukkan nama lengkap"
-          :disabled="isLoading"
-          :state="errors.nama ? 'error' : 'default'"
-          :message="errors.nama"
-        />
-
-        <VInputField
-          v-model="form.email"
-          label="Email"
-          type="email"
-          placeholder="nama@email.com"
-          :disabled="isLoading"
-          :state="errors.email ? 'error' : 'default'"
-          :message="errors.email"
-        />
-
-        <VInputField
-          v-model="form.no_hp"
-          label="Nomor HP"
-          placeholder="08123456789"
-          :disabled="isLoading"
-          :state="errors.no_hp ? 'error' : 'default'"
-          :message="errors.no_hp"
-        />
-
-        <VInputField
-          v-model="form.tanggal_lahir"
-          label="Tanggal Lahir"
-          type="date"
-          :disabled="isLoading"
-        />
-
-        <VInputField
-          v-model="form.alamat"
-          label="Alamat"
-          placeholder="Masukkan alamat"
-          :disabled="isLoading"
-        />
-
-        <div class="flex gap-3 mt-4">
-          <VButton
-            variant="tertiary"
-            class="h-[48px] px-8"
-            @click="$router.push('/admin/parents')"
+      <!-- Form Card -->
+      <div class="bg-white p-8 rounded-2xl border border-[#e2e8f0] shadow-sm max-w-4xl">
+        <div class="flex flex-col gap-6">
+          <VInputField
+            v-model="form.nama"
+            label="Nama Lengkap"
+            placeholder="Masukkan nama lengkap"
             :disabled="isLoading"
-          >
-            Batal
-          </VButton>
-          <VButton
-            variant="primary"
-            class="h-[48px] px-8"
+            :state="errors.nama ? 'error' : 'default'"
+            :message="errors.nama"
+          />
+
+          <VInputField
+            v-model="form.email"
+            label="Email"
+            type="email"
+            placeholder="nama@email.com"
             :disabled="isLoading"
-            @click="openConfirmModal"
-          >
-            {{ isLoading ? 'Memproses...' : 'Simpan' }}
-          </VButton>
+            :state="errors.email ? 'error' : 'default'"
+            :message="errors.email"
+          />
+
+          <VInputField
+            v-model="form.no_hp"
+            label="Nomor HP"
+            placeholder="08123456789"
+            :disabled="isLoading"
+            :state="errors.no_hp ? 'error' : 'default'"
+            :message="errors.no_hp"
+          />
+
+          <VInputField
+            v-model="form.tanggal_lahir"
+            label="Tanggal Lahir"
+            type="date"
+            :disabled="isLoading"
+          />
+
+          <VInputField
+            v-model="form.alamat"
+            label="Alamat"
+            placeholder="Masukkan alamat"
+            :disabled="isLoading"
+          />
+
+          <div class="flex gap-4 mt-4">
+            <VButton
+              variant="tertiary"
+              class="px-8"
+              @click="$router.push('/admin/parents')"
+              :disabled="isLoading"
+            >
+              Batal
+            </VButton>
+            <VButton
+              variant="primary"
+              class="px-8"
+              :disabled="isLoading"
+              @click="openConfirmModal"
+            >
+              {{ isLoading ? 'Memproses...' : 'Simpan' }}
+            </VButton>
+          </div>
         </div>
       </div>
 
