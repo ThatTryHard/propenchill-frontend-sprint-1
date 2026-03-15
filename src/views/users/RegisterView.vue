@@ -77,7 +77,7 @@ const handleRegister = async () => {
   isLoading.value = true
 
   try {
-    await authStore.register({
+    const response = await authStore.register({
       nama: nama.value,
       email: email.value,
       no_hp: noHp.value,
@@ -85,10 +85,15 @@ const handleRegister = async () => {
       confirm_password: confirmPassword.value,
     })
 
-    toast.success('Registrasi berhasil! Mengalihkan ke halaman login...')
+    const registeredEmail = response?.data?.email || email.value
+
+    toast.success('Registrasi berhasil! Silakan lanjut verifikasi email.')
 
     setTimeout(() => {
-      router.push({ name: 'login' })
+      router.push({
+        name: 'verify-email',
+        query: { email: registeredEmail },
+      })
     }, 1000)
   } catch (error: unknown) {
     const message = (error as Error).message
