@@ -9,6 +9,7 @@ import {
   UserRound,
   ListOrdered,
   Search,
+  Mail,
 } from 'lucide-vue-next'
 
 import { useStudentStore, type Student } from '@/stores/students'
@@ -45,11 +46,15 @@ const selectedStudent = ref<Student | null>(null)
 const selectedStudentId = ref<number | null>(null)
 const selectedStudentName = ref('')
 
+const combinedQuery = computed(() => {
+  return search.value || namaFilter.value || nomorInduk.value
+})
+
 const loadStudents = async () => {
   await studentStore.fetchStudents(
     currentPage.value,
     limit.value,
-    search.value || namaFilter.value || nomorInduk.value,
+    combinedQuery.value,
     kelas.value
   )
 }
@@ -100,11 +105,12 @@ const totalStaf = computed(() => 0)
 
 const tableColumns = [
   { key: 'nomor', label: 'Nomor' },
-  { key: 'jenis', label: 'Jenis' },
   { key: 'nama', label: 'Nama' },
-  { key: 'nis', label: 'Nomor Induk' },
-  { key: 'kelas', label: 'Kelas/Jabatan' },
-  { key: 'unit_kerja', label: 'Unit Kerja' },
+  { key: 'nisn', label: 'NISN' },
+  { key: 'nis', label: 'NIS' },
+  { key: 'email', label: 'Email' },
+  { key: 'kelas', label: 'Kelas' },
+  { key: 'jenis_kelamin_label', label: 'Jenis Kelamin' },
   { key: 'aksi', label: 'Aksi' },
 ]
 
@@ -116,8 +122,8 @@ const tableRows = computed(() => {
         studentStore.pagination.limit +
       index +
       1,
-    jenis: 'Siswa',
-    unit_kerja: '-',
+    jenis_kelamin_label:
+      student.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
   }))
 })
 
@@ -242,7 +248,7 @@ onMounted(async () => {
                     <input
                       v-model="namaFilter"
                       type="text"
-                      placeholder="Lorem"
+                      placeholder="Masukkan nama"
                       class="w-full bg-transparent outline-none text-[16px] leading-[120%] font-semibold text-[#111827] placeholder:text-[#858a91]"
                     />
                   </div>
@@ -264,7 +270,7 @@ onMounted(async () => {
                     <input
                       v-model="nomorInduk"
                       type="text"
-                      placeholder="Lorem"
+                      placeholder="NIS / NISN"
                       class="w-full bg-transparent outline-none text-[16px] leading-[120%] font-semibold text-[#111827] placeholder:text-[#858a91]"
                     />
                   </div>
@@ -275,7 +281,7 @@ onMounted(async () => {
 
             <div class="flex items-center gap-[10px]">
               <div class="text-[20px] leading-[120%] font-semibold text-[#111827]">
-                Kelas/Unit
+                Kelas
               </div>
 
               <div
@@ -286,7 +292,7 @@ onMounted(async () => {
                     <input
                       v-model="kelas"
                       type="text"
-                      placeholder="Lorem"
+                      placeholder="Masukkan kelas"
                       class="w-full bg-transparent outline-none text-[16px] leading-[120%] font-semibold text-[#111827] placeholder:text-[#858a91]"
                     />
                   </div>
@@ -311,7 +317,7 @@ onMounted(async () => {
             <input
               v-model="search"
               type="text"
-              placeholder="Cari data siswa dan staf"
+              placeholder="Cari nama, email, NIS, atau NISN"
               class="w-full bg-transparent border-none outline-none ring-0 focus:outline-none focus:ring-0 shadow-none text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
             />
           </div>
@@ -337,14 +343,14 @@ onMounted(async () => {
             </div>
           </template>
 
-          <template #cell-jenis="{ value }">
-            <div class="text-center text-[14px] text-[#202632]">
+          <template #cell-nama="{ value }">
+            <div class="text-center text-[14px] text-[#202632] font-medium">
               {{ value }}
             </div>
           </template>
 
-          <template #cell-nama="{ value }">
-            <div class="text-center text-[14px] text-[#202632] font-medium">
+          <template #cell-nisn="{ value }">
+            <div class="text-center text-[14px] text-[#202632]">
               {{ value }}
             </div>
           </template>
@@ -355,13 +361,19 @@ onMounted(async () => {
             </div>
           </template>
 
+          <template #cell-email="{ value }">
+            <div class="text-center text-[14px] text-[#202632] break-all">
+              {{ value }}
+            </div>
+          </template>
+
           <template #cell-kelas="{ value }">
             <div class="text-center text-[14px] text-[#202632]">
               {{ value }}
             </div>
           </template>
 
-          <template #cell-unit_kerja="{ value }">
+          <template #cell-jenis_kelamin_label="{ value }">
             <div class="text-center text-[14px] text-[#202632]">
               {{ value }}
             </div>
@@ -383,7 +395,7 @@ onMounted(async () => {
               <VButton
                 variant="primary"
                 class="!h-[26px] !min-w-[64px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
-                @click="openDeleteModal(row.student_id, row.nama)"
+                @click="openDeleteModal(row.id_siswa, row.nama)"
               >
                 <template #leftIcon>
                   <Trash2 :size="12" />
