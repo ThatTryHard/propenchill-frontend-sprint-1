@@ -19,6 +19,7 @@ import {
   HelpCircle,
   LogOut,
   ShieldCheck, 
+  UserRound,
 } from 'lucide-vue-next'
 
 const props = defineProps<{
@@ -39,6 +40,12 @@ const navItems = [
     label: 'Kelola Akun Staff', 
     path: '/admin-management', 
     icon: ShieldCheck 
+  },
+  { 
+    name: 'teachers',
+    label: 'Kelola Akun Guru',
+    path: '/admin/guru', 
+    icon: UserRound
   },
 ]
 
