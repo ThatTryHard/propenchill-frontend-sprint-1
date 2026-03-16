@@ -12,6 +12,9 @@ import ForgetPasswordView from '@/views/users/ForgotPasswordView.vue'
 import VerifyOTPView from '@/views/users/VerifyOTPView.vue'
 import SetNewPasswordView from '@/views/users/SetNewPasswordView.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
+import TeacherListView from '../views/admin/teacher/ListView.vue'
+import TeacherCreateView from '../views/admin/teacher/CreateView.vue'
+import TeacherEditView from '../views/admin/teacher/EditView.vue'
 import StudentManagementView from "@/views/students/StudentManagementView.vue"
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
 
@@ -84,6 +87,23 @@ const router = createRouter({
       name: 'admin-parents-edit',
       component: ParentEditView,
     },
+<<<<<<< HEAD
+    { 
+      path: '/admin/guru', 
+      name: 'admin-guru-list', 
+      component: TeacherListView 
+    },
+    { 
+      path: '/admin/guru/tambah', 
+      name: 'admin-guru-create', 
+      component: TeacherCreateView 
+    },
+    { 
+      path: '/admin/guru/:id/edit', 
+      name: 'admin-guru-edit', 
+      component: TeacherEditView 
+    },
+=======
     {
     path: "/students",
     name: "student-management",
@@ -95,6 +115,7 @@ const router = createRouter({
       component: VerifyEmailView,
     }
     // TODO: Add routes for other roles here
+>>>>>>> dev
   ],
 })
 
