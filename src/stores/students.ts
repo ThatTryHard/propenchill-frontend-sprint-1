@@ -4,10 +4,13 @@ import axios from 'axios'
 const VITE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export interface Student {
-  student_id: number
+  id_siswa: number
+  nisn: string
   nis: string
   nama: string
+  email: string
   kelas: string
+  jenis_kelamin: 'L' | 'P'
   tanggal_lahir: string
 }
 
@@ -19,9 +22,12 @@ export interface StudentPagination {
 }
 
 export interface StudentPayload {
+  nisn: string
   nis: string
   nama: string
+  email: string
   kelas: string
+  jenis_kelamin: 'L' | 'P'
   tanggal_lahir: string
 }
 
@@ -74,18 +80,10 @@ export const useStudentStore = defineStore('students', {
       this.error = ''
 
       try {
-        const token = this.getToken()
-
-        console.log('TOKEN YANG DIPAKAI:', token)
-        console.log('REQUEST KE:', `${VITE_API_URL}/api/siswa/`)
-        console.log('PARAMS:', { page, limit, q, kelas })
-
         const response = await axios.get(`${VITE_API_URL}/api/siswa/`, {
           ...this.getAuthHeader(),
           params: { page, limit, q, kelas },
         })
-
-        console.log('FETCH STUDENTS SUCCESS:', response.data)
 
         this.students = response.data?.data || []
         this.pagination = response.data?.pagination || {
@@ -95,15 +93,11 @@ export const useStudentStore = defineStore('students', {
           limit: 10,
         }
       } catch (error: any) {
-        console.log('FETCH STUDENTS ERROR FULL:', error)
-        console.log('FETCH STUDENTS ERROR RESPONSE:', error?.response)
-        console.log('FETCH STUDENTS ERROR STATUS:', error?.response?.status)
-        console.log('FETCH STUDENTS ERROR DATA:', error?.response?.data)
-
         if (error?.response?.status === 401) {
           this.error = 'Unauthorized. Silakan login ulang.'
         } else if (error?.response?.status === 403) {
-          this.error = error?.response?.data?.error || 'Anda tidak punya akses ke data siswa.'
+          this.error =
+            error?.response?.data?.error || 'Anda tidak punya akses ke data siswa.'
         } else if (error?.response?.status === 404) {
           this.error = 'Endpoint data siswa tidak ditemukan.'
         } else if (error?.response?.status === 500) {
@@ -138,8 +132,6 @@ export const useStudentStore = defineStore('students', {
 
         return response.data
       } catch (error: any) {
-        console.log('CREATE STUDENT ERROR:', error?.response)
-
         this.error =
           error?.response?.data?.error || 'Gagal menambahkan data siswa.'
         throw error
@@ -161,8 +153,6 @@ export const useStudentStore = defineStore('students', {
 
         return response.data
       } catch (error: any) {
-        console.log('UPDATE STUDENT ERROR:', error?.response)
-
         this.error =
           error?.response?.data?.error || 'Gagal memperbarui data siswa.'
         throw error
@@ -183,8 +173,6 @@ export const useStudentStore = defineStore('students', {
 
         return response.data
       } catch (error: any) {
-        console.log('DELETE STUDENT ERROR:', error?.response)
-
         this.error =
           error?.response?.data?.error || 'Gagal menghapus data siswa.'
         throw error
@@ -195,7 +183,7 @@ export const useStudentStore = defineStore('students', {
 
     async getStudentById(id: number) {
       const foundStudent = this.students.find(
-        (student) => student.student_id === id
+        (student) => student.id_siswa === id
       )
 
       if (foundStudent) {
@@ -204,9 +192,7 @@ export const useStudentStore = defineStore('students', {
 
       await this.fetchStudents(1, 100)
 
-      return (
-        this.students.find((student) => student.student_id === id) || null
-      )
+      return this.students.find((student) => student.id_siswa === id) || null
     },
   },
 })
