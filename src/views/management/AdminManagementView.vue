@@ -7,12 +7,12 @@
     <div class="p-8 flex flex-col gap-6 h-full font-sans">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Akun Staff/Admin</h1>
+          <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Akun Staff</h1>
           <p class="text-[#718096] text-sm mt-1">Daftar akun pengelola sistem yang terdaftar</p>
         </div>
-        <VButton variant="primary" @click="$router.push('/admin-management/create')">
+        <VButton variant="primary" @click="openAddModal">
           <template #leftIcon><Plus :size="18" /></template>
-          Tambah Admin
+          Tambah Staff
         </VButton>
       </div>
 
@@ -29,7 +29,7 @@
         <VInputField
           v-model="searchQuery"
           state="search"
-          placeholder="Cari nama admin..."
+          placeholder="Cari nama staff..."
           @update:modelValue="debouncedSearch"
         />
       </div>
@@ -95,20 +95,26 @@
                 </td>
                 <td class="px-6 py-4">
                   <div class="flex items-center justify-center gap-2">
-                    <button
-                      @click="$router.push('/admin-management/edit/' + admin.id)"
-                      class="p-2 rounded-lg text-[#3F9760] hover:bg-[#e8f3eb] transition-colors"
-                      title="Edit"
+                    <VButton
+                      variant="secondary"
+                      class="!h-[26px] !min-w-[58px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
+                      @click="openEditModal(admin)"
                     >
-                      <Pencil :size="16" />
-                    </button>
-                    <button
+                      <template #leftIcon>
+                        <Pencil :size="12" />
+                      </template>
+                      Edit
+                    </VButton>
+                    <VButton
+                      variant="primary"
+                      class="!h-[26px] !min-w-[64px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
                       @click="openDeleteConfirm(admin)"
-                      class="p-2 rounded-lg text-[#A0453B] hover:bg-[#fde8e8] transition-colors"
-                      title="Hapus"
                     >
-                      <Trash2 :size="16" />
-                    </button>
+                      <template #leftIcon>
+                        <Trash2 :size="12" />
+                      </template>
+                      Hapus
+                    </VButton>
                   </div>
                 </td>
               </tr>
@@ -117,80 +123,40 @@
         </div>
       </div>
 
-      <VModal
-        v-model:is-open="formModal.show"
-        :title="isEdit ? 'Edit Informasi Admin' : 'Tambah Admin Baru'"
-        :description="
-          isEdit
-            ? 'Perbarui data pengelola sistem agar tetap akurat.'
-            : 'Daftarkan akun admin baru untuk mengelola sistem SIMP.'
-        "
-        :buttons="formButtons"
-      >
-        <template #icon>
-          <component :is="isEdit ? UserCheck : UserPlus" class="w-10 h-10 text-[#3f9760]" />
-        </template>
+      <AdminAccountModal
+        :isOpen="formModal.show"
+        :isEdit="isEdit"
+        :loading="formModal.loading"
+        :errorMessage="formModal.error"
+        :initialForm="form"
+        @update:isOpen="formModal.show = $event"
+        @submit="handleSave"
+      />
 
-        <div class="w-full flex flex-col gap-5 mt-4 text-left">
-          <VInputField
-            v-model="form.nama"
-            label="Nama Lengkap"
-            placeholder="Masukkan nama lengkap admin"
-            :state="errors.nama ? 'error' : 'default'"
-            :message="errors.nama"
-            :disabled="formModal.loading"
-          />
-
-          <VInputField
-            v-model="form.email"
-            label="Alamat Email"
-            type="email"
-            placeholder="contoh: admin@simp.com"
-            :state="errors.email ? 'error' : 'default'"
-            :message="errors.email"
-            :disabled="formModal.loading"
-          />
-
-          <div class="flex flex-col gap-2">
-            <label class="text-[16px] font-semibold text-[#111827]">Role Akses</label>
-            <select
-              v-model="form.role"
-              class="w-full p-[14px] rounded-[12px] border-2 border-[#b2b5ba] focus:border-[#3f9760] outline-none bg-white text-[16px]"
-              :disabled="formModal.loading"
-            >
-              <option value="ADMIN">ADMIN</option>
-              <option value="BIDANG_AGAMA">BIDANG AGAMA</option>
-              <option value="BIDANG_KESISWAAN">BIDANG KESISWAAN</option>
-              <option value="BIDANG_KURIKULUM">BIDANG KURIKULUM</option>
-              <option value="KEPSEK">KEPALA SEKOLAH</option>
-            </select>
-          </div>
-        </div>
-      </VModal>
-
-      <VModal
-        v-model:is-open="deleteModal.show"
+      <ConfirmationModal
+        :isOpen="deleteModal.show"
         title="Nonaktifkan Akun"
         :description="`Apakah Anda yakin ingin menonaktifkan akun ${deleteModal.adminName}? Akses ke sistem akan segera dicabut.`"
-        :buttons="deleteButtons"
-      >
-        <template #icon>
-          <UserX class="w-10 h-10 text-red-500" />
-        </template>
-      </VModal>
+        confirmText="Hapus"
+        :loading="deleteModal.loading"
+        :errorMessage="deleteModal.error"
+        @update:isOpen="deleteModal.show = $event"
+        @confirm="handleDelete"
+      />
     </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
-import { Plus, Pencil, Trash2, UserPlus, UserCheck, UserX } from 'lucide-vue-next'
+import { ref, reactive, onMounted } from 'vue'
+import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { useAdminStore } from '@/stores/admin'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import AdminAccountModal from '@/components/admin/management/AdminAccountModal.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
-import VModal from '@/components/common/VModal.vue'
 import VAlert from '@/components/common/VAlert.vue'
 
 const adminStore = useAdminStore()
@@ -205,11 +171,10 @@ const alert = reactive({
   message: '',
 })
 
-const formModal = reactive({ show: false, loading: false })
-const deleteModal = reactive({ show: false, adminName: '', loading: false })
+const formModal = reactive({ show: false, loading: false, error: '' })
+const deleteModal = reactive({ show: false, adminName: '', loading: false, error: '' })
 
 const form = ref({ nama: '', email: '', role: 'ADMIN' })
-const errors = ref<Record<string, string>>({})
 
 onMounted(() => adminStore.fetchAdmins())
 
@@ -224,7 +189,7 @@ const debouncedSearch = () => {
 const openAddModal = () => {
   isEdit.value = false
   form.value = { nama: '', email: '', role: 'ADMIN' }
-  errors.value = {}
+  formModal.error = ''
   formModal.show = true
 }
 
@@ -232,24 +197,27 @@ const openEditModal = (admin: any) => {
   isEdit.value = true
   selectedId.value = admin.id
   form.value = { nama: admin.nama, email: admin.email, role: admin.role }
-  errors.value = {}
+  formModal.error = ''
   formModal.show = true
 }
 
 const openDeleteConfirm = (admin: any) => {
   selectedId.value = admin.id
   deleteModal.adminName = admin.nama
+  deleteModal.error = ''
   deleteModal.show = true
 }
 
 const handleDelete = async () => {
   if (!selectedId.value) return
   deleteModal.loading = true
+  deleteModal.error = ''
   try {
     await adminStore.deleteAdmin(selectedId.value)
     showAlert('success', 'Terhapus!', 'Akun berhasil dinonaktifkan.')
     deleteModal.show = false
   } catch (err) {
+    deleteModal.error = 'Tidak bisa menghapus akun sendiri.'
     showAlert('error', 'Gagal!', 'Tidak bisa menghapus akun sendiri.')
     deleteModal.show = false
   } finally {
@@ -264,34 +232,21 @@ const showAlert = (type: string, title: string, message: string) => {
   alert.message = message
 }
 
-const handleSave = async () => {
-  errors.value = {}
-
-  if (!form.value.nama.trim()) {
-    errors.value.nama = 'Nama wajib diisi!'
-    return
-  }
-  if (!form.value.email.trim()) {
-    errors.value.email = 'Email wajib diisi!'
-    return
-  }
-
+const handleSave = async (payload: { nama: string; email: string; role: string }) => {
   formModal.loading = true
+  formModal.error = ''
   try {
     if (isEdit.value && selectedId.value) {
-      await adminStore.updateAdmin(selectedId.value, form.value)
+      await adminStore.updateAdmin(selectedId.value, payload)
       showAlert('success', 'Berhasil!', 'Data admin berhasil diperbarui.')
     } else {
-      await adminStore.addAdmin(form.value)
+      await adminStore.addAdmin(payload)
       showAlert('success', 'Berhasil!', 'Admin baru berhasil didaftarkan.')
     }
     closeModal()
   } catch (err: any) {
-    if (err.data) {
-      errors.value = err.data
-    } else {
-      showAlert('error', 'Gagal!', 'Terjadi kesalahan pada sistem.')
-    }
+    formModal.error = err?.data?.error || err?.data?.message || 'Terjadi kesalahan pada sistem.'
+    showAlert('error', 'Gagal!', formModal.error)
   } finally {
     formModal.loading = false
   }
@@ -299,49 +254,7 @@ const handleSave = async () => {
 
 const closeModal = () => {
   formModal.show = false
-  errors.value = {}
+  formModal.error = ''
   form.value = { nama: '', email: '', role: 'ADMIN' }
 }
-
-const formButtons = computed(
-  (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
-    {
-      label: formModal.loading
-        ? 'Memproses...'
-        : isEdit.value
-          ? 'Simpan Perubahan'
-          : 'Tambah Admin',
-      variant: 'primary',
-      action: () => {
-        if (!formModal.loading) handleSave()
-      },
-    },
-    {
-      label: 'Batal',
-      variant: 'secondary',
-      action: () => {
-        closeModal()
-      },
-    },
-  ],
-)
-
-const deleteButtons = computed(
-  (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
-    {
-      label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
-      variant: 'primary',
-      action: () => {
-        if (!deleteModal.loading) handleDelete()
-      },
-    },
-    {
-      label: 'Batal',
-      variant: 'secondary',
-      action: () => {
-        deleteModal.show = false
-      },
-    },
-  ],
-)
 </script>

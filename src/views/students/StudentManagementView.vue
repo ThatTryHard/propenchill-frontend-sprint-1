@@ -18,16 +18,16 @@ import { useAuthStore } from '@/stores/users/auth'
 import { toast } from 'vue-sonner'
 
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import StudentSidebar from '@/components/admin/StudentSidebar.vue'
+import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import VButton from '@/components/common/VButton.vue'
 import VCard from '@/components/common/VCard.vue'
 import VTable from '@/components/common/VTable.vue'
 import VPagination from '@/components/common/VPagination.vue'
-import CreateStudentModal from '@/components/admin/CreateStudentModal.vue'
-import EditStudentModal from '@/components/admin/EditStudentModal.vue'
-import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal.vue'
-import ImportStudentModal from '@/components/admin/ImportStudentModal.vue'
-import ExportStudentModal from '@/components/admin/ExportStudentModal.vue'
+import CreateStudentModal from '@/components/admin/students/CreateStudentModal.vue'
+import EditStudentModal from '@/components/admin/students/EditStudentModal.vue'
+import DeleteConfirmationModal from '@/components/admin/students/DeleteConfirmationModal.vue'
+import ImportStudentModal from '@/components/admin/students/ImportStudentModal.vue'
+import ExportStudentModal from '@/components/admin/students/ExportStudentModal.vue'
 
 import databaseIcon from '@/assets/Database_Logo SVG.svg'
 import studentIcon from '@/assets/Siswa SVG.svg'
@@ -159,7 +159,7 @@ onMounted(async () => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <StudentSidebar :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
+      <AdminSidebar :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
     </template>
 
     <div

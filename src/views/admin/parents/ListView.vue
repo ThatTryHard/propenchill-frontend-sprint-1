@@ -10,7 +10,7 @@
           <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Wali Murid</h1>
           <p class="text-[#718096] text-sm mt-1">Daftar akun wali murid yang terdaftar</p>
         </div>
-        <VButton variant="primary" @click="$router.push('/admin/parents/create')">
+        <VButton variant="primary" @click="openCreateModal">
           <template #leftIcon><Plus :size="18" /></template>
           Tambah Wali Murid
         </VButton>
@@ -71,21 +71,28 @@
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ parent.no_hp }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ parent.tanggal_lahir || '-' }}</td>
                 <td class="px-6 py-4">
-                  <div class="flex items-center gap-2">
-                    <button
-                      @click="$router.push(`/admin/parents/${parent.id}/edit`)"
-                      class="p-2 rounded-lg text-[#3F9760] hover:bg-[#e8f3eb] transition-colors"
-                      title="Edit"
+                  <div class="flex justify-center gap-2">
+                    <VButton
+                      variant="secondary"
+                      class="!h-[26px] !min-w-[58px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
+                      @click="openEditModal(parent.id)"
                     >
-                      <Pencil :size="16" />
-                    </button>
-                    <button
+                      <template #leftIcon>
+                        <Pencil :size="12" />
+                      </template>
+                      Edit
+                    </VButton>
+
+                    <VButton
+                      variant="primary"
+                      class="!h-[26px] !min-w-[64px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
                       @click="openDeleteModal(parent)"
-                      class="p-2 rounded-lg text-[#A0453B] hover:bg-[#fde8e8] transition-colors"
-                      title="Hapus"
                     >
-                      <Trash2 :size="16" />
-                    </button>
+                      <template #leftIcon>
+                        <Trash2 :size="12" />
+                      </template>
+                      Hapus
+                    </VButton>
                   </div>
                 </td>
               </tr>
@@ -111,48 +118,54 @@
         </div>
       </div>
 
-      <!-- Delete Modal -->
-      <!-- <VModal
-        :show="deleteModal.show"
-        icon="delete"
+      <ConfirmationModal
+        :isOpen="deleteModal.show"
         title="Hapus Wali Murid"
         :description="`Apakah Anda yakin ingin menghapus akun ${deleteModal.parentName}? Tindakan ini tidak dapat dibatalkan.`"
         confirmText="Hapus"
-        cancelText="Batal"
         :loading="deleteModal.loading"
-        @close="deleteModal.show = false"
+        :errorMessage="deleteModal.error"
+        @update:isOpen="deleteModal.show = $event"
         @confirm="handleDelete"
-      /> -->
-      <VModal
-        v-model:is-open="deleteModal.show"
-        title="Hapus Wali Murid"
-        :description="`Apakah Anda yakin ingin menghapus akun ${deleteModal.parentName}? Tindakan ini tidak dapat dibatalkan.`"
-        :buttons="deleteButtons"
-      >
-        <template #icon>
-          <Trash2 class="w-10 h-10 text-red-500" />
-        </template>
-      </VModal>
+      />
+
+      <CreateParentModal
+        :isOpen="isCreateModalOpen"
+        @update:isOpen="isCreateModalOpen = $event"
+        @created="handleParentCreated"
+      />
+
+      <EditParentModal
+        :isOpen="isEditModalOpen"
+        :parentId="selectedParentId"
+        @update:isOpen="isEditModalOpen = $event"
+        @updated="handleParentUpdated"
+      />
     </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { useParentStore, type Parent } from '@/stores/parents'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import CreateParentModal from '@/components/admin/parents/CreateParentModal.vue'
+import EditParentModal from '@/components/admin/parents/EditParentModal.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
-import VModal from '@/components/common/VModal.vue'
 import VAlert from '@/components/common/VAlert.vue'
 
 const store = useParentStore()
 const route = useRoute()
 
 const searchQuery = ref('')
+const isCreateModalOpen = ref(false)
+const isEditModalOpen = ref(false)
+const selectedParentId = ref<number | null>(null)
 
 const alert = reactive({
   visible: false,
@@ -166,6 +179,7 @@ const deleteModal = reactive({
   parentId: null as number | null,
   parentName: '',
   loading: false,
+  error: '',
 })
 
 onMounted(() => {
@@ -190,34 +204,45 @@ const changePage = (page: number) => {
   store.setParentPage(page)
 }
 
+const refreshCurrentPage = async () => {
+  await store.fetchParents(store.pagination.currentPage, searchQuery.value)
+}
+
+const openCreateModal = () => {
+  isCreateModalOpen.value = true
+}
+
+const openEditModal = (parentId: number) => {
+  selectedParentId.value = parentId
+  isEditModalOpen.value = true
+}
+
+const handleParentCreated = async (message: string) => {
+  alert.visible = true
+  alert.type = 'success'
+  alert.title = 'Success Alert'
+  alert.message = message
+  await refreshCurrentPage()
+}
+
+const handleParentUpdated = async (message: string) => {
+  alert.visible = true
+  alert.type = 'success'
+  alert.title = 'Success Alert'
+  alert.message = message
+  await refreshCurrentPage()
+}
+
 const openDeleteModal = (parent: Parent) => {
   deleteModal.parentId = parent.id
   deleteModal.parentName = parent.nama
   deleteModal.show = true
 }
 
-// Konfigurasi Tombol Modal Delete
-const deleteButtons = computed(
-    (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
-  {
-    label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
-    variant: 'primary',
-    action: () => {
-      if (!deleteModal.loading) handleDelete()
-    }
-  },
-  {
-    label: 'Batal',
-    variant: 'secondary',
-    action: () => {
-      deleteModal.show = false
-    }
-  }
-])
-
 const handleDelete = async () => {
   if (!deleteModal.parentId) return
   deleteModal.loading = true
+  deleteModal.error = ''
   try {
     const data = await store.deleteParent(deleteModal.parentId)
     alert.visible = true
@@ -225,8 +250,9 @@ const handleDelete = async () => {
     alert.title = 'Success Alert'
     alert.message = data.message || 'Akun wali murid berhasil dihapus.'
     deleteModal.show = false
-    store.fetchParents(store.pagination.currentPage, searchQuery.value)
+    await refreshCurrentPage()
   } catch (error) {
+    deleteModal.error = (error as Error).message
     alert.visible = true
     alert.type = 'error'
     alert.title = 'Error Alert'

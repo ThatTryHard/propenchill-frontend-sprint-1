@@ -13,7 +13,7 @@
             <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Guru</h1>
             <p class="text-[#718096] text-sm mt-1">Daftar guru yang terdaftar dalam sistem.</p>
           </div>
-          <VButton variant="primary" @click="$router.push('/admin/guru/tambah')">
+          <VButton variant="primary" @click="openCreateModal">
             <template #leftIcon><Plus :size="18" /></template>
             Tambah Guru
           </VButton>
@@ -82,12 +82,26 @@
                   <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ teacher.jabatan }}</td>
                   <td class="px-6 py-4">
                     <div class="flex justify-center gap-2">
-                      <button @click="$router.push(`/admin/guru/${teacher.id}/edit`)" class="p-2 text-[#3F9760] hover:bg-[#e8f3eb] rounded-lg transition-colors">
-                        <Pencil :size="16" />
-                      </button>
-                      <button @click="openDeleteModal(teacher)" class="p-2 text-[#A0453B] hover:bg-[#fde8e8] rounded-lg transition-colors">
-                        <Trash2 :size="16" />
-                      </button>
+                      <VButton
+                        variant="secondary"
+                        class="!h-[26px] !min-w-[58px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
+                        @click="openEditModal(teacher.id)"
+                      >
+                        <template #leftIcon>
+                          <Pencil :size="12" />
+                        </template>
+                        Edit
+                      </VButton>
+                      <VButton
+                        variant="primary"
+                        class="!h-[26px] !min-w-[64px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
+                        @click="openDeleteModal(teacher)"
+                      >
+                        <template #leftIcon>
+                          <Trash2 :size="12" />
+                        </template>
+                        Hapus
+                      </VButton>
                     </div>
                   </td>
                 </tr>
@@ -104,24 +118,35 @@
           </div>
         </div>
   
-        <VModal 
-          v-model:is-open="deleteModal.show" 
-          title="Hapus Akun Guru" 
-          :description="`Apakah Anda yakin ingin menghapus data akun ${deleteModal.teacherName}?`" 
-          :buttons="deleteButtons"
-        >
-          <template #icon>
-            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-              <Trash2 class="w-6 h-6 text-red-600" />
-            </div>
-          </template>
-        </VModal>
+        <CreateTeacherModal
+          :isOpen="isCreateModalOpen"
+          @update:isOpen="isCreateModalOpen = $event"
+          @created="handleTeacherCreated"
+        />
+
+        <EditTeacherModal
+          :isOpen="isEditModalOpen"
+          :teacherId="selectedTeacherId"
+          @update:isOpen="isEditModalOpen = $event"
+          @updated="handleTeacherUpdated"
+        />
+
+        <ConfirmationModal
+          :isOpen="deleteModal.show"
+          title="Hapus Akun Guru"
+          :description="`Apakah Anda yakin ingin menghapus data akun ${deleteModal.teacherName}?`"
+          confirmText="Hapus"
+          :loading="deleteModal.loading"
+          :errorMessage="deleteModal.error"
+          @update:isOpen="deleteModal.show = $event"
+          @confirm="handleDelete"
+        />
       </div>
     </DashboardLayout>
   </template>
   
   <script setup lang="ts">
-  import { ref, reactive, onMounted, computed } from 'vue'
+  import { ref, reactive, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
   import { useTeacherStore } from '@/stores/teacher'
@@ -129,9 +154,11 @@
   
   import DashboardLayout from '@/components/common/DashboardLayout.vue'
   import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+  import CreateTeacherModal from '@/components/admin/teachers/CreateTeacherModal.vue'
+  import EditTeacherModal from '@/components/admin/teachers/EditTeacherModal.vue'
+  import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
   import VButton from '@/components/common/VButton.vue'
   import VInputField from '@/components/common/VInputField.vue'
-  import VModal from '@/components/common/VModal.vue'
   import VAlert from '@/components/common/VAlert.vue'
   import VPagination from '@/components/common/VPagination.vue'
   
@@ -141,8 +168,11 @@
   
   const searchQuery = ref('')
   const selectedJabatan = ref('')
+  const isCreateModalOpen = ref(false)
+  const isEditModalOpen = ref(false)
+  const selectedTeacherId = ref<number | null>(null)
   const alert = reactive({ visible: false, type: 'success' as 'success' | 'error', title: '', message: '' })
-  const deleteModal = reactive({ show: false, teacherId: null as number | null, teacherName: '', loading: false })
+  const deleteModal = reactive({ show: false, teacherId: null as number | null, teacherName: '', loading: false, error: '' })
   
   onMounted((): void => {
     if (route.query.success) {
@@ -167,25 +197,37 @@
   const openDeleteModal = (teacher: any): void => {
     deleteModal.teacherId = teacher.id
     deleteModal.teacherName = teacher.nama
+    deleteModal.error = ''
     deleteModal.show = true
   }
-  
-  const deleteButtons = computed(() => [
-    { 
-      label: deleteModal.loading ? 'Memproses...' : 'Ya, Hapus', 
-      variant: 'primary' as const, 
-      action: (): Promise<void> => handleDelete() 
-    },
-    { 
-      label: 'Batal', 
-      variant: 'secondary' as const, 
-      action: (): void => { deleteModal.show = false } 
-    }
-  ])
+
+  const openCreateModal = (): void => {
+    isCreateModalOpen.value = true
+  }
+
+  const openEditModal = (teacherId: number): void => {
+    selectedTeacherId.value = teacherId
+    isEditModalOpen.value = true
+  }
+
+  const handleTeacherCreated = async (message: string): Promise<void> => {
+    alert.visible = true
+    alert.type = 'success'
+    alert.message = message
+    await store.fetchTeachers(1, searchQuery.value, selectedJabatan.value)
+  }
+
+  const handleTeacherUpdated = async (message: string): Promise<void> => {
+    alert.visible = true
+    alert.type = 'success'
+    alert.message = message
+    await store.fetchTeachers(store.pagination.currentPage, searchQuery.value, selectedJabatan.value)
+  }
 
   const handleDelete = async (): Promise<void> => {
     if (!deleteModal.teacherId) return
     deleteModal.loading = true
+    deleteModal.error = ''
     try {
       await store.deleteTeacher(deleteModal.teacherId)
       alert.visible = true
@@ -194,6 +236,7 @@
       deleteModal.show = false
       await store.fetchTeachers(store.pagination.currentPage, searchQuery.value, selectedJabatan.value)
     } catch (e: any) {
+      deleteModal.error = e.message || 'Gagal menghapus data guru.'
       alert.visible = true
       alert.type = 'error'
       alert.message = e.message || 'Gagal menghapus data guru.'
