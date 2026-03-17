@@ -42,8 +42,6 @@
     </div>
 
     <!-- User Profile -->
-    <div class="flex items-center gap-3 px-3 py-3 bg-[#3F9760] rounded-2xl shadow-lg mx-1">
-      <div class="profile-ring flex items-center justify-center w-10 h-10 rounded-full bg-white flex-shrink-0 shadow-sm"/>
     <div class="flex items-center gap-3 px-3 py-3 bg-[#4d8b47] rounded-2xl">
       <div class="profile-ring flex items-center justify-center w-11 h-11 rounded-full">
         <div class="flex items-center justify-center w-9 h-9 rounded-full bg-[#f0f7f2]">
@@ -52,8 +50,6 @@
       </div>
 
       <div class="flex flex-col leading-tight overflow-hidden">
-        <span class="text-[14px] font-bold text-white truncate">{{ userName }}</span>
-        <span class="text-[11px] text-[#e8f3eb] truncate">{{ userEmail }}</span>
         <span class="text-[13px] font-semibold text-white truncate">
           {{ userName || 'User' }}
         </span>

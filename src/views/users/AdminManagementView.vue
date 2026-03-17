@@ -39,19 +39,43 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="border-b border-[#e2e8f0] bg-[#f8fafc]">
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">No</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Nama</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Email</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Role</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider text-center">Aksi</th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  No
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  Nama
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  Email
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  Role
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider text-center"
+                >
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="adminStore.isLoading">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">Memuat data admin...</td>
+                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                  Memuat data admin...
+                </td>
               </tr>
               <tr v-else-if="adminStore.admins.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">Data tidak tersedia</td>
+                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                  Data tidak tersedia
+                </td>
               </tr>
               <tr
                 v-else
@@ -63,7 +87,9 @@
                 <td class="px-6 py-4 text-[14px] font-medium text-[#1a202c]">{{ admin.nama }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ admin.email }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">
-                  <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold uppercase">
+                  <span
+                    class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold uppercase"
+                  >
                     {{ admin.role }}
                   </span>
                 </td>
@@ -94,7 +120,11 @@
       <VModal
         v-model:is-open="formModal.show"
         :title="isEdit ? 'Edit Informasi Admin' : 'Tambah Admin Baru'"
-        :description="isEdit ? 'Perbarui data pengelola sistem agar tetap akurat.' : 'Daftarkan akun admin baru untuk mengelola sistem SIMP.'"
+        :description="
+          isEdit
+            ? 'Perbarui data pengelola sistem agar tetap akurat.'
+            : 'Daftarkan akun admin baru untuk mengelola sistem SIMP.'
+        "
         :buttons="formButtons"
       >
         <template #icon>
@@ -120,10 +150,10 @@
             :message="errors.email"
             :disabled="formModal.loading"
           />
-          
+
           <div class="flex flex-col gap-2">
             <label class="text-[16px] font-semibold text-[#111827]">Role Akses</label>
-            <select 
+            <select
               v-model="form.role"
               class="w-full p-[14px] rounded-[12px] border-2 border-[#b2b5ba] focus:border-[#3f9760] outline-none bg-white text-[16px]"
               :disabled="formModal.loading"
@@ -235,8 +265,8 @@ const showAlert = (type: string, title: string, message: string) => {
 }
 
 const handleSave = async () => {
-  errors.value = {} 
-  
+  errors.value = {}
+
   if (!form.value.nama.trim()) {
     errors.value.nama = 'Nama wajib diisi!'
     return
@@ -258,7 +288,7 @@ const handleSave = async () => {
     closeModal()
   } catch (err: any) {
     if (err.data) {
-      errors.value = err.data 
+      errors.value = err.data
     } else {
       showAlert('error', 'Gagal!', 'Terjadi kesalahan pada sistem.')
     }
@@ -275,37 +305,43 @@ const closeModal = () => {
 
 const formButtons = computed(
   (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
-  {
-    label: formModal.loading ? 'Memproses...' : (isEdit.value ? 'Simpan Perubahan' : 'Tambah Admin'),
-    variant: 'primary',
-    action: () => {
-      if (!formModal.loading) handleSave()
-    }
-  },
-  {
-    label: 'Batal',
-    variant: 'secondary',
-    action: () => {
-      closeModal()
-    }
-  }
-])
+    {
+      label: formModal.loading
+        ? 'Memproses...'
+        : isEdit.value
+          ? 'Simpan Perubahan'
+          : 'Tambah Admin',
+      variant: 'primary',
+      action: () => {
+        if (!formModal.loading) handleSave()
+      },
+    },
+    {
+      label: 'Batal',
+      variant: 'secondary',
+      action: () => {
+        closeModal()
+      },
+    },
+  ],
+)
 
 const deleteButtons = computed(
   (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
-  {
-    label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
-    variant: 'primary',
-    action: () => {
-      if (!deleteModal.loading) handleDelete()
-    }
-  },
-  {
-    label: 'Batal',
-    variant: 'secondary',
-    action: () => {
-      deleteModal.show = false
-    }
-  }
-])
+    {
+      label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
+      variant: 'primary',
+      action: () => {
+        if (!deleteModal.loading) handleDelete()
+      },
+    },
+    {
+      label: 'Batal',
+      variant: 'secondary',
+      action: () => {
+        deleteModal.show = false
+      },
+    },
+  ],
+)
 </script>

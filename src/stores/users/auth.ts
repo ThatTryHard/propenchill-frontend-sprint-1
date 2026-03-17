@@ -7,14 +7,10 @@ export const useAuthStore = defineStore('auth', {
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
     role: localStorage.getItem('user_role') || null,
-    user: JSON.parse(localStorage.getItem('user_data') || 'null') as { nama: string; email: string } | null,
-    user:
-      localStorage.getItem('user_nama') || localStorage.getItem('user_email')
-        ? {
-            nama: localStorage.getItem('user_nama') || '',
-            email: localStorage.getItem('user_email') || '',
-          }
-        : null,
+    user: JSON.parse(localStorage.getItem('user_data') || 'null') as {
+      nama: string
+      email: string
+    } | null,
   }),
 
   actions: {
@@ -34,23 +30,12 @@ export const useAuthStore = defineStore('auth', {
       this.accessToken = data.access
       this.refreshToken = data.refresh
       this.role = data.role || null
-<<<<<<< HEAD
-      
       const userData = { nama: data.nama, email: data.email }
       this.user = userData
-      
-=======
-      this.user = {
-        nama: data.nama || '',
-        email: data.email || email,
-      }
->>>>>>> dev
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
       localStorage.setItem('user_data', JSON.stringify(userData))
       if (data.role) localStorage.setItem('user_role', data.role)
-      localStorage.setItem('user_nama', this.user.nama)
-      localStorage.setItem('user_email', this.user.email)
 
       return data
     },
@@ -78,7 +63,7 @@ export const useAuthStore = defineStore('auth', {
 
       return data
     },
-    
+
     async sendEmailOtp(payload: { email: string }) {
       const response = await fetch(VITE_API_URL + '/api/send-email-otp/', {
         method: 'POST',
@@ -99,7 +84,7 @@ export const useAuthStore = defineStore('auth', {
 
     async verifyEmailOtp(payload: { email: string; otp: string }) {
       const response = await fetch(VITE_API_URL + '/api/verify-email-otp/', {
-        method: 'POST', 
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -114,7 +99,7 @@ export const useAuthStore = defineStore('auth', {
 
       return data
     },
-    
+
     logout() {
       this.accessToken = null
       this.refreshToken = null
@@ -123,12 +108,9 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
       localStorage.removeItem('user_role')
-<<<<<<< HEAD
       localStorage.removeItem('user_data')
-=======
       localStorage.removeItem('user_nama')
       localStorage.removeItem('user_email')
->>>>>>> dev
     },
   },
 })

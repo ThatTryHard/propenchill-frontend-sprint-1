@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
+import VToast from '@/components/common/VToast.vue'
 import { useAuthStore } from '@/stores/users/auth'
 import VInputField from '@/components/common/VInputField.vue'
 import VButton from '@/components/common/VButton.vue'
@@ -87,8 +88,12 @@ const handleRegister = async () => {
 
     const registeredEmail = response?.data?.email || email.value
 
-    toast.success('Registrasi berhasil! Silakan lanjut verifikasi email.')
-
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'success',
+        message: 'Registrasi berhasil! Silakan lanjut verifikasi email.',
+      },
+    })
     setTimeout(() => {
       router.push({
         name: 'verify-email',

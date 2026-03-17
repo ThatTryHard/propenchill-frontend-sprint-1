@@ -18,6 +18,9 @@ const studentStore = useStudentStore()
 const form = reactive({
   nama: '',
   nis: '',
+  nisn: '',
+  email: '',
+  jenis_kelamin: 'L' as 'L' | 'P',
   kelas: '',
   tanggal_lahir: '',
 })
@@ -25,6 +28,9 @@ const form = reactive({
 const errors = reactive({
   nama: '',
   nis: '',
+  nisn: '',
+  email: '',
+  jenis_kelamin: '',
   kelas: '',
   tanggal_lahir: '',
 })
@@ -32,11 +38,17 @@ const errors = reactive({
 const resetForm = () => {
   form.nama = ''
   form.nis = ''
+  form.nisn = ''
+  form.email = ''
+  form.jenis_kelamin = 'L'
   form.kelas = ''
   form.tanggal_lahir = ''
 
   errors.nama = ''
   errors.nis = ''
+  errors.nisn = ''
+  errors.email = ''
+  errors.jenis_kelamin = ''
   errors.kelas = ''
   errors.tanggal_lahir = ''
 }
@@ -47,7 +59,7 @@ watch(
     if (isOpen) {
       resetForm()
     }
-  }
+  },
 )
 
 const closeModal = () => {
@@ -100,6 +112,9 @@ const handleSubmit = async () => {
     await studentStore.createStudent({
       nama: form.nama.trim(),
       nis: form.nis.trim(),
+      nisn: form.nisn.trim(),
+      email: form.email.trim(),
+      jenis_kelamin: form.jenis_kelamin,
       kelas: form.kelas.trim(),
       tanggal_lahir: form.tanggal_lahir,
     })
@@ -168,9 +183,7 @@ const handleSubmit = async () => {
 
               <div class="flex flex-col gap-4">
                 <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold">
-                    Nama Lengkap
-                  </label>
+                  <label class="text-[16px] leading-[120%] font-semibold"> Nama Lengkap </label>
                   <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
                     <input
                       v-model="form.nama"
@@ -185,9 +198,7 @@ const handleSubmit = async () => {
                 </div>
 
                 <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold">
-                    Nomor Induk
-                  </label>
+                  <label class="text-[16px] leading-[120%] font-semibold"> Nomor Induk </label>
                   <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
                     <input
                       v-model="form.nis"
@@ -203,9 +214,23 @@ const handleSubmit = async () => {
                 </div>
 
                 <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold">
-                    Kelas/Jabatan
-                  </label>
+                  <label class="text-[16px] leading-[120%] font-semibold"> Jenis Kelamin </label>
+                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
+                    <select
+                      v-model="form.jenis_kelamin"
+                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827]"
+                    >
+                      <option value="L">Laki-laki</option>
+                      <option value="P">Perempuan</option>
+                    </select>
+                  </div>
+                  <p v-if="errors.jenis_kelamin" class="text-[12px] text-[#A0453B]">
+                    {{ errors.jenis_kelamin }}
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                  <label class="text-[16px] leading-[120%] font-semibold"> Kelas/Jabatan </label>
                   <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
                     <input
                       v-model="form.kelas"
@@ -220,9 +245,7 @@ const handleSubmit = async () => {
                 </div>
 
                 <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold">
-                    Tanggal Lahir
-                  </label>
+                  <label class="text-[16px] leading-[120%] font-semibold"> Tanggal Lahir </label>
                   <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
                     <input
                       v-model="form.tanggal_lahir"
@@ -235,10 +258,7 @@ const handleSubmit = async () => {
                   </p>
                 </div>
 
-                <p
-                  v-if="studentStore.error"
-                  class="text-[13px] text-[#A0453B] font-medium"
-                >
+                <p v-if="studentStore.error" class="text-[13px] text-[#A0453B] font-medium">
                   {{ studentStore.error }}
                 </p>
               </div>

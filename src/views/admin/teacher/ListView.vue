@@ -182,7 +182,7 @@
       action: (): void => { deleteModal.show = false } 
     }
   ])
-  
+
   const handleDelete = async (): Promise<void> => {
     if (!deleteModal.teacherId) return
     deleteModal.loading = true

@@ -46,11 +46,7 @@ export const useStudentStore = defineStore('students', {
 
   actions: {
     getToken() {
-      return (
-        localStorage.getItem('access_token') ||
-        localStorage.getItem('token') ||
-        ''
-      )
+      return localStorage.getItem('access_token') || localStorage.getItem('token') || ''
     },
 
     getAuthHeader() {
@@ -80,10 +76,18 @@ export const useStudentStore = defineStore('students', {
       this.error = ''
 
       try {
+        const token = this.getToken()
+
+        console.log('TOKEN YANG DIPAKAI:', token)
+        console.log('REQUEST KE:', `${VITE_API_URL}/api/siswa/`)
+        console.log('PARAMS:', { page, limit, q, kelas })
+
         const response = await axios.get(`${VITE_API_URL}/api/siswa/`, {
           ...this.getAuthHeader(),
           params: { page, limit, q, kelas },
         })
+
+        console.log('FETCH STUDENTS SUCCESS:', response.data)
 
         this.students = response.data?.data || []
         this.pagination = response.data?.pagination || {
@@ -93,18 +97,21 @@ export const useStudentStore = defineStore('students', {
           limit: 10,
         }
       } catch (error: any) {
+        console.log('FETCH STUDENTS ERROR FULL:', error)
+        console.log('FETCH STUDENTS ERROR RESPONSE:', error?.response)
+        console.log('FETCH STUDENTS ERROR STATUS:', error?.response?.status)
+        console.log('FETCH STUDENTS ERROR DATA:', error?.response?.data)
+
         if (error?.response?.status === 401) {
           this.error = 'Unauthorized. Silakan login ulang.'
         } else if (error?.response?.status === 403) {
-          this.error =
-            error?.response?.data?.error || 'Anda tidak punya akses ke data siswa.'
+          this.error = error?.response?.data?.error || 'Anda tidak punya akses ke data siswa.'
         } else if (error?.response?.status === 404) {
           this.error = 'Endpoint data siswa tidak ditemukan.'
         } else if (error?.response?.status === 500) {
           this.error = 'Terjadi error pada server backend.'
         } else {
-          this.error =
-            error?.response?.data?.error || 'Gagal mengambil data siswa.'
+          this.error = error?.response?.data?.error || 'Gagal mengambil data siswa.'
         }
 
         this.students = []
@@ -127,13 +134,14 @@ export const useStudentStore = defineStore('students', {
         const response = await axios.post(
           `${VITE_API_URL}/api/siswa/create/`,
           payload,
-          this.getAuthHeader()
+          this.getAuthHeader(),
         )
 
         return response.data
       } catch (error: any) {
-        this.error =
-          error?.response?.data?.error || 'Gagal menambahkan data siswa.'
+        console.log('CREATE STUDENT ERROR:', error?.response)
+
+        this.error = error?.response?.data?.error || 'Gagal menambahkan data siswa.'
         throw error
       } finally {
         this.loading = false
@@ -148,13 +156,14 @@ export const useStudentStore = defineStore('students', {
         const response = await axios.put(
           `${VITE_API_URL}/api/siswa/${id}/update/`,
           payload,
-          this.getAuthHeader()
+          this.getAuthHeader(),
         )
 
         return response.data
       } catch (error: any) {
-        this.error =
-          error?.response?.data?.error || 'Gagal memperbarui data siswa.'
+        console.log('UPDATE STUDENT ERROR:', error?.response)
+
+        this.error = error?.response?.data?.error || 'Gagal memperbarui data siswa.'
         throw error
       } finally {
         this.loading = false
@@ -168,13 +177,14 @@ export const useStudentStore = defineStore('students', {
       try {
         const response = await axios.delete(
           `${VITE_API_URL}/api/siswa/${id}/delete/`,
-          this.getAuthHeader()
+          this.getAuthHeader(),
         )
 
         return response.data
       } catch (error: any) {
-        this.error =
-          error?.response?.data?.error || 'Gagal menghapus data siswa.'
+        console.log('DELETE STUDENT ERROR:', error?.response)
+
+        this.error = error?.response?.data?.error || 'Gagal menghapus data siswa.'
         throw error
       } finally {
         this.loading = false
@@ -182,9 +192,7 @@ export const useStudentStore = defineStore('students', {
     },
 
     async getStudentById(id: number) {
-      const foundStudent = this.students.find(
-        (student) => student.id_siswa === id
-      )
+      const foundStudent = this.students.find((student) => student.id_siswa === id)
 
       if (foundStudent) {
         return foundStudent
@@ -192,7 +200,61 @@ export const useStudentStore = defineStore('students', {
 
       await this.fetchStudents(1, 100)
 
-      return this.students.find((student) => student.id_siswa === id) || null
+      return this.students.find((student) => student.student_id === id) || null
+    },
+
+    async exportStudents() {
+      this.loading = true
+      this.error = ''
+
+      try {
+        const response = await axios.get(`${VITE_API_URL}/api/siswa/export/`, {
+          ...this.getAuthHeader(),
+          responseType: 'blob',
+        })
+
+        const url = window.URL.createObjectURL(new Blob([response.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', 'Rekap_Data_Siswa.xlsx')
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+
+        return true
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal mengekspor data siswa.'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async importStudents(file: File) {
+      this.loading = true
+      this.error = ''
+
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const authHeader = this.getAuthHeader()
+        const config = {
+          headers: {
+            ...authHeader.headers,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+
+        const response = await axios.post(`${VITE_API_URL}/api/siswa/import/`, formData, config)
+
+        return response.data
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal mengimpor data siswa.'
+        throw error
+      } finally {
+        this.loading = false
+      }
     },
   },
 })
