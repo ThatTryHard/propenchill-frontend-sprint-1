@@ -36,15 +36,21 @@ const displayUserEmail = computed(() => props.userEmail || authStore.user?.email
 const navItems = [
   { name: 'parents', label: 'Kelola Wali Murid', path: '/admin/parents', icon: Users },
   {
+    name: 'students',
+    label: 'Kelola Basis Data Siswa dan Staf',
+    path: '/admin/students',
+    icon: BarChart3,
+  },
+  {
     name: 'staff',
     label: 'Kelola Akun Staff',
-    path: '/admin-management',
+    path: '/admin/management',
     icon: ShieldCheck,
   },
   {
     name: 'teachers',
     label: 'Kelola Akun Guru',
-    path: '/admin/guru',
+    path: '/admin/teachers',
     icon: UserRound,
   },
 ]

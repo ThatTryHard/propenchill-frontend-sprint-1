@@ -22,6 +22,19 @@ export interface Pagination {
   limit: number
 }
 
+function normalizeParent(raw: any): Parent {
+  return {
+    id: Number(raw?.id ?? 0),
+    nama: String(raw?.nama ?? ''),
+    email: String(raw?.email ?? ''),
+    // Backend can return either no_hp or nomor_hp.
+    no_hp: String(raw?.no_hp ?? raw?.nomor_hp ?? ''),
+    role: String(raw?.role ?? ''),
+    tanggal_lahir: raw?.tanggal_lahir ?? null,
+    alamat: raw?.alamat ?? null,
+  }
+}
+
 function authHeaders() {
   const auth = useAuthStore()
   return { Authorization: `Bearer ${auth.accessToken}` }
@@ -90,7 +103,15 @@ export const useParentStore = defineStore('parents', () => {
       if (!res.ok) throw new Error('Gagal memuat data')
 
       const result = await res.json()
-      allParents.value = Array.isArray(result.data) ? result.data : []
+      const parentList = Array.isArray(result)
+        ? result
+        : Array.isArray(result?.data)
+          ? result.data
+          : Array.isArray(result?.results)
+            ? result.results
+            : []
+
+      allParents.value = parentList.map((item: any) => normalizeParent(item))
       applyPagination(page)
     } finally {
       isLoading.value = false
@@ -107,9 +128,9 @@ export const useParentStore = defineStore('parents', () => {
     if (!res.ok) throw new Error('Gagal memuat data wali murid')
 
     const result = await res.json()
-    const parent = result.data ?? result
+    const parent = result?.data ?? result
     if (!parent?.id) throw new Error('Data wali murid tidak ditemukan')
-    return parent as Parent
+    return normalizeParent(parent)
   }
 
   async function createParent(body: Record<string, string>) {

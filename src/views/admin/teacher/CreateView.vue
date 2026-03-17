@@ -10,7 +10,7 @@
       <div class="p-8 max-w-4xl mx-auto">
         <div class="mb-8 flex flex-col gap-1">
           <button 
-            @click="$router.push('/admin/guru')" 
+            @click="$router.push('/admin/teachers')" 
             class="flex items-center text-sm text-[#718096] hover:text-[#3f9760] transition-colors mb-2 w-fit"
           >
             <ChevronLeft :size="18" /> Kembali ke Daftar
@@ -73,7 +73,7 @@
             </div>
   
             <div class="flex justify-end gap-4 mt-4 pt-6 border-t border-[#f1f5f9]">
-              <VButton type="button" variant="secondary" @click="$router.push('/admin/guru')">Batal</VButton>
+              <VButton type="button" variant="secondary" @click="$router.push('/admin/teachers')">Batal</VButton>
               <VButton type="submit" variant="primary" :loading="loading">Simpan Akun Guru</VButton>
             </div>
           </form>
@@ -122,7 +122,7 @@
     try {
       await store.createTeacher(form)
       router.push({ 
-        path: '/admin/guru', 
+        path: '/admin/teachers', 
         query: { success: 'Data guru berhasil didaftarkan.' } 
       })
     } catch (error: any) {

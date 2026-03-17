@@ -6,7 +6,7 @@
     
     <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[#f8fafc]">
       <div class="flex flex-col gap-4">
-        <button @click="$router.push('/admin-management')" class="flex items-center gap-2 text-[#718096] hover:text-[#1a202c]">
+        <button @click="$router.push('/admin/management')" class="flex items-center gap-2 text-[#718096] hover:text-[#1a202c]">
           <ArrowLeft :size="18" />
           <span class="text-sm">Kembali</span>
         </button>
@@ -92,7 +92,7 @@ const handleUpdate = async () => {
     })
     
     router.push({ 
-      path: '/admin-management', 
+      path: '/admin/management', 
       query: { success: 'Data admin berhasil diperbarui!' } 
     })
   } catch (err: any) {
@@ -110,7 +110,7 @@ const handleDelete = async () => {
   try {
     await adminStore.deleteAdmin(adminId)
     router.push({ 
-      path: '/admin-management', 
+      path: '/admin/management', 
       query: { success: 'Akun admin telah dinonaktifkan.' } 
     })
   } catch (err) {

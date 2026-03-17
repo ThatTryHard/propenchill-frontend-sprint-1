@@ -8,7 +8,7 @@
       </template>
   
       <div class="p-8 flex flex-col gap-6 max-w-[800px]">
-        <button @click="$router.push('/admin/guru')" class="flex items-center gap-1 text-sm text-[#718096] mb-4 hover:text-[#3f9760] transition-colors">
+        <button @click="$router.push('/admin/teachers')" class="flex items-center gap-1 text-sm text-[#718096] mb-4 hover:text-[#3f9760] transition-colors">
           <ArrowLeft :size="16" /> Kembali
         </button>
         
@@ -105,7 +105,7 @@
     isLoading.value = true
     try {
       await store.updateTeacher(route.params.id as string, form)
-      router.push({ path: '/admin/guru', query: { success: 'Data guru berhasil diperbarui.' } })
+      router.push({ path: '/admin/teachers', query: { success: 'Data guru berhasil diperbarui.' } })
     } catch (e: any) {
       if (e.details) {
         const keys = Object.keys(e.details)

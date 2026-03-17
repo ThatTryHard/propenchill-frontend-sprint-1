@@ -1,20 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AdminManagementView from '../views/users/AdminManagementView.vue'
-import AdminCreateView from '../views/users/AdminCreateView.vue'
-import AdminEditView from '../views/users/AdminEditView.vue'
+import AdminManagementView from '../views/management/AdminManagementView.vue'
 import StatusView from '@/views/StatusView.vue'
 import LoginView from '@/views/users/LoginView.vue'
 import RegisterView from '@/views/users/RegisterView.vue'
 import ParentListView from '@/views/admin/parents/ListView.vue'
-import ParentCreateView from '@/views/admin/parents/CreateView.vue'
-import ParentEditView from '@/views/admin/parents/EditView.vue'
 import ForgetPasswordView from '@/views/users/ForgotPasswordView.vue'
 import VerifyOTPView from '@/views/users/VerifyOTPView.vue'
 import SetNewPasswordView from '@/views/users/SetNewPasswordView.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import TeacherListView from '../views/admin/teacher/ListView.vue'
-import TeacherCreateView from '../views/admin/teacher/CreateView.vue'
-import TeacherEditView from '../views/admin/teacher/EditView.vue'
 import StudentManagementView from '@/views/students/StudentManagementView.vue'
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
 
@@ -58,16 +52,16 @@ const router = createRouter({
       component: StatusView,
     },
     {
-      path: '/admin-management',
+      path: '/admin/management',
       name: 'admin-management',
       component: AdminManagementView,
     },
-    { path: '/admin-management/create', component: AdminCreateView },
+    { path: '/admin/management/create', redirect: '/admin/management' },
 
     {
-      path: '/admin-management/edit/:id',
+      path: '/admin/management/edit/:id',
       name: 'admin-edit',
-      component: () => import('@/views/users/AdminEditView.vue'),
+      redirect: '/admin/management',
     },
 
     // Admin routes
@@ -77,35 +71,33 @@ const router = createRouter({
       component: ParentListView,
     },
     {
-      path: '/admin/parents/create',
-      name: 'admin-parents-create',
-      component: ParentCreateView,
-    },
-    {
-      path: '/admin/parents/:id/edit',
-      name: 'admin-parents-edit',
-      component: ParentEditView,
-    },
-    {
-      path: '/admin/guru',
+      path: '/admin/teachers',
       name: 'admin-guru-list',
       component: TeacherListView,
     },
     {
-      path: '/admin/guru/tambah',
+      path: '/admin/teachers/create',
       name: 'admin-guru-create',
-      component: TeacherCreateView,
+      redirect: '/admin/teachers',
     },
     {
-      path: '/admin/guru/:id/edit',
+      path: '/admin/teachers/:id/edit',
       name: 'admin-guru-edit',
-      component: TeacherEditView,
+      redirect: '/admin/teachers',
     },
     {
-      path: '/students',
+      path: '/admin/students',
       name: 'student-management',
       component: StudentManagementView,
     },
+    // Legacy redirects
+    { path: '/admin-management', redirect: '/admin/management' },
+    { path: '/admin-management/create', redirect: '/admin/management/create' },
+    { path: '/admin-management/edit/:id', redirect: '/admin/management/edit/:id' },
+    { path: '/admin/guru', redirect: '/admin/teachers' },
+    { path: '/admin/guru/tambah', redirect: '/admin/teachers/create' },
+    { path: '/admin/guru/:id/edit', redirect: '/admin/teachers/:id/edit' },
+    { path: '/students', redirect: '/admin/students' },
     {
       path: '/verify-email',
       name: 'verify-email',
