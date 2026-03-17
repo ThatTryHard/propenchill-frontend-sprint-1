@@ -24,10 +24,11 @@
           <div
             v-if="isOpen"
             :class="[
-              'relative w-full max-w-[340px] flex flex-col items-center p-[22px_16px_16px_16px] text-center font-sans text-[#111827]',
+              'relative w-full flex flex-col items-center p-[22px_16px_16px_16px] text-center font-sans text-[#111827]',
               'rounded-[24px] backdrop-blur-[10px] overflow-hidden',
               'shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]',
               'border-[0.5px] border-transparent',
+              maxWidthClass,
             ]"
             style="
               background:
@@ -113,6 +114,10 @@ defineProps({
   buttons: {
     type: Array as () => ModalButton[],
     default: () => [],
+  },
+  maxWidthClass: {
+    type: String,
+    default: 'max-w-[340px]',
   },
 })
 

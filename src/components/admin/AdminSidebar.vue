@@ -18,7 +18,7 @@ import {
   Settings,
   HelpCircle,
   LogOut,
-  ShieldCheck, 
+  ShieldCheck,
   UserRound,
 } from 'lucide-vue-next'
 
@@ -35,17 +35,17 @@ const displayUserEmail = computed(() => props.userEmail || authStore.user?.email
 
 const navItems = [
   { name: 'parents', label: 'Kelola Wali Murid', path: '/admin/parents', icon: Users },
-  { 
-    name: 'staff', 
-    label: 'Kelola Akun Staff', 
-    path: '/admin-management', 
-    icon: ShieldCheck 
+  {
+    name: 'staff',
+    label: 'Kelola Akun Staff',
+    path: '/admin-management',
+    icon: ShieldCheck,
   },
-  { 
+  {
     name: 'teachers',
     label: 'Kelola Akun Guru',
-    path: '/admin/guru', 
-    icon: UserRound
+    path: '/admin/guru',
+    icon: UserRound,
   },
 ]
 

@@ -105,23 +105,14 @@
 
             <div class="flex flex-col items-center gap-[8px] text-[16px] leading-[120%]">
               <div class="flex flex-col items-center gap-[4px]">
-                <div class="flex items-center gap-[4px]">
+                <div class="flex items-center gap-[4px] flex-wrap justify-center text-center">
                   <span class="font-semibold text-[#111827]">Drag & Drop</span>
                   <span
                     class="font-semibold bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent"
-                    >images,</span
                   >
-                </div>
-                <div class="flex items-center gap-[4px]">
-                  <span
-                    class="font-semibold bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent"
-                    >videos,</span
-                  >
-                  <span class="font-semibold text-[#111827]">or any</span>
-                  <span
-                    class="font-semibold bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent"
-                    >file</span
-                  >
+                    {{ fileTypesText }}
+                  </span>
+                  <span class="font-semibold text-[#111827]">here</span>
                 </div>
               </div>
 
@@ -157,6 +148,10 @@ const props = defineProps({
   maxSizeMb: {
     type: Number,
     default: 10,
+  },
+  fileTypesText: {
+    type: String,
+    default: 'images, videos, or any file',
   },
 })
 

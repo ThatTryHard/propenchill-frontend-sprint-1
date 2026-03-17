@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue'
 import {
+  Download,
+  Upload,
   Plus,
   Pencil,
   Trash2,
@@ -9,11 +11,11 @@ import {
   UserRound,
   ListOrdered,
   Search,
-  Mail,
 } from 'lucide-vue-next'
 
 import { useStudentStore, type Student } from '@/stores/students'
 import { useAuthStore } from '@/stores/users/auth'
+import { toast } from 'vue-sonner'
 
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import StudentSidebar from '@/components/admin/StudentSidebar.vue'
@@ -24,6 +26,8 @@ import VPagination from '@/components/common/VPagination.vue'
 import CreateStudentModal from '@/components/admin/CreateStudentModal.vue'
 import EditStudentModal from '@/components/admin/EditStudentModal.vue'
 import DeleteConfirmationModal from '@/components/admin/DeleteConfirmationModal.vue'
+import ImportStudentModal from '@/components/admin/ImportStudentModal.vue'
+import ExportStudentModal from '@/components/admin/ExportStudentModal.vue'
 
 import databaseIcon from '@/assets/Database_Logo SVG.svg'
 import studentIcon from '@/assets/Siswa SVG.svg'
@@ -42,6 +46,9 @@ const limit = ref(10)
 const isCreateModalOpen = ref(false)
 const isEditModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
+const isImportModalOpen = ref(false)
+const isExportModalOpen = ref(false)
+const isExporting = ref(false)
 const selectedStudent = ref<Student | null>(null)
 const selectedStudentId = ref<number | null>(null)
 const selectedStudentName = ref('')
@@ -51,12 +58,7 @@ const combinedQuery = computed(() => {
 })
 
 const loadStudents = async () => {
-  await studentStore.fetchStudents(
-    currentPage.value,
-    limit.value,
-    combinedQuery.value,
-    kelas.value
-  )
+  await studentStore.fetchStudents(currentPage.value, limit.value, combinedQuery.value, kelas.value)
 }
 
 const openCreateModal = () => {
@@ -90,6 +92,23 @@ const handleStudentDeleted = async () => {
   await loadStudents()
 }
 
+const handleExport = async () => {
+  isExporting.value = true
+  try {
+    await studentStore.exportStudents()
+    toast.success('File Excel berhasil diunduh!')
+  } catch (error) {
+    toast.error('Gagal mengunduh file Excel.')
+  } finally {
+    isExporting.value = false
+  }
+}
+
+const handleStudentImported = async () => {
+  currentPage.value = 1
+  await loadStudents()
+}
+
 const resetFilter = async () => {
   search.value = ''
   kelas.value = ''
@@ -118,12 +137,8 @@ const tableRows = computed(() => {
   return studentStore.students.map((student, index) => ({
     ...student,
     nomor:
-      (studentStore.pagination.halaman_sekarang - 1) *
-        studentStore.pagination.limit +
-      index +
-      1,
-    jenis_kelamin_label:
-      student.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
+      (studentStore.pagination.halaman_sekarang - 1) * studentStore.pagination.limit + index + 1,
+    jenis_kelamin_label: student.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
   }))
 })
 
@@ -144,14 +159,15 @@ onMounted(async () => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <StudentSidebar
-        :userName="authStore.user?.name"
-        :userEmail="authStore.user?.email"
-      />
+      <StudentSidebar :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
     </template>
 
-    <div class="w-full max-w-[1180px] mx-auto px-10 py-[34px] flex flex-col gap-[22px] max-[768px]:px-4 max-[768px]:py-6">
-      <section class="flex justify-between items-start gap-5 max-[1200px]:flex-col max-[1200px]:items-start">
+    <div
+      class="w-full max-w-[1180px] mx-auto px-10 py-[34px] flex flex-col gap-[22px] max-[768px]:px-4 max-[768px]:py-6"
+    >
+      <section
+        class="flex justify-between items-start gap-5 max-[1200px]:flex-col max-[1200px]:items-start"
+      >
         <div>
           <h1 class="m-0 text-[31px] leading-[120%] font-extrabold text-[#111827]">
             Manajemen Basis Data Siswa dan Staf
@@ -161,24 +177,50 @@ onMounted(async () => {
           </p>
         </div>
 
-        <VButton
-          variant="primary"
-          class="min-w-[208px] h-[42px] !px-5 !py-0 !rounded-[18px] !text-[15px]"
-          @click="openCreateModal"
-        >
-          <template #leftIcon>
-            <Plus :size="18" />
+        <div class="flex gap-3 flex-wrap">
+          <template v-if="authStore.role === 'ADMIN'">
+            <VButton
+              variant="secondary"
+              class="h-[42px] !px-4 !py-0 !rounded-[18px] !text-[14px]"
+              @click="isImportModalOpen = true"
+            >
+              <template #leftIcon><Upload :size="18" /></template>
+              Import
+            </VButton>
+
+            <VButton
+              variant="secondary"
+              class="h-[42px] !px-4 !py-0 !rounded-[18px] !text-[14px]"
+              @click="isExportModalOpen = true"
+            >
+              <template #leftIcon><Download :size="18" /></template>
+              Export
+            </VButton>
           </template>
-          Tambah Data
-        </VButton>
+
+          <VButton
+            variant="primary"
+            class="min-w-[180px] h-[42px] !px-5 !py-0 !rounded-[18px] !text-[14px]"
+            @click="openCreateModal"
+          >
+            <template #leftIcon>
+              <Plus :size="18" />
+            </template>
+            Tambah Data
+          </VButton>
+        </div>
       </section>
 
       <section class="grid grid-cols-3 gap-5 max-[1200px]:grid-cols-1">
         <VCard paddingClass="p-0">
           <div class="relative h-[186px] overflow-hidden">
-            <div class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
+            <div
+              class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]"
+            >
               <b class="w-full text-center text-[32px] leading-[120%] text-[#111827]">Total Data</b>
-              <b class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent">
+              <b
+                class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent"
+              >
                 {{ totalData }}
               </b>
             </div>
@@ -192,9 +234,13 @@ onMounted(async () => {
 
         <VCard paddingClass="p-0">
           <div class="relative h-[186px] overflow-hidden">
-            <div class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
+            <div
+              class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]"
+            >
               <b class="w-full text-center text-[32px] leading-[120%] text-[#111827]">Siswa</b>
-              <b class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent">
+              <b
+                class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent"
+              >
                 {{ totalSiswa }}
               </b>
             </div>
@@ -208,9 +254,13 @@ onMounted(async () => {
 
         <VCard paddingClass="p-0">
           <div class="relative h-[186px] overflow-hidden">
-            <div class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
+            <div
+              class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]"
+            >
               <b class="w-full text-center text-[32px] leading-[120%] text-[#111827]">Staf</b>
-              <b class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent">
+              <b
+                class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent"
+              >
                 {{ totalStaf }}
               </b>
             </div>
@@ -227,18 +277,14 @@ onMounted(async () => {
         <div class="flex flex-col gap-5 w-full">
           <div class="flex items-center gap-[10px]">
             <Filter class="w-10 h-10 text-[#111827]" />
-            <b class="text-[24px] leading-[120%] text-[#111827] font-bold">
-              Filter Data
-            </b>
+            <b class="text-[24px] leading-[120%] text-[#111827] font-bold"> Filter Data </b>
           </div>
 
           <div
             class="w-full flex items-center justify-end gap-[10px] text-[20px] max-[1100px]:flex-wrap max-[1100px]:justify-start"
           >
             <div class="flex items-center gap-[10px]">
-              <div class="text-[20px] leading-[120%] font-semibold text-[#111827]">
-                Nama
-              </div>
+              <div class="text-[20px] leading-[120%] font-semibold text-[#111827]">Nama</div>
 
               <div
                 class="rounded-[10px] border-2 border-transparent bg-[linear-gradient(#f8fafc,#f8fafc)_padding-box,linear-gradient(90.74deg,#3f9760,#d1955f)_border-box] overflow-hidden px-4 py-[10px]"
@@ -258,9 +304,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex items-center gap-[10px]">
-              <div class="text-[20px] leading-[120%] font-semibold text-[#111827]">
-                Nomor Induk
-              </div>
+              <div class="text-[20px] leading-[120%] font-semibold text-[#111827]">Nomor Induk</div>
 
               <div
                 class="rounded-[10px] border-2 border-transparent bg-[linear-gradient(#f8fafc,#f8fafc)_padding-box,linear-gradient(90.74deg,#3f9760,#d1955f)_border-box] overflow-hidden px-4 py-[10px]"
@@ -280,9 +324,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex items-center gap-[10px]">
-              <div class="text-[20px] leading-[120%] font-semibold text-[#111827]">
-                Kelas
-              </div>
+              <div class="text-[20px] leading-[120%] font-semibold text-[#111827]">Kelas</div>
 
               <div
                 class="rounded-[10px] border-2 border-transparent bg-[linear-gradient(#f8fafc,#f8fafc)_padding-box,linear-gradient(90.74deg,#3f9760,#d1955f)_border-box] overflow-hidden px-4 py-[10px]"
@@ -332,11 +374,7 @@ onMounted(async () => {
       </div>
 
       <div class="flex flex-col gap-4">
-        <VTable
-          :columns="tableColumns"
-          :rows="tableRows"
-          :isLoading="studentStore.loading"
-        >
+        <VTable :columns="tableColumns" :rows="tableRows" :isLoading="studentStore.loading">
           <template #cell-nomor="{ value }">
             <div class="text-center text-[14px] text-[#202632]">
               {{ value }}
@@ -437,6 +475,18 @@ onMounted(async () => {
       :studentName="selectedStudentName"
       @update:isOpen="isDeleteModalOpen = $event"
       @confirmed="handleStudentDeleted"
+    />
+
+    <ImportStudentModal
+      :isOpen="isImportModalOpen"
+      @update:isOpen="isImportModalOpen = $event"
+      @imported="handleStudentImported"
+    />
+
+    <ExportStudentModal
+      :isOpen="isExportModalOpen"
+      @update:isOpen="isExportModalOpen = $event"
+      @imported="handleExport"
     />
   </DashboardLayout>
 </template>

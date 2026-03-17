@@ -36,7 +36,7 @@ export const useAdminStore = defineStore('admin', () => {
       const result = await res.json()
       admins.value = result.map((a: Admin) => ({
         ...a,
-        status: a.is_active ? 'Aktif' : 'Non-Aktif'
+        status: a.is_active ? 'Aktif' : 'Non-Aktif',
       }))
     } finally {
       isLoading.value = false
@@ -56,11 +56,11 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
   async function updateAdmin(id: number, body: Record<string, string>) {
-    const res = await fetch(`${VITE_API_URL}/api/admin/${id}/`, { 
+    const res = await fetch(`${VITE_API_URL}/api/admin/${id}/`, {
       method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json', 
-        ...authHeaders() 
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeaders(),
       },
       body: JSON.stringify(body),
     })
