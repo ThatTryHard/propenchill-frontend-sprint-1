@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { PlusCircle, X } from 'lucide-vue-next'
 import { useParentStore, validateParentForm } from '@/stores/parents'
+import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
 
 const props = defineProps<{
@@ -89,7 +90,16 @@ const handleSubmit = async () => {
     emit('created', data.message || 'Akun wali murid berhasil dibuat.')
     closeModal()
   } catch (error) {
-    submitError.value = (error as Error).message
+    const parsed = parseFieldErrors(error, {
+      nama: ['nama', 'name'],
+      email: ['email'],
+      no_hp: ['no_hp', 'nomor_hp', 'nomor hp', 'phone'],
+    })
+
+    errors.nama = parsed.fieldErrors.nama || ''
+    errors.email = parsed.fieldErrors.email || ''
+    errors.no_hp = parsed.fieldErrors.no_hp || ''
+    submitError.value = parsed.generalError
   } finally {
     isSubmitting.value = false
   }

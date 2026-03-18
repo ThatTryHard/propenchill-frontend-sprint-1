@@ -34,8 +34,8 @@
         />
       </div>
 
-      <div class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 shadow-sm">
-        <div class="overflow-x-auto">
+      <div class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 flex flex-col shadow-sm">
+        <div class="overflow-x-auto flex-1">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="border-b border-[#e2e8f0] bg-[#f8fafc]">
@@ -79,11 +79,11 @@
               </tr>
               <tr
                 v-else
-                v-for="(admin, index) in adminStore.admins"
+                v-for="(admin, index) in paginatedAdmins"
                 :key="admin.id"
                 class="border-b border-[#f1f5f9] hover:bg-[#f8fafc] transition-colors"
               >
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ index + 1 }}</td>
+                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ (currentPage - 1) * pageSize + index + 1 }}</td>
                 <td class="px-6 py-4 text-[14px] font-medium text-[#1a202c]">{{ admin.nama }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ admin.email }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">
@@ -121,6 +121,17 @@
             </tbody>
           </table>
         </div>
+
+        <div class="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0]">
+          <span class="text-[13px] text-[#718096]">
+            Halaman {{ currentPage }} dari {{ totalPages }} ({{ adminStore.admins.length }} data)
+          </span>
+
+          <VPagination
+            v-model:currentPage="currentPage"
+            :totalPages="totalPages"
+          />
+        </div>
       </div>
 
       <AdminAccountModal
@@ -148,7 +159,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { useAdminStore } from '@/stores/admin'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
@@ -158,9 +169,12 @@ import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import VPagination from '@/components/common/VPagination.vue'
 
 const adminStore = useAdminStore()
 const searchQuery = ref('')
+const currentPage = ref(1)
+const pageSize = 10
 const isEdit = ref(false)
 const selectedId = ref<number | null>(null)
 
@@ -176,12 +190,28 @@ const deleteModal = reactive({ show: false, adminName: '', loading: false, error
 
 const form = ref({ nama: '', email: '', role: 'ADMIN' })
 
+const totalPages = computed(() => Math.max(1, Math.ceil(adminStore.admins.length / pageSize)))
+const paginatedAdmins = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return adminStore.admins.slice(start, start + pageSize)
+})
+
 onMounted(() => adminStore.fetchAdmins())
+
+watch(
+  () => adminStore.admins.length,
+  () => {
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value
+    }
+  },
+)
 
 let searchTimeout: any = null
 const debouncedSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
+    currentPage.value = 1
     adminStore.fetchAdmins(searchQuery.value)
   }, 400)
 }
@@ -244,6 +274,7 @@ const handleSave = async (payload: { nama: string; email: string; role: string }
       showAlert('success', 'Berhasil!', 'Admin baru berhasil didaftarkan.')
     }
     closeModal()
+    currentPage.value = 1
   } catch (err: any) {
     formModal.error = err?.data?.error || err?.data?.message || 'Terjadi kesalahan pada sistem.'
     showAlert('error', 'Gagal!', formModal.error)

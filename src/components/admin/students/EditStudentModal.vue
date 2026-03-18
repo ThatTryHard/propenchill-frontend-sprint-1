@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { X, Edit } from 'lucide-vue-next'
 import { useStudentStore, type Student } from '@/stores/students'
+import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
 
 const props = defineProps<{
@@ -30,6 +31,8 @@ const errors = reactive({
   tanggal_lahir: '',
 })
 
+const submitError = ref('')
+
 const resetForm = () => {
   if (props.student) {
     form.nama = props.student.nama
@@ -42,6 +45,7 @@ const resetForm = () => {
   errors.nis = ''
   errors.kelas = ''
   errors.tanggal_lahir = ''
+  submitError.value = ''
 }
 
 watch(
@@ -105,6 +109,8 @@ const isSubmitDisabled = computed(() => studentStore.loading)
 const handleSubmit = async () => {
   if (!validateForm() || !props.student) return
 
+  submitError.value = ''
+
   try {
     await studentStore.updateStudent(props.student.student_id, {
       nama: form.nama.trim(),
@@ -115,8 +121,19 @@ const handleSubmit = async () => {
 
     emit('updated')
     closeModal()
-  } catch {
-    // error sudah ditangani di store
+  } catch (error) {
+    const parsed = parseFieldErrors(error, {
+      nama: ['nama', 'name'],
+      nis: ['nis', 'nomor_induk', 'nomor induk'],
+      kelas: ['kelas', 'class'],
+      tanggal_lahir: ['tanggal_lahir', 'tanggal lahir', 'birth_date'],
+    }, 'Gagal memperbarui data siswa.')
+
+    errors.nama = parsed.fieldErrors.nama || ''
+    errors.nis = parsed.fieldErrors.nis || ''
+    errors.kelas = parsed.fieldErrors.kelas || ''
+    errors.tanggal_lahir = parsed.fieldErrors.tanggal_lahir || ''
+    submitError.value = parsed.generalError || studentStore.error
   }
 }
 </script>
@@ -245,10 +262,10 @@ const handleSubmit = async () => {
                 </div>
 
                 <p
-                  v-if="studentStore.error"
+                  v-if="submitError"
                   class="text-[13px] text-[#A0453B] font-medium"
                 >
-                  {{ studentStore.error }}
+                  {{ submitError }}
                 </p>
               </div>
 
