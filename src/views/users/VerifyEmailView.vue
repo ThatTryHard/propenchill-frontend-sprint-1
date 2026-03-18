@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
+import VToast from '@/components/common/VToast.vue'
 import { useAuthStore } from '@/stores/users/auth'
 import VInputField from '@/components/common/VInputField.vue'
 import VButton from '@/components/common/VButton.vue'
@@ -24,7 +25,12 @@ const handleSendOtp = async () => {
   otpError.value = ''
 
   if (!email.value) {
-    toast.error('Email tidak ditemukan.')
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'error',
+        message: 'Email tidak ditemukan.',
+      },
+    })
     return
   }
 
@@ -35,10 +41,20 @@ const handleSendOtp = async () => {
       email: email.value,
     })
 
-    toast.success('Kode OTP berhasil dikirim ke email Anda.')
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'success',
+        message: 'Kode OTP berhasil dikirim ke email Anda.',
+      },
+    })
   } catch (error: unknown) {
     const message = (error as Error).message
-    toast.error(message)
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'error',
+        message: message,
+      },
+    })
   } finally {
     isSendingOtp.value = false
   }
@@ -60,14 +76,23 @@ const handleVerifyOtp = async () => {
       otp: otp.value,
     })
 
-    toast.success('Email berhasil diverifikasi! Mengalihkan ke halaman login...')
-
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'success',
+        message: 'Email berhasil diverifikasi! Mengalihkan ke halaman login...',
+      },
+    })
     setTimeout(() => {
       router.push({ name: 'login' })
     }, 1000)
   } catch (error: unknown) {
     const message = (error as Error).message
-    toast.error(message)
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'error',
+        message: message,
+      },
+    })
     otpError.value = message
   } finally {
     isVerifying.value = false

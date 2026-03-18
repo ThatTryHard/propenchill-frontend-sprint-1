@@ -129,7 +129,16 @@ const generatePreview = async (file: File) => {
       const data = new Uint8Array(e.target?.result as ArrayBuffer)
       const workbook = xlsx.read(data, { type: 'array' })
       const firstSheetName = workbook.SheetNames[0]
+      if (!firstSheetName) {
+        showAlert('error', 'File Excel tidak memiliki sheet yang valid.')
+        return
+      }
       const worksheet = workbook.Sheets[firstSheetName]
+
+      if (!worksheet) {
+        showAlert('error', 'Gagal membaca sheet dari file Excel.')
+        return
+      }
 
       // Convert ke JSON
       const json = xlsx.utils.sheet_to_json(worksheet)

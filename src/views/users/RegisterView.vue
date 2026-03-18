@@ -102,7 +102,12 @@ const handleRegister = async () => {
     }, 1000)
   } catch (error: unknown) {
     const message = (error as Error).message
-    toast.error(message)
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'error',
+        message: 'Registrasi Gagal! Silakan coba lagi.',
+      },
+    })
     emailError.value = message
     noHpError.value = message
   } finally {

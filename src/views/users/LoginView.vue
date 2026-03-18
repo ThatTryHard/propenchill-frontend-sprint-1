@@ -139,6 +139,12 @@ const handleLogin = async () => {
   } catch (error: unknown) {
     // Kalau gagal, warnain kedua field jadi merah
     toast.error((error as Error).message)
+    toast.custom(VToast, {
+      componentProps: {
+        type: 'error',
+        message: 'Login Gagal! Pastikan email dan kata sandi Anda benar.',
+      },
+    })
     emailError.value = (error as Error).message
     passwordError.value = (error as Error).message
     password.value = ''

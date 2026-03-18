@@ -3,7 +3,7 @@
     <template #sidebar>
       <AdminSidebar />
     </template>
-    
+
     <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[#f8fafc]">
       <div class="flex flex-col gap-4">
         <button @click="$router.push('/admin/management')" class="flex items-center gap-2 text-[#718096] hover:text-[#1a202c]">
@@ -14,6 +14,14 @@
       </div>
 
       <div class="bg-white p-8 rounded-2xl border border-[#e2e8f0] shadow-sm max-w-4xl">
+        <VAlert
+          v-if="alert.visible"
+          :type="alert.type"
+          :title="alert.title"
+          :message="alert.message"
+          @close="alert.visible = false"
+        />
+
         <div class="flex flex-col gap-6">
           <VInputField v-model="form.nama" label="Nama Lengkap" :state="errors.nama ? 'error' : 'default'" :message="errors.nama" />
           <VInputField v-model="form.email" label="Email" :state="errors.email ? 'error' : 'default'" :message="errors.email" />
@@ -24,10 +32,10 @@
         <template #leftIcon><Trash2 :size="18" /></template>
         Hapus
         </VButton>
-          <VButton 
-            variant="primary" 
-            class="px-8" 
-            :loading="isLoading" 
+          <VButton
+            variant="primary"
+            class="px-8"
+            :loading="isLoading"
             @click="handleUpdate"
             >
             Simpan Perubahan
@@ -39,43 +47,59 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Trash2 } from 'lucide-vue-next'
 import { useAdminStore } from '@/stores/admin'
-import { useAuthStore } from '@/stores/users/auth'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VButton from '@/components/common/VButton.vue'
+import VAlert from '@/components/common/VAlert.vue'
 
 const route = useRoute()
 const router = useRouter()
 const adminStore = useAdminStore()
-const authStore = useAuthStore() 
 
 const form = ref({ nama: '', email: '', role: '' })
 const errors = ref<Record<string, string>>({})
 const isLoading = ref(false)
-const showDeleteConfirm = ref(false) 
+const alert = reactive({
+  visible: false,
+  type: 'error' as 'error' | 'success' | 'warning' | 'information',
+  title: '',
+  message: '',
+})
+
+const showAlert = (
+  type: 'error' | 'success' | 'warning' | 'information',
+  title: string,
+  message: string,
+) => {
+  alert.visible = true
+  alert.type = type
+  alert.title = title
+  alert.message = message
+}
 
 onMounted(async () => {
   const adminId = route.params.id
   try {
     const data = await adminStore.fetchAdminById(adminId as string)
-    form.value = { 
-      nama: data.nama, 
-      email: data.email, 
-      role: data.role 
+    form.value = {
+      nama: data.nama,
+      email: data.email,
+      role: data.role
     }
   } catch (err) {
     console.error("Gagal memuat data:", err)
+    showAlert('error', 'Error Alert', 'Gagal memuat data admin.')
   }
 })
 
 const handleUpdate = async () => {
   if (!form.value.nama || !form.value.email) {
-    errors.value = { 
+    errors.value = {
       nama: !form.value.nama ? 'Nama tidak boleh kosong' : '',
       email: !form.value.email ? 'Email tidak boleh kosong' : ''
     }
@@ -84,22 +108,23 @@ const handleUpdate = async () => {
 
   isLoading.value = true
   try {
-    const adminId = Number(route.params.id) 
+    const adminId = Number(route.params.id)
     await adminStore.updateAdmin(adminId, {
       nama: form.value.nama,
       email: form.value.email,
       role: form.value.role
     })
-    
-    router.push({ 
-      path: '/admin/management', 
-      query: { success: 'Data admin berhasil diperbarui!' } 
+
+    router.push({
+      path: '/admin/management',
+      query: { success: 'Data admin berhasil diperbarui!' }
     })
   } catch (err: any) {
     console.error("Update gagal:", err)
     if (err.data) {
       errors.value = err.data
     }
+    showAlert('error', 'Error Alert', 'Gagal memperbarui data admin.')
   } finally {
     isLoading.value = false
   }
@@ -109,12 +134,12 @@ const handleDelete = async () => {
   const adminId = Number(route.params.id)
   try {
     await adminStore.deleteAdmin(adminId)
-    router.push({ 
-      path: '/admin/management', 
-      query: { success: 'Akun admin telah dinonaktifkan.' } 
+    router.push({
+      path: '/admin/management',
+      query: { success: 'Akun admin telah dinonaktifkan.' }
     })
-  } catch (err) {
-    alert("Gagal menghapus: Akun ini mungkin milik Anda sendiri.")
+  } catch {
+    showAlert('error', 'Error Alert', 'Gagal menghapus: Akun ini mungkin milik Anda sendiri.')
   }
 }
 </script>

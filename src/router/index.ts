@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AdminManagementView from '../views/management/AdminManagementView.vue'
 import StatusView from '@/views/StatusView.vue'
+import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/users/LoginView.vue'
 import RegisterView from '@/views/users/RegisterView.vue'
 import ParentListView from '@/views/admin/parents/ListView.vue'
@@ -9,12 +10,21 @@ import VerifyOTPView from '@/views/users/VerifyOTPView.vue'
 import SetNewPasswordView from '@/views/users/SetNewPasswordView.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import TeacherListView from '../views/admin/teacher/ListView.vue'
+import TeacherCreateView from '../views/admin/teacher/CreateView.vue'
+import TeacherEditView from '../views/admin/teacher/EditView.vue'
 import StudentManagementView from '@/views/students/StudentManagementView.vue'
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
+import { useAuthStore } from '@/stores/users/auth'
+import { useGlobalAlert } from '@/composables/useGlobalAlert'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/',
+      name: 'home',
+      component: HomeView,
+    },
     {
       path: '/auth',
       component: AuthLayout,
@@ -55,6 +65,7 @@ const router = createRouter({
       path: '/admin/management',
       name: 'admin-management',
       component: AdminManagementView,
+      meta: { requiresAuth: true, roleAccess: ['ADMIN'] },
     },
     { path: '/admin/management/create', redirect: '/admin/management' },
 
@@ -69,11 +80,13 @@ const router = createRouter({
       path: '/admin/parents',
       name: 'admin-parents',
       component: ParentListView,
+      meta: { requiresAuth: true, roleAccess: ['ADMIN', 'KEPSEK'] },
     },
     {
       path: '/admin/teachers',
       name: 'admin-guru-list',
       component: TeacherListView,
+      meta: { requiresAuth: true, roleAccess: ['ADMIN', 'KEPSEK'] },
     },
     {
       path: '/admin/teachers/create',
@@ -89,6 +102,10 @@ const router = createRouter({
       path: '/admin/students',
       name: 'student-management',
       component: StudentManagementView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'],
+      },
     },
     // Legacy redirects
     { path: '/admin-management', redirect: '/admin/management' },
@@ -105,6 +122,34 @@ const router = createRouter({
     },
     // TODO: Add routes for other roles here
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  const { showAlert } = useGlobalAlert()
+  const isAuthenticated = !!authStore.accessToken
+  const userRole = authStore.role
+
+  // 1. Cek apakah halaman butuh login?
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    showAlert('warning', 'Anda harus login terlebih dahulu.', 'Peringatan')
+    return next({ name: 'login' })
+  }
+
+  // 2. Cek apakah role user diizinkan masuk ke halaman ini?
+  if (to.meta.roleAccess) {
+    const allowedRoles = to.meta.roleAccess as string[]
+    if (userRole && !allowedRoles.includes(userRole)) {
+      showAlert(
+        'error',
+        'Akses Ditolak: Anda tidak memiliki izin untuk halaman ini.',
+        'Akses Ditolak',
+      )
+      return next(false)
+    }
+  }
+
+  next()
 })
 
 export default router
