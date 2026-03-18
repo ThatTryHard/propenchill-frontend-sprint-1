@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { X, PlusCircle } from 'lucide-vue-next'
 import { useStudentStore } from '@/stores/students'
+import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
 
 const props = defineProps<{
@@ -35,6 +36,8 @@ const errors = reactive({
   tanggal_lahir: '',
 })
 
+const submitError = ref('')
+
 const resetForm = () => {
   form.nama = ''
   form.nis = ''
@@ -51,6 +54,7 @@ const resetForm = () => {
   errors.jenis_kelamin = ''
   errors.kelas = ''
   errors.tanggal_lahir = ''
+  submitError.value = ''
 }
 
 watch(
@@ -108,6 +112,8 @@ const isSubmitDisabled = computed(() => studentStore.loading)
 const handleSubmit = async () => {
   if (!validateForm()) return
 
+  submitError.value = ''
+
   try {
     await studentStore.createStudent({
       nama: form.nama.trim(),
@@ -121,8 +127,25 @@ const handleSubmit = async () => {
 
     emit('created')
     closeModal()
-  } catch {
-    // error sudah ditangani di store
+  } catch (error) {
+    const parsed = parseFieldErrors(error, {
+      nama: ['nama', 'name'],
+      nis: ['nis', 'nomor_induk', 'nomor induk'],
+      nisn: ['nisn'],
+      email: ['email'],
+      jenis_kelamin: ['jenis_kelamin', 'gender'],
+      kelas: ['kelas', 'class'],
+      tanggal_lahir: ['tanggal_lahir', 'tanggal lahir', 'birth_date'],
+    }, 'Gagal menambahkan data siswa.')
+
+    errors.nama = parsed.fieldErrors.nama || ''
+    errors.nis = parsed.fieldErrors.nis || ''
+    errors.nisn = parsed.fieldErrors.nisn || ''
+    errors.email = parsed.fieldErrors.email || ''
+    errors.jenis_kelamin = parsed.fieldErrors.jenis_kelamin || ''
+    errors.kelas = parsed.fieldErrors.kelas || ''
+    errors.tanggal_lahir = parsed.fieldErrors.tanggal_lahir || ''
+    submitError.value = parsed.generalError || studentStore.error
   }
 }
 </script>
@@ -258,8 +281,8 @@ const handleSubmit = async () => {
                   </p>
                 </div>
 
-                <p v-if="studentStore.error" class="text-[13px] text-[#A0453B] font-medium">
-                  {{ studentStore.error }}
+                <p v-if="submitError" class="text-[13px] text-[#A0453B] font-medium">
+                  {{ submitError }}
                 </p>
               </div>
 

@@ -109,11 +109,15 @@
             </table>
           </div>
   
-          <div v-if="store.pagination?.totalPages > 1" class="px-6 py-4 border-t border-[#e2e8f0] bg-[#f8fafc]">
-            <VPagination 
-              :current-page="store.pagination.currentPage" 
-              :total-pages="store.pagination.totalPages" 
-              @page-change="(p: number) => store.fetchTeachers(p, searchQuery, selectedJabatan)" 
+          <div class="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0]">
+            <span class="text-[13px] text-[#718096]">
+              Halaman {{ currentPage }} dari {{ store.pagination.totalPages }} ({{ store.pagination.totalData }} data)
+            </span>
+
+            <VPagination
+              v-model:currentPage="currentPage"
+              :totalPages="store.pagination.totalPages"
+              @page-change="loadTeachers"
             />
           </div>
         </div>
@@ -146,7 +150,7 @@
   </template>
   
   <script setup lang="ts">
-  import { ref, reactive, onMounted } from 'vue'
+  import { ref, reactive, onMounted, watch } from 'vue'
   import { useRoute } from 'vue-router'
   import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
   import { useTeacherStore } from '@/stores/teacher'
@@ -168,31 +172,45 @@
   
   const searchQuery = ref('')
   const selectedJabatan = ref('')
+  const currentPage = ref(1)
   const isCreateModalOpen = ref(false)
   const isEditModalOpen = ref(false)
   const selectedTeacherId = ref<number | null>(null)
   const alert = reactive({ visible: false, type: 'success' as 'success' | 'error', title: '', message: '' })
   const deleteModal = reactive({ show: false, teacherId: null as number | null, teacherName: '', loading: false, error: '' })
   
+  const loadTeachers = async (): Promise<void> => {
+    await store.fetchTeachers(currentPage.value, searchQuery.value, selectedJabatan.value)
+  }
+
   onMounted((): void => {
     if (route.query.success) {
       alert.visible = true
       alert.type = 'success'
       alert.message = route.query.success as string
     }
-    store.fetchTeachers(1, '', '')
+    loadTeachers()
   })
   
   let timeout: ReturnType<typeof setTimeout> | null = null
   const debouncedSearch = (): void => {
     if (timeout) clearTimeout(timeout)
     timeout = setTimeout(() => {
-      store.fetchTeachers(1, searchQuery.value, selectedJabatan.value)
+      currentPage.value = 1
+      loadTeachers()
     }, 400)
   }
   
-  const handleFilter = (): Promise<void> => 
-    store.fetchTeachers(1, searchQuery.value, selectedJabatan.value)
+  const handleFilter = (): Promise<void> => {
+    currentPage.value = 1
+    return loadTeachers()
+  }
+
+  watch(currentPage, async (page) => {
+    if (page !== store.pagination.currentPage) {
+      await loadTeachers()
+    }
+  })
   
   const openDeleteModal = (teacher: any): void => {
     deleteModal.teacherId = teacher.id
@@ -214,14 +232,15 @@
     alert.visible = true
     alert.type = 'success'
     alert.message = message
-    await store.fetchTeachers(1, searchQuery.value, selectedJabatan.value)
+    currentPage.value = 1
+    await loadTeachers()
   }
 
   const handleTeacherUpdated = async (message: string): Promise<void> => {
     alert.visible = true
     alert.type = 'success'
     alert.message = message
-    await store.fetchTeachers(store.pagination.currentPage, searchQuery.value, selectedJabatan.value)
+    await loadTeachers()
   }
 
   const handleDelete = async (): Promise<void> => {
@@ -234,7 +253,10 @@
       alert.type = 'success'
       alert.message = 'Akun guru berhasil dihapus dari sistem.'
       deleteModal.show = false
-      await store.fetchTeachers(store.pagination.currentPage, searchQuery.value, selectedJabatan.value)
+      if (store.teachers.length === 1 && currentPage.value > 1) {
+        currentPage.value -= 1
+      }
+      await loadTeachers()
     } catch (e: any) {
       deleteModal.error = e.message || 'Gagal menghapus data guru.'
       alert.visible = true

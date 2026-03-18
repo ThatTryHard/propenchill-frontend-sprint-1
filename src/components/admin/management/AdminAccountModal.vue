@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { Edit, PlusCircle, X } from 'lucide-vue-next'
 import VButton from '@/components/common/VButton.vue'
+import { parseFieldErrors } from '@/lib/fieldErrors'
 
 const props = withDefaults(
   defineProps<{
@@ -24,6 +25,7 @@ const emit = defineEmits<{
 
 const form = reactive({ nama: '', email: '', role: 'ADMIN' })
 const errors = reactive({ nama: '', email: '' })
+const submitError = ref('')
 
 watch(
   () => [props.isOpen, props.initialForm],
@@ -34,8 +36,25 @@ watch(
     form.role = props.initialForm.role || 'ADMIN'
     errors.nama = ''
     errors.email = ''
+    submitError.value = ''
   },
   { deep: true },
+)
+
+watch(
+  () => props.errorMessage,
+  (value) => {
+    if (!props.isOpen || !value) return
+
+    const parsed = parseFieldErrors(value, {
+      nama: ['nama', 'name'],
+      email: ['email'],
+    })
+
+    if (parsed.fieldErrors.nama) errors.nama = parsed.fieldErrors.nama
+    if (parsed.fieldErrors.email) errors.email = parsed.fieldErrors.email
+    submitError.value = parsed.generalError
+  },
 )
 
 const closeModal = () => emit('update:isOpen', false)
@@ -151,7 +170,7 @@ const handleSubmit = () => {
                   </div>
                 </div>
 
-                <p v-if="errorMessage" class="text-[13px] text-[#A0453B] font-medium">{{ errorMessage }}</p>
+                <p v-if="submitError" class="text-[13px] text-[#A0453B] font-medium">{{ submitError }}</p>
               </div>
 
               <div class="flex items-center justify-end gap-2">

@@ -2,6 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { PlusCircle, X } from 'lucide-vue-next'
 import { useTeacherStore, validateTeacherForm } from '@/stores/teacher'
+import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
 
 const props = defineProps<{ isOpen: boolean }>()
@@ -68,7 +69,18 @@ const handleSubmit = async () => {
     emit('created', 'Data guru berhasil didaftarkan.')
     closeModal()
   } catch (error: any) {
-    submitError.value = error?.message || 'Gagal menyimpan data guru.'
+    const parsed = parseFieldErrors(error, {
+      nama: ['nama', 'name'],
+      email: ['email'],
+      niy: ['niy'],
+      jabatan: ['jabatan', 'role', 'position'],
+    }, 'Gagal menyimpan data guru.')
+
+    errors.nama = parsed.fieldErrors.nama || ''
+    errors.email = parsed.fieldErrors.email || ''
+    errors.niy = parsed.fieldErrors.niy || ''
+    errors.jabatan = parsed.fieldErrors.jabatan || ''
+    submitError.value = parsed.generalError
   } finally {
     isSubmitting.value = false
   }

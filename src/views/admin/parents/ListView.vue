@@ -37,8 +37,8 @@
       </div>
 
       <!-- Table -->
-      <div class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1">
-        <div class="overflow-x-auto">
+      <div class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 flex flex-col">
+        <div class="overflow-x-auto flex-1">
           <table class="w-full text-left">
             <thead>
               <tr class="border-b border-[#e2e8f0] bg-[#f8fafc]">
@@ -101,18 +101,15 @@
         </div>
 
         <!-- Pagination -->
-        <div
-          v-if="store.pagination.totalPages > 1"
-          class="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0]"
-        >
+        <div class="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0]">
           <span class="text-[13px] text-[#718096]">
             Halaman {{ store.pagination.currentPage }} dari {{ store.pagination.totalPages }}
             ({{ store.pagination.totalData }} data)
           </span>
           
-          <VPagination 
-            :current-page="store.pagination.currentPage"
-            :total-pages="store.pagination.totalPages"
+          <VPagination
+            v-model:currentPage="currentPage"
+            :totalPages="store.pagination.totalPages"
             @page-change="changePage"
           />
         </div>
@@ -124,7 +121,6 @@
         :description="`Apakah Anda yakin ingin menghapus akun ${deleteModal.parentName}? Tindakan ini tidak dapat dibatalkan.`"
         confirmText="Hapus"
         :loading="deleteModal.loading"
-        :errorMessage="deleteModal.error"
         @update:isOpen="deleteModal.show = $event"
         @confirm="handleDelete"
       />
@@ -146,8 +142,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { useParentStore, type Parent } from '@/stores/parents'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
@@ -158,11 +154,14 @@ import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import VPagination from '@/components/common/VPagination.vue'
 
 const store = useParentStore()
 const route = useRoute()
+const router = useRouter()
 
 const searchQuery = ref('')
+const currentPage = ref(1)
 const isCreateModalOpen = ref(false)
 const isEditModalOpen = ref(false)
 const selectedParentId = ref<number | null>(null)
@@ -179,7 +178,6 @@ const deleteModal = reactive({
   parentId: null as number | null,
   parentName: '',
   loading: false,
-  error: '',
 })
 
 onMounted(() => {
@@ -189,24 +187,32 @@ onMounted(() => {
     alert.title = 'Success Alert'
     alert.message = route.query.success as string
   }
-  store.fetchParents()
+  store.fetchParents(currentPage.value, searchQuery.value)
 })
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const debouncedSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
+    currentPage.value = 1
     store.fetchParents(1, searchQuery.value)
   }, 400)
 }
 
 const changePage = (page: number) => {
+  currentPage.value = page
   store.setParentPage(page)
 }
 
 const refreshCurrentPage = async () => {
-  await store.fetchParents(store.pagination.currentPage, searchQuery.value)
+  await store.fetchParents(currentPage.value, searchQuery.value)
 }
+
+watch(currentPage, async (page) => {
+  if (page !== store.pagination.currentPage) {
+    await store.fetchParents(page, searchQuery.value)
+  }
+})
 
 const openCreateModal = () => {
   isCreateModalOpen.value = true
@@ -242,7 +248,6 @@ const openDeleteModal = (parent: Parent) => {
 const handleDelete = async () => {
   if (!deleteModal.parentId) return
   deleteModal.loading = true
-  deleteModal.error = ''
   try {
     const data = await store.deleteParent(deleteModal.parentId)
     alert.visible = true
@@ -252,12 +257,13 @@ const handleDelete = async () => {
     deleteModal.show = false
     await refreshCurrentPage()
   } catch (error) {
-    deleteModal.error = (error as Error).message
+    const errorMessage = (error as Error).message || 'Gagal menghapus wali murid.'
+    deleteModal.show = false
+    await router.replace({ name: 'admin-parents' })
     alert.visible = true
     alert.type = 'error'
-    alert.title = 'Error Alert'
-    alert.message = (error as Error).message
-    deleteModal.show = false
+    alert.title = 'Tidak Bisa Menghapus Akun'
+    alert.message = errorMessage
   } finally {
     deleteModal.loading = false
   }

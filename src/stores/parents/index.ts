@@ -89,8 +89,13 @@ export const useParentStore = defineStore('parents', () => {
   async function fetchParents(page = 1, query = '') {
     isLoading.value = true
     try {
+      const trimmedQuery = query.trim()
       const params = new URLSearchParams()
-      if (query.trim()) params.set('q', query.trim())
+      if (trimmedQuery) {
+        // Keep both keys for backward compatibility with different backend implementations.
+        params.set('search', trimmedQuery)
+        params.set('q', trimmedQuery)
+      }
 
       const queryString = params.toString()
       const endpoint = queryString
@@ -111,7 +116,22 @@ export const useParentStore = defineStore('parents', () => {
             ? result.results
             : []
 
-      allParents.value = parentList.map((item: any) => normalizeParent(item))
+      const normalizedParents = parentList.map((item: any) => normalizeParent(item))
+
+      // Fallback filter on client side when backend ignores search query.
+      if (trimmedQuery) {
+        const keyword = trimmedQuery.toLowerCase()
+        allParents.value = normalizedParents.filter((parent: Parent) => {
+          return (
+            parent.nama.toLowerCase().includes(keyword) ||
+            parent.email.toLowerCase().includes(keyword) ||
+            parent.no_hp.toLowerCase().includes(keyword)
+          )
+        })
+      } else {
+        allParents.value = normalizedParents
+      }
+
       applyPagination(page)
     } finally {
       isLoading.value = false
@@ -140,7 +160,11 @@ export const useParentStore = defineStore('parents', () => {
       body: JSON.stringify(body),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Gagal membuat akun wali murid')
+    if (!res.ok) {
+      const error: any = new Error(data.error || data.message || 'Gagal membuat akun wali murid')
+      error.details = data
+      throw error
+    }
     return data
   }
 
@@ -151,7 +175,11 @@ export const useParentStore = defineStore('parents', () => {
       body: JSON.stringify(body),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Gagal memperbarui data wali murid')
+    if (!res.ok) {
+      const error: any = new Error(data.error || data.message || 'Gagal memperbarui data wali murid')
+      error.details = data
+      throw error
+    }
     return data
   }
 
@@ -160,8 +188,10 @@ export const useParentStore = defineStore('parents', () => {
       method: 'DELETE',
       headers: authHeaders(),
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error || 'Gagal menghapus wali murid')
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      throw new Error(data.error || data.message || 'Gagal menghapus wali murid')
+    }
     return data
   }
 
