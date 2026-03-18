@@ -280,19 +280,22 @@ export const useStudentStore = defineStore('students', {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await axios.post(
-        `${VITE_API_URL}/api/siswa/import/`,
-        formData,
-        {
-          ...this.getAuthHeader(),
-          headers: {
-            ...this.getAuthHeader().headers,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
-
-      return response.data
+      try {
+        const response = await axios.post(
+          `${VITE_API_URL}/api/siswa/import/`,
+          formData,
+          {
+            ...this.getAuthHeader(),
+            headers: {
+              ...this.getAuthHeader().headers,
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        )
+        return response.data
+      } catch (error: any) {
+        throw error
+      }
     },
   },
 })
