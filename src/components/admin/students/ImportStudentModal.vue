@@ -13,6 +13,13 @@
     @close="resetModal"
   >
     <div class="w-full mt-4 flex flex-col gap-4">
+      <VAlert
+        v-if="alert.show"
+        :type="alert.type"
+        :message="alert.message"
+        @close="alert.show = false"
+      />
+
       <div v-if="step === 1">
         <VInputFile
           v-model="selectedFile"
@@ -66,7 +73,7 @@
           <table class="w-full text-[12px] text-gray-700">
             <tbody class="divide-y divide-gray-100">
               <tr v-for="(err, idx) in importErrors" :key="idx">
-                <td class="py-1 px-2 font-bold text-[#b42318] w-16">#{{ err.row }}</td>
+                <td class="py-1 px-2 font-bold text-[#b42318] w-16">#{{ err.row - 1 }}</td>
                 <td class="py-1 px-2">{{ err.message }}</td>
               </tr>
             </tbody>
@@ -172,11 +179,23 @@ const submitImport = async () => {
       resetModal()
     }, 1500)
   } catch (error: any) {
-    if (error.response?.data?.errors) {
-      importErrors.value = error.response.data.errors
-      showAlert('error', 'Ditemukan error pada format data.')
+    const errorResponse = error.response?.data
+
+    if (errorResponse) {
+      if (
+        errorResponse.errors &&
+        Array.isArray(errorResponse.errors) &&
+        errorResponse.errors.length > 0
+      ) {
+        importErrors.value = errorResponse.errors
+        showAlert('error', errorResponse.message || 'Ditemukan error pada format data.')
+      } else if (errorResponse.error) {
+        showAlert('error', errorResponse.error)
+      } else {
+        showAlert('error', 'Gagal mengunggah file. Silakan periksa kembali format Anda.')
+      }
     } else {
-      showAlert('error', error.response?.data?.error || 'Gagal mengunggah file.')
+      showAlert('error', 'Koneksi ke server terputus.')
     }
   } finally {
     isLoading.value = false
