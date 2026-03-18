@@ -128,23 +128,16 @@
           @created="handleTeacherCreated"
         />
 
-        <EditTeacherModal
-          :isOpen="isEditModalOpen"
-          :teacherId="selectedTeacherId"
-          @update:isOpen="isEditModalOpen = $event"
-          @updated="handleTeacherUpdated"
-        />
-
-        <ConfirmationModal
-          :isOpen="deleteModal.show"
-          title="Hapus Akun Guru"
-          :description="`Apakah Anda yakin ingin menghapus data akun ${deleteModal.teacherName}?`"
-          confirmText="Hapus"
-          :loading="deleteModal.loading"
-          :errorMessage="deleteModal.error"
-          @update:isOpen="deleteModal.show = $event"
-          @confirm="handleDelete"
-        />
+    <div class="p-8 flex flex-col gap-6 h-full">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Guru</h1>
+          <p class="text-[#718096] text-sm mt-1">Daftar guru yang terdaftar dalam sistem.</p>
+        </div>
+        <VButton variant="primary" @click="openCreateModal">
+          <template #leftIcon><Plus :size="18" /></template>
+          Tambah Guru
+        </VButton>
       </div>
     </DashboardLayout>
   </template>
@@ -219,16 +212,45 @@
     deleteModal.show = true
   }
 
-  const openCreateModal = (): void => {
-    isCreateModalOpen.value = true
-  }
+const handleFilter = (): Promise<void> =>
+  store.fetchTeachers(1, searchQuery.value, selectedJabatan.value)
 
-  const openEditModal = (teacherId: number): void => {
-    selectedTeacherId.value = teacherId
-    isEditModalOpen.value = true
-  }
+const openDeleteModal = (teacher: any): void => {
+  deleteModal.teacherId = teacher.id
+  deleteModal.teacherName = teacher.nama
+  deleteModal.error = ''
+  deleteModal.show = true
+}
 
-  const handleTeacherCreated = async (message: string): Promise<void> => {
+const openCreateModal = (): void => {
+  isCreateModalOpen.value = true
+}
+
+const openEditModal = (teacherId: number): void => {
+  selectedTeacherId.value = teacherId
+  isEditModalOpen.value = true
+}
+
+const handleTeacherCreated = async (message: string): Promise<void> => {
+  alert.visible = true
+  alert.type = 'success'
+  alert.message = message
+  await store.fetchTeachers(1, searchQuery.value, selectedJabatan.value)
+}
+
+const handleTeacherUpdated = async (message: string): Promise<void> => {
+  alert.visible = true
+  alert.type = 'success'
+  alert.message = message
+  await store.fetchTeachers(store.pagination.currentPage, searchQuery.value, selectedJabatan.value)
+}
+
+const handleDelete = async (): Promise<void> => {
+  if (!deleteModal.teacherId) return
+  deleteModal.loading = true
+  deleteModal.error = ''
+  try {
+    await store.deleteTeacher(deleteModal.teacherId)
     alert.visible = true
     alert.type = 'success'
     alert.message = message

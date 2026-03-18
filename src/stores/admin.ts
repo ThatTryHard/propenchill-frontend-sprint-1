@@ -74,7 +74,7 @@ export const useAdminStore = defineStore('admin', () => {
   }
 
   async function deleteAdmin(id: number) {
-    const res = await fetch(`${VITE_API_URL}/api/admin/delete/${id}/`, {
+    const res = await fetch(`${VITE_API_URL}/api/admin/${id}/`, {
       method: 'DELETE',
       headers: authHeaders(),
     })

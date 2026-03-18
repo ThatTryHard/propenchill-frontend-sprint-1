@@ -100,17 +100,6 @@
         </div>
       </template>
 
-      <!-- Update Modal -->
-      <!-- <VModal
-        :show="updateModal.show"
-        title="Perbarui Wali Murid"
-        description="Apakah Anda yakin ingin menyimpan perubahan data wali murid ini?"
-        confirmText="Simpan"
-        cancelText="Batal"
-        :loading="isLoading"
-        @close="updateModal.show = false"
-        @confirm="handleUpdate"
-      /> -->
       <VModal
         v-model:is-open="updateModal.show"
         title="Perbarui Wali Murid"
@@ -121,18 +110,6 @@
           <UserCheck class="w-10 h-10 text-[#3f9760]" />
         </template>
       </VModal>
-      <!-- Delete Modal -->
-      <!-- <VModal
-        :show="deleteModal.show"
-        icon="delete"
-        title="Hapus Wali Murid"
-        :description="`Apakah Anda yakin ingin menghapus akun ${form.nama}? Tindakan ini tidak dapat dibatalkan.`"
-        confirmText="Hapus"
-        cancelText="Batal"
-        :loading="deleteModal.loading"
-        @close="deleteModal.show = false"
-        @confirm="handleDelete"
-      /> -->
 
       <VModal
         v-model:is-open="deleteModal.show"
@@ -176,7 +153,7 @@ const deleteModal = reactive({ show: false, loading: false })
 
 const toDateInputValue = (value: string | null | undefined): string => {
   if (!value) return ''
-  return value.includes('T') ? value.split('T')[0] : value
+  return (value.includes('T') ? value.split('T')[0] : value) || ''
 }
 
 // Clear errors on input

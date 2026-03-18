@@ -4,6 +4,7 @@ import { X, PlusCircle } from 'lucide-vue-next'
 import { useStudentStore } from '@/stores/students'
 import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
+import VInputField from '@/components/common/VInputField.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -24,6 +25,8 @@ const form = reactive({
   jenis_kelamin: 'L' as 'L' | 'P',
   kelas: '',
   tanggal_lahir: '',
+  no_hp: '',
+  alamat: '',
 })
 
 const errors = reactive({
@@ -32,8 +35,6 @@ const errors = reactive({
   nisn: '',
   email: '',
   jenis_kelamin: '',
-  kelas: '',
-  tanggal_lahir: '',
 })
 
 const submitError = ref('')
@@ -46,24 +47,21 @@ const resetForm = () => {
   form.jenis_kelamin = 'L'
   form.kelas = ''
   form.tanggal_lahir = ''
+  form.no_hp = ''
+  form.alamat = ''
 
   errors.nama = ''
   errors.nis = ''
   errors.nisn = ''
   errors.email = ''
   errors.jenis_kelamin = ''
-  errors.kelas = ''
-  errors.tanggal_lahir = ''
-  submitError.value = ''
 }
 
 watch(
   () => props.isOpen,
   (isOpen) => {
-    if (isOpen) {
-      resetForm()
-    }
-  },
+    if (isOpen) resetForm()
+  }
 )
 
 const closeModal = () => {
@@ -73,34 +71,46 @@ const closeModal = () => {
 const validateForm = () => {
   errors.nama = ''
   errors.nis = ''
-  errors.kelas = ''
-  errors.tanggal_lahir = ''
+  errors.nisn = ''
+  errors.email = ''
+  errors.jenis_kelamin = ''
 
   let isValid = true
 
   if (!form.nama.trim()) {
-    errors.nama = 'Nama lengkap wajib diisi.'
+    errors.nama = 'Nama wajib diisi.'
     isValid = false
   }
 
   if (!form.nis.trim()) {
-    errors.nis = 'Nomor induk wajib diisi.'
+    errors.nis = 'NIS wajib diisi.'
     isValid = false
   } else if (!/^\d+$/.test(form.nis)) {
-    errors.nis = 'Nomor induk harus berupa angka.'
+    errors.nis = 'NIS harus berupa angka.'
     isValid = false
   } else if (form.nis.length !== 10) {
-    errors.nis = 'Nomor induk harus terdiri dari 10 digit.'
+    errors.nis = 'NIS harus terdiri dari 10 digit.'
     isValid = false
   }
 
-  if (!form.kelas.trim()) {
-    errors.kelas = 'Kelas/Jabatan wajib diisi.'
+  if (!form.nisn.trim()) {
+    errors.nisn = 'NISN wajib diisi.'
+    isValid = false
+  } else if (!/^\d+$/.test(form.nisn)) {
+    errors.nisn = 'NISN harus berupa angka.'
+    isValid = false
+  } else if (form.nisn.length !== 10) {
+    errors.nisn = 'NISN harus terdiri dari 10 digit.'
     isValid = false
   }
 
-  if (!form.tanggal_lahir) {
-    errors.tanggal_lahir = 'Tanggal lahir wajib diisi.'
+  if (!form.email.trim()) {
+    errors.email = 'Email wajib diisi.'
+    isValid = false
+  }
+
+  if (!form.jenis_kelamin) {
+    errors.jenis_kelamin = 'Jenis kelamin wajib dipilih.'
     isValid = false
   }
 
@@ -121,31 +131,16 @@ const handleSubmit = async () => {
       nisn: form.nisn.trim(),
       email: form.email.trim(),
       jenis_kelamin: form.jenis_kelamin,
-      kelas: form.kelas.trim(),
-      tanggal_lahir: form.tanggal_lahir,
+      kelas: form.kelas.trim() || null,
+      tanggal_lahir: form.tanggal_lahir || null,
+      no_hp: form.no_hp.trim() || null,
+      alamat: form.alamat.trim() || null,
     })
 
     emit('created')
     closeModal()
-  } catch (error) {
-    const parsed = parseFieldErrors(error, {
-      nama: ['nama', 'name'],
-      nis: ['nis', 'nomor_induk', 'nomor induk'],
-      nisn: ['nisn'],
-      email: ['email'],
-      jenis_kelamin: ['jenis_kelamin', 'gender'],
-      kelas: ['kelas', 'class'],
-      tanggal_lahir: ['tanggal_lahir', 'tanggal lahir', 'birth_date'],
-    }, 'Gagal menambahkan data siswa.')
-
-    errors.nama = parsed.fieldErrors.nama || ''
-    errors.nis = parsed.fieldErrors.nis || ''
-    errors.nisn = parsed.fieldErrors.nisn || ''
-    errors.email = parsed.fieldErrors.email || ''
-    errors.jenis_kelamin = parsed.fieldErrors.jenis_kelamin || ''
-    errors.kelas = parsed.fieldErrors.kelas || ''
-    errors.tanggal_lahir = parsed.fieldErrors.tanggal_lahir || ''
-    submitError.value = parsed.generalError || studentStore.error
+  } catch {
+    // error sudah ditangani store
   }
 }
 </script>
@@ -175,18 +170,8 @@ const handleSubmit = async () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[643px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
+            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
+            style="background: linear-gradient(#f8fafc, #f8fafc) padding-box, linear-gradient(243.74deg, rgba(255,255,255,0.05), #ffffff 47.12%, rgba(255,255,255,0.05)) border-box;"
           >
             <div class="flex flex-col gap-5">
               <div class="flex justify-end">
@@ -204,85 +189,103 @@ const handleSubmit = async () => {
                 <b class="text-[24px] leading-[120%]">Tambah Data</b>
               </div>
 
-              <div class="flex flex-col gap-4">
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Nama Lengkap </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.nama"
-                      type="text"
-                      placeholder="Masukkan nama lengkap"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
-                    />
-                  </div>
-                  <p v-if="errors.nama" class="text-[12px] text-[#A0453B]">
-                    {{ errors.nama }}
-                  </p>
-                </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <VInputField
+                  v-model="form.nama"
+                  label="Nama"
+                  placeholder="Masukkan nama"
+                  :state="errors.nama ? 'error' : 'default'"
+                  :message="errors.nama"
+                />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Nomor Induk </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.nis"
-                      type="text"
-                      inputmode="numeric"
-                      placeholder="Masukkan nomor induk"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
-                    />
-                  </div>
-                  <p v-if="errors.nis" class="text-[12px] text-[#A0453B]">
-                    {{ errors.nis }}
-                  </p>
-                </div>
+                <VInputField
+                  v-model="form.email"
+                  label="Email"
+                  type="email"
+                  placeholder="Masukkan email"
+                  :state="errors.email ? 'error' : 'default'"
+                  :message="errors.email"
+                />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Jenis Kelamin </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
+                <VInputField
+                  v-model="form.nis"
+                  label="NIS"
+                  type="text"
+                  placeholder="Masukkan NIS"
+                  :state="errors.nis ? 'error' : 'default'"
+                  :message="errors.nis"
+                />
+
+                <VInputField
+                  v-model="form.nisn"
+                  label="NISN"
+                  type="text"
+                  placeholder="Masukkan NISN"
+                  :state="errors.nisn ? 'error' : 'default'"
+                  :message="errors.nisn"
+                />
+
+                <div class="flex flex-col gap-2 w-full">
+                  <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                    Jenis Kelamin
+                  </label>
+                  <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
                     <select
                       v-model="form.jenis_kelamin"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827]"
+                      class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none"
                     >
                       <option value="L">Laki-laki</option>
                       <option value="P">Perempuan</option>
                     </select>
                   </div>
-                  <p v-if="errors.jenis_kelamin" class="text-[12px] text-[#A0453B]">
+                  <div
+                    v-if="errors.jenis_kelamin"
+                    class="text-[12px] font-light leading-[150%] bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent"
+                  >
                     {{ errors.jenis_kelamin }}
-                  </p>
+                  </div>
                 </div>
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Kelas/Jabatan </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.kelas"
-                      type="text"
-                      placeholder="Contoh: XII IPA 1 / Kepala TU"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
+                <VInputField
+                  v-model="form.kelas"
+                  label="Kelas"
+                  type="text"
+                  placeholder="Masukkan kelas"
+                />
+
+                <VInputField
+                  v-model="form.tanggal_lahir"
+                  label="Tanggal Lahir"
+                  type="date"
+                  placeholder="Pilih tanggal lahir"
+                />
+
+                <VInputField
+                  v-model="form.no_hp"
+                  label="No HP"
+                  type="text"
+                  placeholder="Masukkan no hp"
+                />
+
+                <div class="md:col-span-2 flex flex-col gap-2">
+                  <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                    Alamat
+                  </label>
+                  <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
+                    <textarea
+                      v-model="form.alamat"
+                      rows="3"
+                      placeholder="Masukkan alamat"
+                      class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none resize-none"
                     />
                   </div>
-                  <p v-if="errors.kelas" class="text-[12px] text-[#A0453B]">
-                    {{ errors.kelas }}
-                  </p>
                 </div>
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Tanggal Lahir </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.tanggal_lahir"
-                      type="date"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827]"
-                    />
-                  </div>
-                  <p v-if="errors.tanggal_lahir" class="text-[12px] text-[#A0453B]">
-                    {{ errors.tanggal_lahir }}
-                  </p>
-                </div>
-
-                <p v-if="submitError" class="text-[13px] text-[#A0453B] font-medium">
-                  {{ submitError }}
+                <p
+                  v-if="studentStore.error"
+                  class="md:col-span-2 text-[13px] text-[#A0453B] font-medium"
+                >
+                  {{ studentStore.error }}
                 </p>
               </div>
 

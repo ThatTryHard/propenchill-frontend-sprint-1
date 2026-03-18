@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { Toaster } from 'vue-sonner'
+import VAlert from '@/components/common/VAlert.vue'
+import { useGlobalAlert } from '@/composables/useGlobalAlert'
+
+const { alertState, closeAlert } = useGlobalAlert()
 </script>
 
 <template>
@@ -18,6 +22,13 @@ import { Toaster } from 'vue-sonner'
           border: 'none',
         },
       }"
+    />
+    <VAlert
+      v-if="alertState.show"
+      :type="alertState.type"
+      :title="alertState.title"
+      :message="alertState.message"
+      @close="closeAlert"
     />
     <router-view />
   </div>

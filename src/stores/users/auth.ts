@@ -65,7 +65,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async sendEmailOtp(payload: { email: string }) {
-      const response = await fetch(VITE_API_URL + '/api/send-email-otp/', {
+      const response = await fetch(VITE_API_URL + '/api/auth/send-email-otp/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async verifyEmailOtp(payload: { email: string; otp: string }) {
-      const response = await fetch(VITE_API_URL + '/api/verify-email-otp/', {
+      const response = await fetch(VITE_API_URL + '/api/auth/verify-email-otp/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
