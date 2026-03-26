@@ -30,7 +30,7 @@ const form = reactive({
   alamat: '',
 })
 
-const errors = reactive({
+const errors = reactive<Record<string, string>>({
   nama: '',
   email: '',
   jenis_kelamin: '',
