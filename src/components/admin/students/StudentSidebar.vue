@@ -29,7 +29,7 @@ const navItems = [
   {
     name: 'template-surat',
     label: 'Manajemen Template Surat',
-    path: '/template-surat',
+    path: '/letter_templates/create',
     icon: Mail,
   },
   {

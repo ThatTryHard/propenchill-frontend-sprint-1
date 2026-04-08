@@ -28,7 +28,7 @@
               <label class="text-sm font-medium text-[#4a5568]">Jabatan</label>
               <select v-model="form.jabatan" class="border border-[#e2e8f0] rounded-lg p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-[#3f9760]">
                 <option value="Kepala Sekolah">Kepala Sekolah</option>
-                <option value="Guru Bidang Kurikulum">Guru Bidang Kurikulum</option>
+                <option value="Guru Bidang Akademik">Guru Bidang Akademik</option>
                 <option value="Guru Bidang Kesiswaan">Guru Bidang Kesiswaan</option>
                 <option value="Guru Bidang Agama">Guru Bidang Agama</option>
                 <option value="Guru">Guru</option>

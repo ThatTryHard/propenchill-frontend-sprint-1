@@ -218,10 +218,10 @@ onMounted(async () => {
       <section class="flex items-start justify-between gap-8 max-[1200px]:flex-col max-[1200px]:items-start">
         <div class="flex flex-col gap-2">
           <h1 class="m-0 text-[32px] leading-[120%] font-extrabold text-[#111827]">
-            Manajemen Basis Data Siswa dan Staf
+            Manajemen Siswa dan Staf
           </h1>
           <p class="m-0 text-[20px] leading-[120%] text-[#858a91]">
-            Lihat dan kelola Basis Data Siswa dan Staf
+            Lihat dan kelola Siswa dan Staf
           </p>
         </div>
 

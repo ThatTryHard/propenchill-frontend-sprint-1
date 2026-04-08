@@ -37,7 +37,7 @@
         >
           <option value="">Semua Jabatan</option>
           <option value="Kepala Sekolah">Kepala Sekolah</option>
-          <option value="Guru Bidang Kurikulum">Guru Bidang Kurikulum</option>
+          <option value="Guru Bidang Akademik">Guru Bidang Akademik</option>
           <option value="Guru Bidang Kesiswaan">Guru Bidang Kesiswaan</option>
           <option value="Guru Bidang Agama">Guru Bidang Agama</option>
           <option value="Guru">Guru</option>
