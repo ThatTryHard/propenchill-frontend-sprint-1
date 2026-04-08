@@ -15,6 +15,7 @@ import TeacherEditView from '../views/admin/teacher/EditView.vue'
 import StudentManagementView from '@/views/students/StudentManagementView.vue'
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
 import CreateSuratMasukView from '@/views/department_teachers/CreateSuratMasukView.vue'
+import TemplateCreateView from '@/views/letter_templates/TemplateCreateView.vue'
 import { useAuthStore } from '@/stores/users/auth'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
 
@@ -133,6 +134,15 @@ const router = createRouter({
       path: '/verify-email',
       name: 'verify-email',
       component: VerifyEmailView,
+    },
+    {
+      path: '/letter_templates/create',
+      name: 'letter-template-create',
+      component: TemplateCreateView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['ADMIN', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+      },
     },
     // TODO: Add routes for other roles here
   ],

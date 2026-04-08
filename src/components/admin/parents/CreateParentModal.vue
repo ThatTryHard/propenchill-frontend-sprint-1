@@ -4,6 +4,7 @@ import { PlusCircle, X } from 'lucide-vue-next'
 import { useParentStore, validateParentForm } from '@/stores/parents'
 import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
+import VInputField from '@/components/common/VInputField.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -49,10 +50,8 @@ const resetForm = () => {
 watch(
   () => props.isOpen,
   (isOpen) => {
-    if (isOpen) {
-      resetForm()
-    }
-  },
+    if (isOpen) resetForm()
+  }
 )
 
 const closeModal = () => {
@@ -131,18 +130,8 @@ const handleSubmit = async () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[643px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
+            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
+            style="background: linear-gradient(#f8fafc, #f8fafc) padding-box, linear-gradient(243.74deg, rgba(255,255,255,0.05), #ffffff 47.12%, rgba(255,255,255,0.05)) border-box;"
           >
             <div class="flex flex-col gap-5">
               <div class="flex justify-end">
@@ -200,13 +189,37 @@ const handleSubmit = async () => {
                   <p v-if="errors.no_hp" class="text-[12px] text-[#A0453B]">{{ errors.no_hp }}</p>
                 </div>
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Tanggal Lahir </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.tanggal_lahir"
-                      type="date"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827]"
+                <VInputField
+                  v-model="form.kelas"
+                  label="Kelas"
+                  type="text"
+                  placeholder="Masukkan kelas"
+                />
+
+                <VInputField
+                  v-model="form.tanggal_lahir"
+                  label="Tanggal Lahir"
+                  type="date"
+                  placeholder="Pilih tanggal lahir"
+                />
+
+                <VInputField
+                  v-model="form.no_hp"
+                  label="No HP"
+                  type="text"
+                  placeholder="Masukkan no hp"
+                />
+
+                <div class="md:col-span-2 flex flex-col gap-2">
+                  <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                    Alamat
+                  </label>
+                  <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
+                    <textarea
+                      v-model="form.alamat"
+                      rows="3"
+                      placeholder="Masukkan alamat"
+                      class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none resize-none"
                     />
                   </div>
                 </div>

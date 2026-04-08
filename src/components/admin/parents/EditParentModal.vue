@@ -4,6 +4,7 @@ import { Edit, X } from 'lucide-vue-next'
 import { useParentStore } from '@/stores/parents'
 import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
+import VInputField from '@/components/common/VInputField.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -181,18 +182,8 @@ const handleSubmit = async () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[643px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
+            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
+            style="background: linear-gradient(#f8fafc, #f8fafc) padding-box, linear-gradient(243.74deg, rgba(255,255,255,0.05), #ffffff 47.12%, rgba(255,255,255,0.05)) border-box;"
           >
             <div class="flex flex-col gap-5">
               <div class="flex justify-end">
