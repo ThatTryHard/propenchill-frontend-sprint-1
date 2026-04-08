@@ -78,7 +78,7 @@ const normalizeCreateErrors = (error: any): ApiErrorMap => {
   }
 
   if (payload.pengirim && typeof payload.pengirim === 'object') {
-    const pengirimError = payload.pengirim
+    const pengirimError = payload.pengirim as any
     if (pengirimError.nama_instansi) {
       errors.nama_instansi = firstError(pengirimError.nama_instansi)
     }
@@ -97,12 +97,42 @@ const normalizeCreateErrors = (error: any): ApiErrorMap => {
   return errors
 }
 
+export interface PaginationParams {
+  page?: number
+  limit?: number
+  search?: string
+  start_date?: string
+  end_date?: string
+  status?: string
+}
+
+export interface DisposisiPayload {
+  target_role: string
+  instruksi: string
+  sifat: string
+}
+
 export const useSuratMasukStore = defineStore('surat-masuk', {
   state: () => ({
     pengirimList: [] as Pengirim[],
     loadingPengirim: false,
     submitting: false,
     error: '' as string,
+
+    suratList: [] as SuratMasukResponse['data'][],
+    pagination: {
+      total_data: 0,
+      total_halaman: 1,
+      halaman_saat_ini: 1,
+      limit: 10,
+    },
+    loadingList: false,
+
+    suratDetail: null as SuratMasukResponse['data'] | null,
+    loadingDetail: false,
+
+    submittingDisposisi: false,
+    deleting: false,
   }),
 
   actions: {
@@ -135,6 +165,72 @@ export const useSuratMasukStore = defineStore('surat-masuk', {
         throw normalizedErrors
       } finally {
         this.submitting = false
+      }
+    },
+
+    // PBI-13: GET List Surat Masuk
+    async fetchSuratMasukList(params: PaginationParams = {}) {
+      this.loadingList = true
+      this.error = ''
+      try {
+        const response = await api.get('/api/surat-masuk/list/', { params })
+        this.suratList = response.data.data || []
+        if (response.data.pagination) {
+          this.pagination = response.data.pagination
+        }
+        return response.data
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal memuat daftar arsip surat masuk.'
+        throw error
+      } finally {
+        this.loadingList = false
+      }
+    },
+
+    // PBI-15 (Part 1): GET Detail Surat
+    async fetchSuratMasukDetail(id: number | string) {
+      this.loadingDetail = true
+      this.error = ''
+      this.suratDetail = null
+      try {
+        const response = await api.get(`/api/surat-masuk/${id}/`)
+        this.suratDetail = response.data.data || response.data
+        return this.suratDetail
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal memuat detail surat.'
+        throw error
+      } finally {
+        this.loadingDetail = false
+      }
+    },
+
+    // PBI-14: DELETE (Soft Delete) Surat
+    async deleteSuratMasuk(id: number | string) {
+      this.deleting = true
+      this.error = ''
+      try {
+        const response = await api.delete(`/api/surat-masuk/${id}/`)
+        return response.data
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal menghapus data surat masuk.'
+        throw error
+      } finally {
+        this.deleting = false
+      }
+    },
+
+    // PBI-15 (Part 2): POST Disposisi
+    async submitDisposisi(id: number | string, payload: DisposisiPayload) {
+      this.submittingDisposisi = true
+      this.error = ''
+      try {
+        const response = await api.post(`/api/surat-masuk/${id}/disposition/`, payload)
+        return response.data
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal memproses disposisi.'
+        throw error
+      } finally {
+        this.submittingDisposisi = false
       }
     },
   },

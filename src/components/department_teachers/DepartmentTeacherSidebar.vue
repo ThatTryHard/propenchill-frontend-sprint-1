@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
 import VSidebar from '@/components/common/VSidebar.vue'
-import { PlusCircle, Settings, HelpCircle, LogOut } from 'lucide-vue-next'
+import { PlusCircle, Settings, HelpCircle, LogOut, Inbox } from 'lucide-vue-next'
 
 defineProps<{
   userName?: string
@@ -18,6 +18,12 @@ const handleLogout = () => {
 }
 
 const navItems = [
+  {
+    name: 'department-teachers-surat-masuk-list',
+    label: 'Arsip Surat Masuk',
+    path: '/department-teachers/surat-masuk',
+    icon: Inbox,
+  },
   {
     name: 'department-teachers-surat-masuk-create',
     label: 'Buat Pengajuan Surat Masuk',
