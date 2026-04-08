@@ -16,6 +16,8 @@ import StudentManagementView from '@/views/students/StudentManagementView.vue'
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
 import CreateSuratMasukView from '@/views/department_teachers/CreateSuratMasukView.vue'
 import TemplateCreateView from '@/views/letter_templates/TemplateCreateView.vue'
+import SuratMasukListView from '@/views/department_teachers/SuratMasukListView.vue'
+import SuratMasukDetailView from '@/views/department_teachers/SuratMasukDetailView.vue'
 import { useAuthStore } from '@/stores/users/auth'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
 
@@ -120,7 +122,21 @@ const router = createRouter({
     },
     {
       path: '/department-teachers/surat-masuk',
-      redirect: '/department-teachers/surat-masuk/create',
+      name: 'department-teachers-surat-masuk-list',
+      component: SuratMasukListView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'],
+      },
+    },
+    {
+      path: '/department-teachers/surat-masuk/:id',
+      name: 'department-teachers-surat-masuk-detail',
+      component: SuratMasukDetailView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'],
+      },
     },
     // Legacy redirects
     { path: '/admin-management', redirect: '/admin/management' },
