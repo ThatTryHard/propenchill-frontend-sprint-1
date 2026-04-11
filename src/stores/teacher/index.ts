@@ -135,7 +135,7 @@ export const useTeacherStore = defineStore('teacher', () => {
     const data = await res.json()
     
     if (!res.ok) {
-      const error: any = new Error('Gagal memperbarui data guru.')
+      const error: any = new Error('') 
       error.details = data
       throw error
     }

@@ -126,25 +126,26 @@
         query: { success: 'Data guru berhasil didaftarkan.' }
       })
     } catch (error: any) {
-      if (error.details) {
-        const detailKeys = Object.keys(error.details)
+      errors.value = {}
 
+      if (error.details && Object.keys(error.details).length > 0) {
+        const detailKeys = Object.keys(error.details)
         detailKeys.forEach((key) => {
           errors.value[key] = Array.isArray(error.details[key]) ? error.details[key][0] : error.details[key]
         })
 
-        const specificMessages: string[] = []
-        if (error.details.niy) specificMessages.push('Nomor Induk Yayasan (NIY) sudah terdaftar')
-        if (error.details.email) specificMessages.push('Alamat email sudah terdaftar')
-
-        alert.message = specificMessages.length > 0
-          ? `Gagal menyimpan data. ${specificMessages.join(' dan ')}!`
-          : 'Terjadi kesalahan validasi pada sistem.'
+        const firstField = detailKeys[0]
+        if (firstField && error.details[firstField]) {
+          alert.message = Array.isArray(error.details[firstField]) 
+            ? error.details[firstField][0] 
+            : error.details[firstField]
+        }
+        alert.visible = true
       } else {
         alert.message = error.message || 'Terjadi kesalahan pada sistem.'
+        alert.visible = true
       }
       alert.type = 'error'
-      alert.visible = true
     } finally {
       loading.value = false
     }
