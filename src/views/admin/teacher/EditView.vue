@@ -98,8 +98,10 @@
     const localValidation = validateTeacherForm(form)
     if (Object.keys(localValidation).length > 0) {
       Object.assign(errors, localValidation)
-      alert.message = 'Periksa kembali data yang belum valid.'; alert.visible = true
-      updateModalShow.value = false; return
+      alert.message = 'Periksa kembali data yang belum valid.'
+      alert.visible = true
+      updateModalShow.value = false
+      return
     }
 
     isLoading.value = true
@@ -107,16 +109,26 @@
       await store.updateTeacher(route.params.id as string, form)
       router.push({ path: '/admin/teachers', query: { success: 'Data guru berhasil diperbarui.' } })
     } catch (e: any) {
-      if (e.details) {
-        const keys = Object.keys(e.details)
-        keys.forEach(k => { if (k in errors) (errors as any)[k] = e.details[k][0] })
+      Object.assign(errors, { nama: '', email: '', niy: '', jabatan: '' })
 
-        const msgs = keys.map(k => k === 'niy' ? 'NIY sudah digunakan' : k === 'email' ? 'Email sudah digunakan' : 'Data konflik')
-        alert.message = `Gagal memperbarui ${msgs.join(' & ')}.`; alert.visible = true
+      if (e.details && Object.keys(e.details).length > 0) {
+        const keys = Object.keys(e.details)
+        keys.forEach(k => { 
+          if (k in errors) (errors as any)[k] = e.details[k][0] 
+        })
+
+        const firstField = keys[0]
+        if (firstField && e.details[firstField]) {
+          alert.message = e.details[firstField][0]
+        }
+        alert.visible = true
       } else {
-        alert.message = 'Terjadi kesalahan sistem.'; alert.visible = true
+        alert.message = 'Terjadi kesalahan sistem.'
+        alert.visible = true
       }
       updateModalShow.value = false
-    } finally { isLoading.value = false }
+    } finally { 
+      isLoading.value = false 
+    }
   }
   </script>
