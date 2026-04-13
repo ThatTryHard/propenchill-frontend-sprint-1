@@ -15,6 +15,7 @@ import TeacherEditView from '../views/admin/teacher/EditView.vue'
 import StudentManagementView from '@/views/students/StudentManagementView.vue'
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
 import CreateSuratMasukView from '@/views/department_teachers/CreateSuratMasukView.vue'
+import TemplateManagementView from '@/views/letter_templates/TemplateManagementView.vue'
 import TemplateCreateView from '@/views/letter_templates/TemplateCreateView.vue'
 import SuratMasukListView from '@/views/department_teachers/SuratMasukListView.vue'
 import SuratMasukDetailView from '@/views/department_teachers/SuratMasukDetailView.vue'
@@ -150,6 +151,14 @@ const router = createRouter({
       path: '/verify-email',
       name: 'verify-email',
       component: VerifyEmailView,
+    },
+    {
+      path: '/letter_templates',
+      name: 'letter-template-management',
+      component: TemplateManagementView,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/letter_templates/create',

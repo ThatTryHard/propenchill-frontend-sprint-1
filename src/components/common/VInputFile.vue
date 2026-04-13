@@ -201,4 +201,8 @@ const processFile = (file: File) => {
     emit('file-uploaded', file)
   }, 1500)
 }
+
+defineExpose({
+  triggerInput,
+})
 </script>
