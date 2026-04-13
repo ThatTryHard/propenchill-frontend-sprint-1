@@ -1,353 +1,3 @@
-<template>
-  <div class="min-h-screen bg-[linear-gradient(180deg,#fff,#eaf7ef)] flex font-sans">
-    <VSidebar
-      :nav-items="navItems"
-      :bottom-items="bottomItems"
-      :user-name="userName"
-      :user-email="userEmail"
-    />
-
-    <main class="flex-1 px-4 md:px-8 lg:px-10 py-8 overflow-y-auto">
-      <section class="mb-6 flex flex-col gap-1">
-        <h1 class="text-[28px] md:text-[32px] font-bold leading-[120%] text-[#111827]">
-          Tambah Template Surat Baru
-        </h1>
-        <p class="text-[14px] md:text-[16px] leading-[150%] text-[#858a91]">
-          Buat template surat baru untuk digunakan pengguna
-        </p>
-      </section>
-
-      <div class="flex w-full max-w-[980px] flex-col gap-4">
-        <VAlert
-          v-if="generalError"
-          type="error"
-          title="Gagal"
-          :message="generalError"
-          @close="generalError = ''"
-        />
-
-        <VAlert
-          v-if="successMessage"
-          type="success"
-          title="Berhasil"
-          :message="successMessage"
-          @close="successMessage = ''"
-        />
-
-        <!-- Informasi Template -->
-        <div class="relative z-30">
-          <VCard padding-class="p-6 !overflow-visible">
-            <div class="flex flex-col gap-5">
-              <div class="flex flex-col gap-1">
-                <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
-                  Informasi Template
-                </h2>
-                <p class="text-[14px] leading-[150%] text-[#858a91]">
-                  Isi identitas dasar template surat terlebih dahulu
-                </p>
-              </div>
-
-              <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <VInputField
-                  v-model="form.nama_template"
-                  label="Nama Template"
-                  placeholder="Contoh: Surat Izin Tidak Mengikuti Kegiatan Keagamaan"
-                  :state="fieldErrors.nama_template ? 'error' : 'default'"
-                  :message="fieldErrors.nama_template"
-                />
-
-                <VInputField
-                  v-model="form.kode"
-                  label="Kode Template"
-                  placeholder="Contoh: izin_keagamaan"
-                  :state="fieldErrors.kode ? 'error' : 'default'"
-                  :message="fieldErrors.kode"
-                />
-              </div>
-
-              <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-                <div class="relative z-40 flex flex-col gap-2">
-                  <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
-                    Jenis Template
-                  </label>
-                  <VDropdown
-                    v-model="form.jenis"
-                    :options="jenisOptions"
-                    placeholder="Pilih jenis template"
-                  />
-                  <span v-if="fieldErrors.jenis" class="text-[12px] font-light text-[#A0453B]">
-                    {{ fieldErrors.jenis }}
-                  </span>
-                </div>
-
-                <div class="relative z-30 flex flex-col gap-2">
-                  <div class="flex items-center gap-2">
-                    <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
-                      Metode Template
-                    </label>
-
-                    <VTooltip type="small" text="Pilih Upload DOCX atau Input Manual">
-                      <button type="button" class="text-[#858a91] transition hover:text-[#111827]">
-                        <InfoIcon class="h-4 w-4" />
-                      </button>
-                    </VTooltip>
-                  </div>
-
-                  <VDropdown
-                    v-model="form.template_mode"
-                    :options="modeOptions"
-                    placeholder="Pilih metode template"
-                  />
-                  <span
-                    v-if="fieldErrors.template_mode"
-                    class="text-[12px] font-light text-[#A0453B]"
-                  >
-                    {{ fieldErrors.template_mode }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </VCard>
-        </div>
-
-        <!-- Kontrol Akses -->
-        <VCard padding-class="p-6">
-          <div class="flex flex-col gap-5">
-            <div class="flex flex-col gap-1">
-              <div class="flex items-center gap-2">
-                <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
-                  Kontrol Akses
-                </h2>
-
-                <VTooltip
-                  type="large"
-                  title="Kontrol Akses"
-                  text="Pilih role mana yang dapat melihat atau menggunakan template ini."
-                >
-                  <button type="button" class="text-[#858a91] transition hover:text-[#111827]">
-                    <InfoIcon class="h-5 w-5" />
-                  </button>
-                </VTooltip>
-              </div>
-
-              <p class="text-[14px] leading-[150%] text-[#858a91]">
-                Tentukan role mana yang dapat mengakses template ini
-              </p>
-            </div>
-
-            <div class="flex flex-wrap gap-3">
-              <button
-                v-for="role in roleOptions"
-                :key="role.value"
-                type="button"
-                class="transition-transform active:scale-95"
-                @click="toggleRole(role.value)"
-              >
-                <VChip
-                  :label="role.label"
-                  :variant="form.role_akses.includes(role.value) ? 'primary' : 'tertiary'"
-                />
-              </button>
-            </div>
-
-            <span v-if="fieldErrors.role_akses" class="text-[12px] font-light text-[#A0453B]">
-              {{ fieldErrors.role_akses }}
-            </span>
-          </div>
-        </VCard>
-
-        <!-- Upload DOCX -->
-        <VCard v-if="form.template_mode === 'DOCX'" padding-class="p-6">
-          <div class="flex flex-col gap-5">
-            <div class="flex flex-col gap-1">
-              <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
-                Unggah Template Surat
-              </h2>
-              <p class="text-[14px] leading-[150%] text-[#858a91]">
-                Unggah file .docx yang berisi placeholder seperti
-                <span class="font-semibold">{{ placeholderNama }}</span>,
-                <span class="font-semibold">{{ placeholderNis }}</span>, dan
-                <span class="font-semibold">{{ placeholderKelas }}</span>.
-              </p>
-            </div>
-
-            <input
-              ref="fileInputRef"
-              type="file"
-              accept=".docx"
-              class="hidden"
-              @change="handleFileChange"
-            />
-
-            <button
-              type="button"
-              class="flex min-h-[220px] w-full flex-col items-center justify-center gap-3 rounded-[24px] border border-dashed border-[#d1955f] bg-white/70 px-6 py-8 text-center transition hover:bg-white"
-              @click="openFilePicker"
-            >
-              <UploadCloudIcon class="h-10 w-10 text-[#3f9760]" />
-              <div class="flex flex-col gap-1">
-                <span class="text-[18px] font-semibold text-[#111827]">
-                  Upload Files
-                </span>
-                <span class="text-[14px] text-[#858a91]">
-                  Drag & Drop .docx files here
-                </span>
-                <span class="text-[14px] text-[#858a91]">
-                  or browse files on your computer
-                </span>
-              </div>
-
-              <div
-                v-if="selectedFileName"
-                class="mt-2 break-all rounded-[16px] border border-[#d9e2e7] bg-[#f8fafc] px-4 py-2 text-[14px] font-medium text-[#111827]"
-              >
-                {{ selectedFileName }}
-              </div>
-            </button>
-
-            <span
-              v-if="fieldErrors.file_template"
-              class="text-[12px] font-light text-[#A0453B]"
-            >
-              {{ fieldErrors.file_template }}
-            </span>
-          </div>
-        </VCard>
-
-        <!-- Input Manual + Header Footer Preview -->
-        <VCard v-else padding-class="p-6">
-          <div class="flex flex-col gap-5">
-            <div class="flex flex-col gap-1">
-              <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
-                Isi Konten Template
-              </h2>
-              <p class="text-[14px] leading-[150%] text-[#858a91]">
-                Header dan footer surat sudah disediakan sistem. Anda hanya perlu mengisi konten utama surat.
-              </p>
-            </div>
-
-            <div class="overflow-hidden rounded-[20px] border border-[#d9e2e7] bg-white">
-              <!-- Header -->
-              <div class="border-b border-[#e5e7eb] bg-[#f8fafc] px-6 py-5">
-                <p class="mb-3 text-[12px] font-semibold uppercase tracking-wide text-[#858a91]">
-                </p>
-
-                <div
-                  v-if="!isLoadingConfig"
-                  class="prose max-w-none text-[#111827]"
-                  v-html="headerHtml"
-                />
-
-                <div v-else class="text-sm text-[#858a91]">
-                  Memuat header surat...
-                </div>
-              </div>
-
-              <!-- Editor -->
-              <div class="px-6 py-5">
-                <label class="mb-3 block text-[16px] font-semibold leading-[120%] text-[#111827]">
-                  Konten Template
-                </label>
-
-                <div class="mb-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                    @click="insertPlaceholder('{nama}')"
-                  >
-                    Sisipkan {nama}
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                    @click="insertPlaceholder('{nis}')"
-                  >
-                    Sisipkan {nis}
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                    @click="insertPlaceholder('{kelas}')"
-                  >
-                    Sisipkan {kelas}
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                    @click="insertPlaceholder('{tanggal}')"
-                  >
-                    Sisipkan {tanggal}
-                  </button>
-                  <button
-                    type="button"
-                    class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                    @click="insertPlaceholder('{keperluan}')"
-                  >
-                    Sisipkan {keperluan}
-                  </button>
-                </div>
-
-                <div
-                  class="overflow-hidden rounded-[16px] border"
-                  :class="fieldErrors.konten_template ? 'border-[#A0453B]' : 'border-[#d9e2e7]'"
-                >
-                  <QuillEditor
-                    ref="quillRef"
-                    v-model:content="form.konten_template"
-                    contentType="html"
-                    theme="snow"
-                    :toolbar="editorToolbar"
-                    class="min-h-[260px]"
-                  />
-                </div>
-
-                <p
-                  v-if="fieldErrors.konten_template"
-                  class="mt-2 text-[12px] font-light text-[#A0453B]"
-                >
-                  {{ fieldErrors.konten_template }}
-                </p>
-              </div>
-
-              <!-- Footer -->
-              <div class="border-t border-[#e5e7eb] bg-[#f8fafc] px-6 py-5">
-                <p class="mb-3 text-[12px] font-semibold uppercase tracking-wide text-[#858a91]">
-                </p>
-
-                <div
-                  v-if="!isLoadingConfig"
-                  class="prose max-w-none text-[#111827]"
-                  v-html="footerHtml"
-                />
-
-                <div v-else class="text-sm text-[#858a91]">
-                  Memuat footer surat...
-                </div>
-              </div>
-            </div>
-          </div>
-        </VCard>
-
-        <!-- Actions -->
-        <div class="relative z-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <VButton variant="secondary" class="!w-full" @click="goBack">
-            Batal
-          </VButton>
-
-          <VButton
-            variant="primary"
-            class="!w-full"
-            :disabled="templateStore.isSubmitting"
-            @click="submitTemplate"
-          >
-            {{ templateStore.isSubmitting ? 'Menyimpan...' : 'Ajukan Template' }}
-          </VButton>
-        </div>
-      </div>
-    </main>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -363,6 +13,7 @@ import {
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
+import VInputFile from '@/components/common/VInputFile.vue'
 import VSidebar from '@/components/common/VSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
@@ -375,7 +26,6 @@ import { useLetterTemplateStore, type TemplateMode } from '@/stores/letter_templ
 
 interface TemplateForm {
   nama_template: string
-  kode: string
   jenis: string
   template_mode: TemplateMode
   konten_template: string
@@ -386,31 +36,45 @@ interface TemplateForm {
 const router = useRouter()
 const templateStore = useLetterTemplateStore()
 
+const userRaw = localStorage.getItem('user')
+
+const currentUser = computed(() => {
+  try {
+    return userRaw ? JSON.parse(userRaw) : null
+  } catch {
+    return null
+  }
+})
+
+const userName = computed(() => {
+  return currentUser.value?.nama || currentUser.value?.name || 'User'
+})
+
+const userEmail = computed(() => {
+  return currentUser.value?.email || '-'
+})
+
 const placeholderNama = '{nama}'
 const placeholderNis = '{nis}'
 const placeholderKelas = '{kelas}'
 
 const headerHtml = ref('')
-const footerHtml = ref('')
 const isLoadingConfig = ref(false)
 
 const quillRef = ref()
-const fileInputRef = ref<HTMLInputElement | null>(null)
-
-const userName = 'Matcha Addict'
-const userEmail = 'matcha.addict@gmail.com'
+const fileInputRef = ref<InstanceType<typeof VInputFile> | null>(null)
 
 const navItems = [
   {
     name: 'template-management',
     label: 'Manajemen Template Surat',
-    path: '/letter_templates/templates',
+    path: '/letter_templates',
     icon: FileText,
   },
   {
     name: 'template-create',
     label: 'Tambah Template Surat',
-    path: '/letter_templates/templates/create',
+    path: '/letter_templates/create',
     icon: PlusCircle,
   },
 ]
@@ -449,7 +113,6 @@ const editorToolbar = [
 
 const form = reactive<TemplateForm>({
   nama_template: '',
-  kode: '',
   jenis: '',
   template_mode: 'DOCX',
   konten_template: '',
@@ -471,9 +134,6 @@ watch(
 
     if (newMode === 'MANUAL') {
       form.file_template = null
-      if (fileInputRef.value) {
-        fileInputRef.value.value = ''
-      }
     }
 
     if (newMode === 'DOCX') {
@@ -509,7 +169,6 @@ async function fetchLetterConfig() {
     }
 
     headerHtml.value = result?.data?.header_html || ''
-    footerHtml.value = result?.data?.footer_html || ''
   } catch (error) {
     console.error('Gagal mengambil konfigurasi surat:', error)
   } finally {
@@ -533,13 +192,10 @@ function toggleRole(role: string) {
 }
 
 function openFilePicker() {
-  fileInputRef.value?.click()
+  fileInputRef.value?.triggerInput()
 }
 
-function handleFileChange(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0] || null
-
+function handleFileChange(file: File | null) {
   if (!file) {
     form.file_template = null
     return
@@ -548,23 +204,17 @@ function handleFileChange(event: Event) {
   if (!file.name.toLowerCase().endsWith('.docx')) {
     fieldErrors.file_template = 'File template harus berformat .docx.'
     form.file_template = null
-    target.value = ''
     return
   }
 
   if (file.size > 10 * 1024 * 1024) {
     fieldErrors.file_template = 'Ukuran file maksimal 10 MB.'
     form.file_template = null
-    target.value = ''
     return
   }
 
   delete fieldErrors.file_template
   form.file_template = file
-}
-
-function normalizeKode() {
-  form.kode = form.kode.trim().toLowerCase().replace(/\s+/g, '_')
 }
 
 function insertPlaceholder(value: string) {
@@ -580,14 +230,6 @@ function validateForm() {
 
   if (!form.nama_template.trim()) {
     fieldErrors.nama_template = 'Nama template wajib diisi.'
-  }
-
-  normalizeKode()
-
-  if (!form.kode.trim()) {
-    fieldErrors.kode = 'Kode wajib diisi.'
-  } else if (form.kode.includes(' ')) {
-    fieldErrors.kode = 'Kode tidak boleh mengandung spasi.'
   }
 
   if (!form.jenis) {
@@ -620,7 +262,6 @@ async function submitTemplate() {
 
   const result = await templateStore.createTemplate({
     nama_template: form.nama_template,
-    kode: form.kode,
     jenis: form.jenis,
     template_mode: form.template_mode,
     konten_template: form.konten_template,
@@ -647,7 +288,6 @@ async function submitTemplate() {
   successMessage.value = templateStore.successMessage || 'Template surat berhasil dibuat.'
 
   form.nama_template = ''
-  form.kode = ''
   form.jenis = ''
   form.template_mode = 'DOCX'
   form.konten_template = ''
@@ -655,7 +295,7 @@ async function submitTemplate() {
   form.file_template = null
 
   if (fileInputRef.value) {
-    fileInputRef.value.value = ''
+    form.file_template = null
   }
 }
 
@@ -663,6 +303,292 @@ function goBack() {
   router.back()
 }
 </script>
+
+<template>
+  <div class="min-h-screen bg-[linear-gradient(180deg,#fff,#eaf7ef)] flex font-sans">
+    <VSidebar
+      class="!h-auto !min-h-full self-stretch"
+      :nav-items="navItems"
+      :bottom-items="bottomItems"
+      :user-name="userName"
+      :user-email="userEmail"
+    />
+
+    <main class="flex-1 px-4 md:px-8 lg:px-10 py-8 overflow-y-auto">
+      <div class="w-full">
+        <section class="mb-6 flex flex-col gap-1">
+          <h1 class="text-[28px] md:text-[32px] font-bold leading-[120%] text-[#111827]">
+            Tambah Template Surat Baru
+          </h1>
+          <p class="text-[14px] md:text-[16px] leading-[150%] text-[#858a91]">
+            Buat template surat baru untuk digunakan pengguna
+          </p>
+        </section>
+
+        <div class="flex w-full flex-col gap-4">
+          <VAlert
+            v-if="generalError"
+            type="error"
+            title="Gagal"
+            :message="generalError"
+            @close="generalError = ''"
+          />
+
+          <VAlert
+            v-if="successMessage"
+            type="success"
+            title="Berhasil"
+            :message="successMessage"
+            @close="successMessage = ''"
+          />
+
+          <div class="relative z-30">
+            <VCard padding-class="p-6 !overflow-visible">
+              <div class="flex flex-col gap-5">
+                <div class="flex flex-col gap-1">
+                  <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
+                    Informasi Template
+                  </h2>
+                  <p class="text-[14px] leading-[150%] text-[#858a91]">
+                    Isi identitas dasar template surat terlebih dahulu
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                  <VInputField
+                    v-model="form.nama_template"
+                    label="Nama Template"
+                    placeholder="Contoh: Surat Izin Tidak Mengikuti Kegiatan Keagamaan"
+                    :state="fieldErrors.nama_template ? 'error' : 'default'"
+                    :message="fieldErrors.nama_template"
+                  />
+                </div>
+
+                <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+                  <div class="relative z-40 flex flex-col gap-2">
+                    <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                      Jenis Template
+                    </label>
+                    <VDropdown
+                      v-model="form.jenis"
+                      :options="jenisOptions"
+                      placeholder="Pilih jenis template"
+                    />
+                    <span v-if="fieldErrors.jenis" class="text-[12px] font-light text-[#A0453B]">
+                      {{ fieldErrors.jenis }}
+                    </span>
+                  </div>
+
+                  <div class="relative z-30 flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                      <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                        Metode Template
+                      </label>
+
+                      <VTooltip type="small" text="Pilih Upload DOCX atau Input Manual">
+                        <button type="button" class="text-[#858a91] transition hover:text-[#111827]">
+                          <InfoIcon class="h-4 w-4" />
+                        </button>
+                      </VTooltip>
+                    </div>
+
+                    <VDropdown
+                      v-model="form.template_mode"
+                      :options="modeOptions"
+                      placeholder="Pilih metode template"
+                    />
+                    <span
+                      v-if="fieldErrors.template_mode"
+                      class="text-[12px] font-light text-[#A0453B]"
+                    >
+                      {{ fieldErrors.template_mode }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </VCard>
+          </div>
+
+          <VCard padding-class="p-6">
+            <div class="flex flex-col gap-5">
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                  <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
+                    Kontrol Akses
+                  </h2>
+
+                  <VTooltip
+                    type="large"
+                    title="Kontrol Akses"
+                    text="Pilih role mana yang dapat melihat atau menggunakan template ini."
+                  >
+                    <button type="button" class="text-[#858a91] transition hover:text-[#111827]">
+                      <InfoIcon class="h-5 w-5" />
+                    </button>
+                  </VTooltip>
+                </div>
+
+                <p class="text-[14px] leading-[150%] text-[#858a91]">
+                  Tentukan role mana yang dapat mengakses template ini
+                </p>
+              </div>
+
+              <div class="flex flex-wrap gap-3">
+                <button
+                  v-for="role in roleOptions"
+                  :key="role.value"
+                  type="button"
+                  class="transition-transform active:scale-95"
+                  @click="toggleRole(role.value)"
+                >
+                  <VChip
+                    :label="role.label"
+                    :variant="form.role_akses.includes(role.value) ? 'primary' : 'tertiary'"
+                  />
+                </button>
+              </div>
+
+              <span v-if="fieldErrors.role_akses" class="text-[12px] font-light text-[#A0453B]">
+                {{ fieldErrors.role_akses }}
+              </span>
+            </div>
+          </VCard>
+
+          <VCard v-if="form.template_mode === 'DOCX'" padding-class="p-6">
+            <div class="flex flex-col gap-5">
+              <div class="flex flex-col gap-1">
+                <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
+                  Unggah Template Surat
+                </h2>
+                <p class="text-[14px] leading-[150%] text-[#858a91]">
+                  Unggah file .docx yang berisi placeholder seperti
+                  <span class="font-semibold">{{ placeholderNama }}</span>,
+                  <span class="font-semibold">{{ placeholderNis }}</span>, dan
+                  <span class="font-semibold">{{ placeholderKelas }}</span>.
+                </p>
+              </div>
+
+              <VInputFile
+                ref="fileInputRef"
+                accept=".docx"
+                file-types-text=".docx file"
+                :max-size-mb="10"
+                @update:modelValue="handleFileChange"
+              />
+            </div>
+          </VCard>
+
+          <VCard v-else padding-class="p-6">
+            <div class="flex flex-col gap-5">
+              <div class="flex flex-col gap-1">
+                <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
+                  Isi Konten Template
+                </h2>
+                <p class="text-[14px] leading-[150%] text-[#858a91]">
+                  Header surat sudah disediakan sistem. Anda hanya perlu mengisi konten utama surat.
+                </p>
+              </div>
+
+              <div class="overflow-hidden rounded-[20px] border border-[#d9e2e7] bg-white">
+                <div class="border-b border-[#e5e7eb] bg-[#f8fafc] px-6 py-5">
+                  <div
+                    v-if="!isLoadingConfig"
+                    class="prose max-w-none text-[#111827]"
+                    v-html="headerHtml"
+                  />
+
+                  <div v-else class="text-sm text-[#858a91]">
+                    Memuat header surat...
+                  </div>
+                </div>
+
+                <div class="px-6 py-5">
+                  <label class="mb-3 block text-[16px] font-semibold leading-[120%] text-[#111827]">
+                    Konten Template
+                  </label>
+
+                  <div class="mb-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{nama}')"
+                    >
+                      Sisipkan {nama}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{nis}')"
+                    >
+                      Sisipkan {nis}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{kelas}')"
+                    >
+                      Sisipkan {kelas}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{tanggal}')"
+                    >
+                      Sisipkan {tanggal}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{keperluan}')"
+                    >
+                      Sisipkan {keperluan}
+                    </button>
+                  </div>
+
+                  <div
+                    class="overflow-hidden rounded-[16px] border"
+                    :class="fieldErrors.konten_template ? 'border-[#A0453B]' : 'border-[#d9e2e7]'"
+                  >
+                    <QuillEditor
+                      ref="quillRef"
+                      v-model:content="form.konten_template"
+                      contentType="html"
+                      theme="snow"
+                      :toolbar="editorToolbar"
+                      class="min-h-[260px]"
+                    />
+                  </div>
+
+                  <p
+                    v-if="fieldErrors.konten_template"
+                    class="mt-2 text-[12px] font-light text-[#A0453B]"
+                  >
+                    {{ fieldErrors.konten_template }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </VCard>
+
+          <div class="relative z-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+            <VButton variant="secondary" class="!w-full" @click="goBack">
+              Batal
+            </VButton>
+
+            <VButton
+              variant="primary"
+              class="!w-full"
+              :disabled="templateStore.isSubmitting"
+              @click="submitTemplate"
+            >
+              {{ templateStore.isSubmitting ? 'Menyimpan...' : 'Ajukan Template' }}
+            </VButton>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
 
 <style scoped>
 :deep(.ql-toolbar.ql-snow) {
