@@ -62,6 +62,7 @@ const closeModal = () => emit('update:isOpen', false)
 const validateForm = () => {
   errors.nama = ''
   errors.email = ''
+  submitError.value = ''
 
   let isValid = true
 
@@ -72,6 +73,12 @@ const validateForm = () => {
 
   if (!form.email.trim()) {
     errors.email = 'Email wajib diisi!'
+    isValid = false
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (form.email.trim() && !emailRegex.test(form.email)) {
+    errors.email = 'Format email tidak valid! (contoh: user@mail.com)'
     isValid = false
   }
 

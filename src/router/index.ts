@@ -14,6 +14,9 @@ import TeacherCreateView from '../views/admin/teacher/CreateView.vue'
 import TeacherEditView from '../views/admin/teacher/EditView.vue'
 import StudentManagementView from '@/views/students/StudentManagementView.vue'
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
+import FormPengajuanSuratView from '@/views/surat_keluar/FormPengajuanSuratView.vue';
+import RiwayatPengajuanSuratView from '@/views/surat_keluar/RiwayatPengajuanSuratView.vue';
+import DetailPengajuanSuratView from '@/views/surat_keluar/DetailPengajuanSuratView.vue';
 import CreateSuratMasukView from '@/views/department_teachers/CreateSuratMasukView.vue'
 import TemplateManagementView from '@/views/letter_templates/TemplateManagementView.vue'
 import TemplateCreateView from '@/views/letter_templates/TemplateCreateView.vue'
@@ -153,6 +156,21 @@ const router = createRouter({
       component: VerifyEmailView,
     },
     {
+    path: '/surat-keluar/pengajuan', 
+    name: 'FormPengajuanSurat',
+    component: FormPengajuanSuratView,
+    },
+    {
+    path: '/surat-keluar/riwayat',
+    name: 'RiwayatPengajuanSurat',
+    component: RiwayatPengajuanSuratView,
+    },
+    {
+    path: '/surat-keluar/detail/:id',
+    name: 'DetailPengajuanSurat',
+    component: DetailPengajuanSuratView,
+    },
+    {
       path: '/letter_templates',
       name: 'letter-template-management',
       component: TemplateManagementView,
@@ -169,7 +187,6 @@ const router = createRouter({
         roleAccess: ['ADMIN', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
       },
     },
-    // TODO: Add routes for other roles here
   ],
 })
 
