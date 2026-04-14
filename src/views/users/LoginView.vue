@@ -126,7 +126,7 @@ const handleLogin = async () => {
 
     // Logic redirect berdasarkan role
     if (role === 'ADMIN') {
-      redirectPath = '/admin/parents'
+      redirectPath = '/surat-antrean'
     } else if (['KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'].includes(role)) {
       redirectPath = '/department-teachers/surat-masuk/create'
     } else if (role === 'WALI_MURID') {

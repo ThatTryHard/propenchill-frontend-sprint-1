@@ -1,12 +1,12 @@
 <template>
   <aside
-    class="flex flex-col h-screen w-[260px] min-w-[260px] bg-gradient-to-b from-[#f0f7f2] to-[#e8f3eb] border-r border-[#d4e8da] py-6 px-4"
+    class="flex flex-col h-screen w-[260px] min-w-[260px] bg-gradient-to-b from-[#f0f7f2] to-[#e8f3eb] border-r border-[#d4e8da] py-6 px-4 overflow-hidden"
   >
     <div class="flex items-center mb-6">
       <img src="@/assets/SIMP_logo.png" alt="SIMP" class="h-24 object-contain" />
     </div>
 
-    <nav class="flex flex-col gap-1 flex-1">
+    <nav class="flex flex-col gap-1 flex-1 overflow-y-auto min-h-0">
       <router-link
         v-for="item in navItems"
         :key="item.name"
@@ -18,7 +18,7 @@
           @click="navigate"
           :class="[
             'flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 w-full text-left',
-            isActive
+            item.isActive || isActive
               ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
               : 'text-[#4a5568] hover:bg-[#d4e8da]/60',
           ]"
@@ -29,33 +29,35 @@
       </router-link>
     </nav>
 
-    <div class="flex flex-col gap-1 mt-auto mb-4">
-      <button
-        v-for="item in bottomItems"
-        :key="item.name"
-        @click="handleBottomItemClick(item)"
-        class="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-[#4a5568] hover:bg-[#d4e8da]/60 transition-all duration-200 w-full text-left"
-      >
-        <component :is="item.icon" :size="20" :stroke-width="2" />
-        <span>{{ item.label }}</span>
-      </button>
-    </div>
-
-    <!-- User Profile -->
-    <div class="flex items-center gap-3 px-3 py-3 bg-[#4d8b47] rounded-2xl">
-      <div class="profile-ring flex items-center justify-center w-11 h-11 rounded-full">
-        <div class="flex items-center justify-center w-9 h-9 rounded-full bg-[#f0f7f2]">
-          <UserRound :size="22" class="text-[#3F9760]" />
-        </div>
+    <div class="flex flex-col mt-auto">
+      <div class="flex flex-col gap-1 mb-4">
+        <button
+          v-for="item in bottomItems"
+          :key="item.name"
+          @click="handleBottomItemClick(item)"
+          class="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-[#4a5568] hover:bg-[#d4e8da]/60 transition-all duration-200 w-full text-left"
+        >
+          <component :is="item.icon" :size="20" :stroke-width="2" />
+          <span>{{ item.label }}</span>
+        </button>
       </div>
 
-      <div class="flex flex-col leading-tight overflow-hidden">
-        <span class="text-[13px] font-semibold text-white truncate">
-          {{ userName || 'User' }}
-        </span>
-        <span class="text-[11px] text-white/85 truncate">
-          {{ userEmail || '-' }}
-        </span>
+      <!-- User Profile -->
+      <div class="flex items-center gap-3 px-3 py-3 bg-[#4d8b47] rounded-2xl">
+        <div class="profile-ring flex items-center justify-center w-11 h-11 rounded-full">
+          <div class="flex items-center justify-center w-9 h-9 rounded-full bg-[#f0f7f2]">
+            <UserRound :size="22" class="text-[#3F9760]" />
+          </div>
+        </div>
+
+        <div class="flex flex-col leading-tight overflow-hidden">
+          <span class="text-[13px] font-semibold text-white truncate">
+            {{ userName || 'User' }}
+          </span>
+          <span class="text-[11px] text-white/85 truncate">
+            {{ userEmail || '-' }}
+          </span>
+        </div>
       </div>
     </div>
   </aside>
@@ -70,6 +72,7 @@ export interface NavItem {
   label: string
   path: string
   icon: Component
+  isActive?: boolean
 }
 
 export interface BottomNavItem {
