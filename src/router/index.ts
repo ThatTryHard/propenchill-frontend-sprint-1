@@ -24,6 +24,8 @@ import SuratMasukListView from '@/views/department_teachers/SuratMasukListView.v
 import SuratMasukDetailView from '@/views/department_teachers/SuratMasukDetailView.vue'
 import { useAuthStore } from '@/stores/users/auth'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
+import SuratAntreanListView from '@/views/surat_antrean/SuratAntreanListView.vue'
+import SuratAntreanDetailView from '@/views/surat_antrean/SuratAntreanDetailView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -112,7 +114,7 @@ const router = createRouter({
       component: StudentManagementView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'],
+        roleAccess: ['ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
       },
     },
     {
@@ -121,7 +123,7 @@ const router = createRouter({
       component: CreateSuratMasukView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'],
+        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
       },
     },
     {
@@ -130,7 +132,7 @@ const router = createRouter({
       component: SuratMasukListView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'],
+        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
       },
     },
     {
@@ -139,7 +141,7 @@ const router = createRouter({
       component: SuratMasukDetailView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'],
+        roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
       },
     },
     // Legacy redirects
@@ -187,6 +189,25 @@ const router = createRouter({
         roleAccess: ['ADMIN', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
       },
     },
+    {
+      path: '/surat-antrean',
+      name: 'surat-antrean-list',
+      component: SuratAntreanListView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+      },
+    },
+    {
+      path: '/surat-antrean/:id',
+      name: 'surat-antrean-detail',
+      component: SuratAntreanDetailView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+      },
+    },
+    // TODO: Add routes for other roles here
   ],
 })
 

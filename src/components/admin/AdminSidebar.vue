@@ -1,10 +1,5 @@
 <template>
-  <VSidebar
-    :navItems="navItems"
-    :bottomItems="bottomItems"
-    :userName="displayUserName"
-    :userEmail="displayUserEmail"
-  />
+  <VSidebar :navItems="mergedNavItems" :bottomItems="mergedBottomItems" :userName="displayUserName" :userEmail="displayUserEmail" />
 </template>
 
 <script setup lang="ts">
@@ -12,6 +7,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
 import VSidebar from '@/components/common/VSidebar.vue'
+import type { NavItem, BottomNavItem } from '@/components/common/VSidebar.vue'
 import {
   Users,
   BarChart3,
@@ -25,6 +21,8 @@ import {
 const props = defineProps<{
   userName?: string
   userEmail?: string
+  navItems?: NavItem[]
+  bottomItems?: BottomNavItem[]
 }>()
 
 const router = useRouter()
@@ -33,7 +31,7 @@ const authStore = useAuthStore()
 const displayUserName = computed(() => props.userName || authStore.user?.nama || 'User')
 const displayUserEmail = computed(() => props.userEmail || authStore.user?.email || '-')
 
-const navItems = [
+const defaultNavItems: NavItem[] = [
   { name: 'parents', label: 'Kelola Wali Murid', path: '/admin/parents', icon: Users },
   {
     name: 'students',
@@ -60,9 +58,12 @@ const handleLogout = () => {
   router.push('/login')
 }
 
-const bottomItems = [
+const defaultBottomItems: BottomNavItem[] = [
   { name: 'settings', label: 'Settings', icon: Settings },
   { name: 'help', label: 'Help', icon: HelpCircle },
   { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout },
 ]
+
+const mergedNavItems = computed(() => props.navItems ?? defaultNavItems)
+const mergedBottomItems = computed(() => props.bottomItems ?? defaultBottomItems)
 </script>
