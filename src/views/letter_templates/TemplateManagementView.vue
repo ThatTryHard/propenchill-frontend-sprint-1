@@ -118,13 +118,13 @@ const userName = computed(() => {
     currentUser.value?.nama ||
     currentUser.value?.full_name ||
     currentUser.value?.name ||
-    authStore.nama ||
+    authStore.user?.nama ||
     'User'
   )
 })
 
 const userEmail = computed(() => {
-  return currentUser.value?.email || authStore.email || '-'
+  return currentUser.value?.email || authStore.user?.email || '-'
 })
 
 const canManageTemplate = computed(() => {
