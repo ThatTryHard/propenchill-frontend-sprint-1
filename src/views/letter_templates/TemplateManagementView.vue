@@ -13,6 +13,7 @@ import {
 } from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/users/auth'
+import { useRouter } from 'vue-router'
 import mailIcon from '@/assets/mail.png'
 import studentIcon from '@/assets/Siswa SVG.svg'
 import VSidebar from '@/components/common/VSidebar.vue'
@@ -35,6 +36,7 @@ interface TemplateItem {
 
 const templateStore = useLetterTemplateStore()
 const authStore = useAuthStore()
+const router = useRouter()
 
 const navItems = [
   {
@@ -329,20 +331,6 @@ async function handleToggleStatus(item: TemplateItem) {
 // UI action
 function goToEdit(idTemplate: number) {
   router.push(`/letter_templates/${idTemplate}/edit`)
-}
-
-function handleApplyFilter() {
-  currentPage.value = 1
-  fetchData()
-}
-
-function handleResetFilter() {
-  search.value = ''
-  statusFilter.value = ''
-  jenisFilter.value = ''
-  sortValue.value = 'created_at-desc'
-  currentPage.value = 1
-  fetchData()
 }
 
 async function handlePageChange() {
