@@ -20,6 +20,7 @@ import DetailPengajuanSuratView from '@/views/surat_keluar/DetailPengajuanSuratV
 import CreateSuratMasukView from '@/views/department_teachers/CreateSuratMasukView.vue'
 import TemplateManagementView from '@/views/letter_templates/TemplateManagementView.vue'
 import TemplateCreateView from '@/views/letter_templates/TemplateCreateView.vue'
+import TemplateEditView from '@/views/letter_templates/TemplateEditView.vue'
 import SuratMasukListView from '@/views/department_teachers/SuratMasukListView.vue'
 import SuratMasukDetailView from '@/views/department_teachers/SuratMasukDetailView.vue'
 import { useAuthStore } from '@/stores/users/auth'
@@ -190,6 +191,15 @@ const router = createRouter({
       },
     },
     {
+      path: '/letter_templates/:id/edit',
+      name: 'template-edit',
+      component: TemplateEditView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['ADMIN', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK']
+      },
+    },
+    { 
       path: '/surat-antrean',
       name: 'surat-antrean-list',
       component: SuratAntreanListView,

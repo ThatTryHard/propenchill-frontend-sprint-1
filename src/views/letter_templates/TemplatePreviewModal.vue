@@ -189,11 +189,18 @@ async function handleDownloadTemplate() {
           </div>
 
           <div class="rounded-[18px] bg-white/70 px-4 py-4">
+            <p class="text-[12px] text-[#858a91]">Dibuat oleh</p>
+            <p class="mt-1 text-[#111827]">
+              {{ template.created_by_name || (template.created_by ? `User #${template.created_by}` : '-') }}
+            </p>
+          </div>
+
+          <div class="rounded-[18px] bg-white/70 px-4 py-4">
             <p class="text-[12px] text-[#858a91]">Role Akses</p>
 
-            <div v-if="template.role_akses?.length" class="mt-2 flex flex-wrap gap-2">
+            <div v-if="template.allowed_roles?.length" class="mt-2 flex flex-wrap gap-2">
               <span
-                v-for="role in template.role_akses"
+                v-for="role in template.allowed_roles"
                 :key="role"
                 class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1 text-[12px] text-[#111827]"
               >
