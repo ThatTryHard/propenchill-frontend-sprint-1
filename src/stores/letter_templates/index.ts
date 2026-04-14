@@ -101,12 +101,6 @@ async function handleFetch<T = any>(
   }
 }
 
-function safeTrim(value: unknown): string {
-  if (typeof value === 'string') return value.trim()
-  if (value === null || value === undefined) return ''
-  return String(value).trim()
-}
-
 export const useLetterTemplateStore = defineStore('letterTemplate', {
   state: () => ({
     isSubmitting: false,

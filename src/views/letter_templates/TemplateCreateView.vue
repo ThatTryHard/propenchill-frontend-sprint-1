@@ -39,6 +39,7 @@ const authStore = useAuthStore()
 
 function parseJsonSafely<T>(value: string | null): T | null {
   if (!value) return null
+
   try {
     return JSON.parse(value) as T
   } catch {
@@ -54,7 +55,6 @@ const currentUser = computed<Record<string, any> | null>(() => {
   if (localUser.value) return localUser.value
 
   const authAny = authStore as unknown as Record<string, any>
-
   return authAny.user || authAny.currentUser || null
 })
 
@@ -69,11 +69,7 @@ const userName = computed(() => {
 })
 
 const userEmail = computed(() => {
-  return (
-    currentUser.value?.email ||
-    authStore.email ||
-    '-'
-  )
+  return currentUser.value?.email || authStore.email || '-'
 })
 
 const placeholderNama = '{nama}'
@@ -207,6 +203,7 @@ function clearErrors() {
 
 function toggleRole(role: string) {
   const index = form.allowed_roles.indexOf(role)
+
   if (index >= 0) {
     form.allowed_roles.splice(index, 1)
   } else {

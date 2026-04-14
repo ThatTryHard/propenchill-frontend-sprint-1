@@ -334,6 +334,8 @@ async function submitUpdate() {
     return
   }
 
+  await router.push('/letter_templates')
+
   successMessage.value = templateStore.successMessage || 'Template surat berhasil diperbarui.'
 }
 
