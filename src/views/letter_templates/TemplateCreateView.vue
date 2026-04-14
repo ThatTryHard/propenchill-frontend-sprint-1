@@ -279,16 +279,16 @@ async function submitTemplate() {
   })
 
   if (!result.ok) {
-    if (result.details && typeof result.details === 'object' && !Array.isArray(result.details)) {
+    if ('details' in result && result.details && typeof result.details === 'object' && !Array.isArray(result.details)) {
       Object.entries(result.details).forEach(([key, value]) => {
         fieldErrors[key] = Array.isArray(value) ? String(value[0]) : String(value)
       })
 
       if (!Object.keys(fieldErrors).length) {
-        generalError.value = result.error || 'Gagal membuat template.'
+        generalError.value = ('error' in result ? result.error : null) || 'Gagal membuat template.'
       }
     } else {
-      generalError.value = result.error || 'Gagal membuat template.'
+      generalError.value = ('error' in result ? result.error : null) || 'Gagal membuat template.'
     }
 
     return
@@ -322,7 +322,7 @@ function goBack() {
     <main class="flex-1 px-4 md:px-8 lg:px-10 py-8 overflow-y-auto">
       <div class="w-full">
         <section class="mb-6 flex flex-col gap-1">
-          <h1 class="text-[28px] md:text-[32px] font-bold leading-[120%] text-[#111827]">
+          <h1 class="text-[28px] md:text-[32px] font-bold text-[#111827]">
             Tambah Template Surat Baru
           </h1>
           <p class="text-[14px] md:text-[16px] leading-[150%] text-[#858a91]">
@@ -330,7 +330,7 @@ function goBack() {
           </p>
         </section>
 
-        <div class="flex w-full flex-col gap-4">
+        <div class="flex flex-col gap-4">
           <VAlert
             v-if="generalError"
             type="error"
@@ -349,8 +349,8 @@ function goBack() {
           <div class="relative z-30">
             <VCard padding-class="p-6 !overflow-visible">
               <div class="flex flex-col gap-5">
-                <div class="flex flex-col gap-1">
-                  <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
+                <div>
+                  <h2 class="text-[24px] font-semibold text-[#111827]">
                     Informasi Template
                   </h2>
                   <p class="text-[14px] leading-[150%] text-[#858a91]">
@@ -368,11 +368,9 @@ function goBack() {
                   />
                 </div>
 
-                <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-                  <div class="relative z-40 flex flex-col gap-2">
-                    <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
-                      Jenis Template
-                    </label>
+                <div class="grid lg:grid-cols-2 gap-4">
+                  <div class="flex flex-col gap-2">
+                    <label class="font-semibold text-[#111827]">Jenis Template</label>
                     <VDropdown
                       v-model="form.jenis"
                       :options="jenisOptions"
@@ -383,9 +381,9 @@ function goBack() {
                     </span>
                   </div>
 
-                  <div class="relative z-30 flex flex-col gap-2">
+                  <div class="flex flex-col gap-2">
                     <div class="flex items-center gap-2">
-                      <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                      <label class="font-semibold text-[#111827]">
                         Metode Template
                       </label>
                       <VTooltip type="small" text="Pilih Upload DOCX atau Input Manual">
@@ -427,7 +425,7 @@ function goBack() {
                     title="Kontrol Akses"
                     text="Pilih role mana yang dapat melihat atau menggunakan template ini."
                   >
-                    <button type="button" class="text-[#858a91] transition hover:text-[#111827]">
+                    <button type="button" class="text-[#858a91] hover:text-[#111827]">
                       <InfoIcon class="h-5 w-5" />
                     </button>
                   </VTooltip>
@@ -443,7 +441,6 @@ function goBack() {
                   v-for="role in roleOptions"
                   :key="role.value"
                   type="button"
-                  class="transition-transform active:scale-95"
                   @click="toggleRole(role.value)"
                 >
                   <VChip
@@ -453,7 +450,7 @@ function goBack() {
                 </button>
               </div>
 
-              <span v-if="fieldErrors.allowed_roles" class="text-[12px] font-light text-[#A0453B]">
+              <span v-if="fieldErrors.allowed_roles" class="text-xs text-[#A0453B]">
                 {{ fieldErrors.allowed_roles }}
               </span>
             </div>
@@ -461,8 +458,8 @@ function goBack() {
 
           <VCard v-if="form.template_mode === 'DOCX'" padding-class="p-6">
             <div class="flex flex-col gap-5">
-              <div class="flex flex-col gap-1">
-                <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
+              <div>
+                <h2 class="text-[24px] font-semibold text-[#111827]">
                   Unggah Template Surat
                 </h2>
                 <p class="text-[14px] leading-[150%] text-[#858a91]">
@@ -486,8 +483,8 @@ function goBack() {
 
           <VCard v-else padding-class="p-6">
             <div class="flex flex-col gap-5">
-              <div class="flex flex-col gap-1">
-                <h2 class="text-[24px] font-semibold leading-[120%] text-[#111827]">
+              <div>
+                <h2 class="text-[24px] font-semibold text-[#111827]">
                   Isi Konten Template
                 </h2>
                 <p class="text-[14px] leading-[150%] text-[#858a91]">
@@ -496,7 +493,7 @@ function goBack() {
               </div>
 
               <div class="overflow-hidden rounded-[20px] border border-[#d9e2e7] bg-white">
-                <div class="border-b border-[#e5e7eb] bg-[#f8fafc] px-6 py-5">
+                <div class="border-b bg-[#f8fafc] px-6 py-5">
                   <div
                     v-if="!isLoadingConfig"
                     class="prose max-w-none text-[#111827]"
@@ -511,41 +508,11 @@ function goBack() {
                   </label>
 
                   <div class="mb-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{nama}')"
-                    >
-                      Masukkan {nama}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{nis}')"
-                    >
-                      Masukkan {nis}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{kelas}')"
-                    >
-                      Masukkan {kelas}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{tanggal}')"
-                    >
-                      Masukkan {tanggal}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{keperluan}')"
-                    >
-                      Masukkan {keperluan}
-                    </button>
+                    <button type="button" @click="insertPlaceholder('{nama}')">Masukkan {nama}</button>
+                    <button type="button" @click="insertPlaceholder('{nis}')">Masukkan {nis}</button>
+                    <button type="button" @click="insertPlaceholder('{kelas}')">Masukkan {kelas}</button>
+                    <button type="button" @click="insertPlaceholder('{tanggal}')">Masukkan {tanggal}</button>
+                    <button type="button" @click="insertPlaceholder('{keperluan}')">Masukkan {keperluan}</button>
                   </div>
                   <div
                     class="overflow-hidden rounded-[16px] border"

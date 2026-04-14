@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-[#f8fafc]">
+  <div class="flex h-screen layout-bg">
     <VSidebar
       :navItems="navItems"
       :bottomItems="bottomItems"
@@ -11,10 +11,13 @@
       <div class="main-content-wrapper">
         <div class="header-section">
           <div class="title-group">
-            <h1 class="hifi-title">Daftar Pengajuan Surat Keluar</h1>
-            <p class="hifi-subtitle">Lihat dan kelola pengajuan surat yang telah dibuat</p>
+            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[#111827]">
+              Daftar Pengajuan Surat Keluar
+            </h1>
+            <p class="text-[13px] md:text-[14px] leading-[145%] text-[#858a91] mt-1">
+              Lihat dan kelola pengajuan surat yang telah dibuat
+            </p>
           </div>
-          
           <VButton 
             class="hifi-btn-custom-green" 
             @click="$router.push('/surat-keluar/pengajuan')"
@@ -125,7 +128,6 @@ const headers = [
 
 const navItems = [
   { name: 'surat-keluar', label: 'Daftar Pengajuan Surat Keluar', path: '/surat-keluar/riwayat', icon: LayoutGrid },
-  { name: 'surat-masuk', label: 'Daftar Pengajuan Surat Masuk', path: '/surat-masuk/riwayat', icon: Mail }
 ];
 
 const handleLogout = () => { authStore.logout(); router.push('/login'); };
@@ -174,21 +176,8 @@ onMounted(fetchRiwayat);
   max-width: 1440px;
 }
 
-.hifi-title {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 32px;
-  font-weight: 700;
-  color: #111827;
-  line-height: 120%;
-  margin: 0;
-}
-
-.hifi-subtitle {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-  color: #9B9FA5;
-  line-height: 120%;
+.layout-bg {
+  background: var(--Gradient-Primary-Background, linear-gradient(180deg, #FFF 0%, #EAF7EF 100%));
 }
 
 .header-section {
