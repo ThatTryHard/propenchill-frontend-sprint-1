@@ -306,9 +306,7 @@ function handleResetFilter() {
   fetchData()
 }
 
-async function handlePageChange(page: number) {
-  if (page === currentPage.value) return
-  currentPage.value = page
+async function handlePageChange() {
   await fetchData()
 }
 
