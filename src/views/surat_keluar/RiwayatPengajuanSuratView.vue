@@ -55,6 +55,7 @@
                 <option value="Disetujui">Disetujui</option>
                 <option value="Ditolak">Ditolak</option>
                 <option value="Pending">Pending</option>
+                <option value="Menunggu Verifikasi Kepsek">Menunggu Verifikasi Kepsek</option>
               </select>
               <ChevronDown :size="18" class="chevron-icon" />
             </div>
@@ -127,7 +128,13 @@ const headers = [
 ];
 
 const navItems = [
-  { name: 'surat-keluar', label: 'Daftar Pengajuan Surat Keluar', path: '/surat-keluar/riwayat', icon: LayoutGrid },
+  {
+    name: 'surat-keluar',
+    label: 'Daftar Pengajuan Surat Keluar',
+    path: '/surat-keluar/riwayat',
+    matchPaths: ['/surat-keluar/detail'],
+    icon: LayoutGrid,
+  },
 ];
 
 const handleLogout = () => { authStore.logout(); router.push('/login'); };
@@ -151,16 +158,24 @@ const getMonthName = (m) => {
 const fetchRiwayat = async () => {
   try {
     const response = await api.get('/api/letters/my-requests');
-    listPengajuan.value = response.data;
+    listPengajuan.value = Array.isArray(response.data?.data)
+      ? response.data.data
+      : Array.isArray(response.data)
+        ? response.data
+        : [];
   } catch (error) { console.error(error); }
 };
+
+const normalizeStatus = (status) => String(status || '').toLowerCase();
 
 const filteredSurat = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
   return listPengajuan.value.filter((surat) => {
     const matchesSearch = !query || surat.template_nama?.toLowerCase().includes(query);
     const matchesMonth = !filterMonth.value || new Date(surat.tanggal_pengajuan).getMonth() + 1 === parseInt(filterMonth.value);
-    const matchesStatus = !filterStatus.value || surat.status === filterStatus.value;
+    const matchesStatus =
+      !filterStatus.value ||
+      normalizeStatus(surat.status) === normalizeStatus(filterStatus.value);
     return matchesSearch && matchesMonth && matchesStatus;
   });
 });

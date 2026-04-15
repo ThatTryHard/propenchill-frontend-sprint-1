@@ -59,7 +59,7 @@
               </div>
               <div class="info-block">
                 <div class="info-label">Catatan</div>
-                <div class="info-value">{{ detail.catatan || detail.note || '-' }}</div>
+                <div class="info-value">{{ latestNote }}</div>
               </div>
               <div class="info-block">
                 <div class="info-label">Status Saat Ini</div>
@@ -159,7 +159,7 @@
             </button>
 
             <button
-              v-if="detail.status === 'Pending'"
+              v-if="isCancelable"
               class="btn-danger"
               type="button"
               @click="showCancelDialog = true"
@@ -200,7 +200,13 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const navItems = [
-  { name: 'surat-keluar', label: 'Daftar Pengajuan Surat Keluar', path: '/surat-keluar/riwayat', icon: LayoutGrid },
+  {
+    name: 'surat-keluar',
+    label: 'Daftar Pengajuan Surat Keluar',
+    path: '/surat-keluar/riwayat',
+    matchPaths: ['/surat-keluar/detail'],
+    icon: LayoutGrid,
+  },
 ];
 
 const handleLogout = () => {
@@ -218,15 +224,28 @@ const detail = ref({ form_data: {}, tracking_status: [] });
 const showCancelDialog = ref(false);
 const isCancelling = ref(false);
 
+const normalizeStatus = (status) => String(status || '').trim().toLowerCase();
+
+const normalizeDetailPayload = (payload) => {
+  if (!payload || typeof payload !== 'object') return { form_data: {}, tracking_status: [] };
+  if (payload.data && typeof payload.data === 'object') return payload.data;
+  return payload;
+};
+
 const fetchDetail = async () => {
   try {
     const response = await api.get(`/api/letters/requests/${route.params.id}`);
-    detail.value = response.data;
+    detail.value = normalizeDetailPayload(response.data);
   } catch (error) {
     console.error("Gagal ambil detail:", error);
     try {
       const listResponse = await api.get('/api/letters/my-requests');
-      const found = listResponse.data.find((item) => item.id_pengajuan == route.params.id);
+      const listData = Array.isArray(listResponse.data?.data)
+        ? listResponse.data.data
+        : Array.isArray(listResponse.data)
+          ? listResponse.data
+          : [];
+      const found = listData.find((item) => item.id_pengajuan == route.params.id);
       if (found) detail.value = found;
     } catch (nestedError) {
       console.error(nestedError);
@@ -259,21 +278,90 @@ const cancelRequest = async () => {
 };
 
 const submittedBy = computed(() => {
-  return detail.value.siswa_nama || detail.value.pengaju || detail.value.user_name || detail.value.nama_pengaju || '-';
-});
+  const candidateKeys = [
+    'nama_pengaju',
+    'pengaju',
+    'pengaju_nama',
+    'nama_pemohon',
+    'pemohon_nama',
+    'requested_by_name',
+    'requester_name',
+    'user_name',
+    'nama_user',
+    'nama_orangtua',
+    'nama_orang_tua',
+    'nama_wali',
+    'wali_nama',
+    'full_name',
+    'nama',
+    'siswa_nama',
+  ];
 
-const formData = computed(() => ({
-  namaKegiatan: detail.value.form_data?.nama_kegiatan || detail.value.form_data?.nama || detail.value.form_data?.activity_name || detail.value.nama_kegiatan || '-',
-  lokasiKegiatan: detail.value.form_data?.lokasi_kegiatan || detail.value.form_data?.lokasi || detail.value.form_data?.location || detail.value.lokasi_kegiatan || '-',
-  waktuKegiatan: detail.value.form_data?.waktu_kegiatan || detail.value.form_data?.waktu || detail.value.form_data?.time || detail.value.waktu_kegiatan || '-',
-}));
+  for (const key of candidateKeys) {
+    const value = detail.value?.[key];
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+  }
+
+  const nestedSources = [
+    detail.value?.pengaju_obj,
+    detail.value?.requester,
+    detail.value?.requested_by,
+    detail.value?.user,
+    detail.value?.pengaju_detail,
+  ];
+
+  for (const source of nestedSources) {
+    if (source && typeof source === 'object') {
+      const nestedName =
+        source.nama ||
+        source.full_name ||
+        source.name ||
+        source.nama_pengaju ||
+        source.user_name;
+
+      if (typeof nestedName === 'string' && nestedName.trim()) {
+        return nestedName.trim();
+      }
+    }
+  }
+
+  return authStore.user?.nama || '-';
+});
 
 const isApproved = computed(() => {
-  const status = (detail.value.status || '').toLowerCase();
-  return status === 'disetujui' || status === 'selesai';
+  const status = normalizeStatus(detail.value.status);
+  return ['disetujui', 'selesai', 'verified', 'approved'].includes(status);
 });
 
-const isRejected = computed(() => (detail.value.status || '').toLowerCase() === 'ditolak');
+const isRejected = computed(() => {
+  const status = normalizeStatus(detail.value.status);
+  return ['ditolak', 'rejected'].includes(status);
+});
+
+const isCancelable = computed(() => {
+  const status = normalizeStatus(detail.value.status);
+  return status === 'pending';
+});
+
+const latestNote = computed(() => {
+  const noteCandidates = [
+    detail.value.latest_rejection_note,
+    detail.value.latest_verification_note,
+    detail.value.catatan,
+    detail.value.note,
+    detail.value.notes,
+  ];
+
+  for (const note of noteCandidates) {
+    if (typeof note === 'string' && note.trim()) {
+      return note.trim();
+    }
+  }
+
+  return '-';
+});
 
 const formCardTitle = computed(() => (isRejected.value ? 'Revisi Surat' : 'Data Form'));
 const formCardSubtitle = computed(() => {
@@ -285,16 +373,78 @@ const formCardSubtitle = computed(() => {
 const showEditButton = computed(() => isRejected.value || isApproved.value);
 const editButtonLabel = computed(() => (isRejected.value ? 'Edit' : 'Ajukan Revisi'));
 
+const trackingSummary = computed(() => {
+  const history = Array.isArray(detail.value.tracking_status) ? detail.value.tracking_status : [];
+
+  const normalizedStatuses = history
+    .map((item) => normalizeStatus(item?.status || item?.status_surat || item?.state || ''))
+    .filter(Boolean);
+
+  const hasWaitingKepsek = normalizedStatuses.some((status) =>
+    ['menunggu verifikasi kepsek', 'menunggu_verifikasi_kepsek'].includes(status)
+  );
+
+  const hasVerified = normalizedStatuses.some((status) =>
+    ['verified', 'disetujui', 'approved', 'selesai'].includes(status)
+  );
+
+  const hasRejected = normalizedStatuses.some((status) =>
+    ['rejected', 'ditolak'].includes(status)
+  );
+
+  const level1Result = hasWaitingKepsek || hasVerified ? 'approved' : hasRejected ? 'rejected' : 'pending';
+  const level2Result = hasVerified ? 'approved' : hasRejected && hasWaitingKepsek ? 'rejected' : hasWaitingKepsek ? 'pending' : 'pending';
+
+  return {
+    hasWaitingKepsek,
+    hasVerified,
+    hasRejected,
+    level1Result,
+    level2Result,
+  };
+});
+
 const statusSteps = computed(() => {
-  const activeIndex = isApproved.value ? 3 : isRejected.value ? 1 : 0;
+  const summary = trackingSummary.value;
+
+  const activeIndex = summary.hasVerified
+    ? 3
+    : summary.hasRejected && summary.hasWaitingKepsek
+      ? 2
+      : summary.hasRejected
+        ? 1
+        : summary.hasWaitingKepsek
+          ? 2
+          : 1;
+
+  const verif1Subtitle =
+    summary.level1Result === 'approved'
+      ? 'Verifikasi level 1 disetujui.'
+      : summary.level1Result === 'rejected'
+        ? 'Pengajuan ditolak pada verifikasi level 1.'
+        : 'Dalam proses verifikasi pertama.';
+
+  const verif2Subtitle =
+    summary.level2Result === 'approved'
+      ? 'Verifikasi level 2 disetujui.'
+      : summary.level2Result === 'rejected'
+        ? 'Pengajuan ditolak pada verifikasi level 2.'
+        : summary.hasWaitingKepsek
+          ? 'Menunggu verifikasi kepala sekolah.'
+          : 'Menunggu hasil verifikasi level 1.';
+
   const baseSteps = [
     { label: 'Diajukan', timestamp: formatDateTime(detail.value.tanggal_pengajuan || detail.value.created_at), subtitle: 'Pengajuan dibuat.' },
     {
-      label: isRejected.value ? 'Ditolak' : 'Verif 1',
-      timestamp: isRejected.value ? formatDateTime(detail.value.tanggal_ditolak || detail.value.updated_at) : detail.value.verif_1_time || '',
-      subtitle: isRejected.value ? 'Pengajuan ditolak oleh reviewer.' : 'Dalam proses verifikasi pertama.',
+      label: 'Verif 1',
+      timestamp: detail.value.verif_1_time || (summary.level1Result === 'rejected' ? formatDateTime(detail.value.tanggal_ditolak || detail.value.updated_at) : ''),
+      subtitle: verif1Subtitle,
     },
-    { label: isRejected.value ? 'Ditolak' : 'Verif 2', timestamp: detail.value.verif_2_time || '', subtitle: isRejected.value ? 'Pengajuan ditolak pada tahap kedua.' : 'Dalam proses verifikasi kedua.' },
+    {
+      label: 'Verif 2',
+      timestamp: detail.value.verif_2_time || (summary.level2Result === 'rejected' ? formatDateTime(detail.value.tanggal_ditolak || detail.value.updated_at) : ''),
+      subtitle: verif2Subtitle,
+    },
     { label: 'Disetujui', timestamp: detail.value.tanggal_disetujui || '', subtitle: 'Surat telah disetujui.' },
   ];
 
@@ -317,6 +467,15 @@ const historyList = computed(() => {
 });
 
 const latestStatusNote = computed(() => {
+  if (latestNote.value !== '-') {
+    return {
+      actor: 'Verifier',
+      role: 'Verifikasi Surat',
+      note: latestNote.value,
+      time: formatDateTime(detail.value.updated_at || detail.value.created_at),
+    };
+  }
+
   const list = historyList.value;
   if (!list.length) {
     return { actor: 'Sistem', role: 'Sistem', note: 'Belum ada catatan pada tahap ini.', time: '-' };
@@ -325,49 +484,112 @@ const latestStatusNote = computed(() => {
 });
 
 const formDataEntries = computed(() => {
-  let rawData = detail.value.form_data;
-  
-  // 1. KITA INTIP APA ISI ASLINYA DARI BACKEND
-  console.log("🛠️ DEBUG - Data Mentah form_data:", rawData); 
-
-  if (!rawData) return []; // Kalau undefined/null, langsung stop
-
-  if (typeof rawData === 'string') {
-    try {
-      // Bersihin format aneh dari Python (kalau ada)
-      let cleanString = rawData
-        .replace(/'/g, '"')
-        .replace(/None/g, 'null')
-        .replace(/True/g, 'true')
-        .replace(/False/g, 'false');
-      rawData = JSON.parse(cleanString);
-    } catch (e) {
-      console.error("Gagal parse JSON:", e);
-      return [];
+  const readObject = (source) => {
+    if (!source) return {};
+    if (typeof source === 'object') return source;
+    if (typeof source === 'string') {
+      try {
+        return JSON.parse(
+          source
+            .replace(/'/g, '"')
+            .replace(/None/g, 'null')
+            .replace(/True/g, 'true')
+            .replace(/False/g, 'false')
+        );
+      } catch {
+        return {};
+      }
     }
+    return {};
+  };
+
+  const formatLabel = (value) =>
+    String(value || '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+
+  const toDisplayValue = (value) => {
+    if (value === null || value === undefined || value === '') return '-';
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    if (Array.isArray(value)) {
+      return value.length ? value.join(', ') : '-';
+    }
+    if (typeof value === 'object') {
+      if ('value' in value && (typeof value.value === 'string' || typeof value.value === 'number')) {
+        return String(value.value);
+      }
+      return JSON.stringify(value);
+    }
+    return String(value);
+  };
+
+  const buildEntries = (source) => {
+    if (Array.isArray(source)) {
+      return source
+        .map((item, index) => {
+          if (item && typeof item === 'object' && ('key' in item || 'value' in item)) {
+            const key = String(item.key || `field_${index + 1}`);
+            return {
+              key,
+              label: formatLabel(key),
+              value: toDisplayValue(item.value),
+            };
+          }
+
+          return {
+            key: `field_${index + 1}`,
+            label: `Field ${index + 1}`,
+            value: toDisplayValue(item),
+          };
+        })
+        .filter((item) => item.value !== '-');
+    }
+
+    if (source && typeof source === 'object') {
+      return Object.keys(source).map((key) => ({
+        key,
+        label: formatLabel(key),
+        value: toDisplayValue(source[key]),
+      }));
+    }
+
+    return [];
+  };
+
+  const filled = readObject(detail.value.filled_variables);
+  const formData = readObject(detail.value.form_data);
+  const parsedVariables = Array.isArray(detail.value.parsed_variables) ? detail.value.parsed_variables : [];
+
+  const filledEntries = buildEntries(filled);
+  if (filledEntries.length > 0) {
+    return filledEntries;
   }
 
-  const data = rawData || {};
-  const keys = Object.keys(data);
-  
-  // 2. KITA INTIP APAKAH KEY-NYA KETEMU (Misal: "nama", "nis", dll)
-  console.log("🛠️ DEBUG - Keys yang didapat:", keys); 
+  const formDataEntries = buildEntries(formData);
+  if (formDataEntries.length > 0) {
+    return formDataEntries;
+  }
 
-  return keys.map((key) => ({
-    key,
-    label: key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-    value: data[key] ? data[key] : '-'
-  }));
+  if (parsedVariables.length > 0) {
+    return parsedVariables.map((key) => ({
+      key,
+      label: formatLabel(key),
+      value: '-'
+    }));
+  }
+
+  return [];
 });
 
-const formatFieldLabel = (key) => {
-  return key.replace(/_/g, ' ').replace(/\b\w/g, (match) => match.toUpperCase());
-};
-
 const getStatusClass = (status) => {
-  if (status === 'Pending') return 'status-pending';
-  if (status === 'Disetujui' || status === 'Selesai') return 'status-success';
-  if (status === 'Ditolak' || status === 'Dibatalkan') return 'status-danger';
+  const normalized = normalizeStatus(status);
+  if (['pending', 'diproses', 'menunggu verifikasi kepsek', 'menunggu_verifikasi_kepsek'].includes(normalized)) {
+    return 'status-pending';
+  }
+  if (['disetujui', 'selesai', 'verified', 'approved'].includes(normalized)) return 'status-success';
+  if (['ditolak', 'rejected', 'dibatalkan'].includes(normalized)) return 'status-danger';
   return 'status-default';
 };
 

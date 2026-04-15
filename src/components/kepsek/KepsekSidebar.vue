@@ -1,8 +1,17 @@
+<template>
+  <VSidebar
+    :navItems="navItems"
+    :bottomItems="bottomItems"
+    :userName="userName"
+    :userEmail="userEmail"
+  />
+</template>
+
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
 import VSidebar from '@/components/common/VSidebar.vue'
-import { PlusCircle, Settings, HelpCircle, LogOut, Inbox, ClipboardCheck } from 'lucide-vue-next'
+import { ClipboardCheck, Settings, HelpCircle, LogOut } from 'lucide-vue-next'
 
 defineProps<{
   userName?: string
@@ -19,22 +28,10 @@ const handleLogout = () => {
 
 const navItems = [
   {
-    name: 'department-teachers-surat-antrean',
+    name: 'kepsek-surat-antrean',
     label: 'Verifikasi dan Persetujuan Berjenjang',
-    path: '/department-teachers/surat-antrean',
+    path: '/kepsek/surat-antrean',
     icon: ClipboardCheck,
-  },
-  {
-    name: 'department-teachers-surat-masuk-list',
-    label: 'Arsip Surat Masuk',
-    path: '/department-teachers/surat-masuk',
-    icon: Inbox,
-  },
-  {
-    name: 'department-teachers-surat-masuk-create',
-    label: 'Buat Pengajuan Surat Masuk',
-    path: '/department-teachers/surat-masuk/create',
-    icon: PlusCircle,
   },
 ]
 
@@ -44,12 +41,3 @@ const bottomItems = [
   { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout },
 ]
 </script>
-
-<template>
-  <VSidebar
-    :navItems="navItems"
-    :bottomItems="bottomItems"
-    :userName="userName"
-    :userEmail="userEmail"
-  />
-</template>

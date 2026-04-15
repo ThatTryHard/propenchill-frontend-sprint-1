@@ -6,7 +6,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
-    role: localStorage.getItem('user_role') || null,
+    role: (localStorage.getItem('user_role') || null)?.toUpperCase() || null,
     user: JSON.parse(localStorage.getItem('user_data') || 'null') as {
       nama: string
       email: string
@@ -29,13 +29,13 @@ export const useAuthStore = defineStore('auth', {
 
       this.accessToken = data.access
       this.refreshToken = data.refresh
-      this.role = data.role || null
+      this.role = data.role ? String(data.role).toUpperCase() : null
       const userData = { nama: data.nama, email: data.email }
       this.user = userData
       localStorage.setItem('access_token', data.access)
       localStorage.setItem('refresh_token', data.refresh)
       localStorage.setItem('user_data', JSON.stringify(userData))
-      if (data.role) localStorage.setItem('user_role', data.role)
+      if (data.role) localStorage.setItem('user_role', String(data.role).toUpperCase())
 
       return data
     },

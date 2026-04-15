@@ -3,15 +3,103 @@ import api from '@/plugins/axios'
 
 export interface SuratAntrean {
   id_surat: number
+  id_pengajuan?: number
   nomor_surat: string | null
+  perihal?: string
   perkara: string
   deskripsi: string
+  description?: string
   kategori: string
+  template_id?: number | null
+  template_nama?: string
+  template_jenis?: string
+  siswa_nama?: string
+  klasifikasi?: string
+  form_data?: Record<string, unknown> | null
+  parsed_variables?: string[]
+  filled_variables?: Record<string, unknown>
+  latest_verification_note?: string
+  latest_rejection_note?: string
   nama_pengaju: string
   tanggal_pengajuan: string
-  status: 'Diproses' | 'Disetujui' | 'Ditolak'
+  status:
+    | 'Diproses'
+    | 'Menunggu Verifikasi Kepsek'
+    | 'Disetujui'
+    | 'Ditolak'
   file_surat?: string | null
   created_at?: string
+  next_level?: number | null
+  [key: string]: unknown
+}
+
+export type VerifyDecision = 'Approve' | 'Reject'
+
+function mapBackendStatusToUi(status: string | null | undefined): SuratAntrean['status'] {
+  const normalized = String(status || '').toLowerCase()
+
+  if (
+    [
+      'menunggu verifikasi kepsek',
+      'menunggu_verifikasi_kepsek',
+      'waiting principal verification',
+      'waiting_principal_verification',
+    ].includes(normalized)
+  ) {
+    return 'Menunggu Verifikasi Kepsek'
+  }
+
+  if (['pending', 'diproses', 'in review', 'in_review'].includes(normalized)) {
+    return 'Diproses'
+  }
+
+  if (['verified', 'disetujui', 'approved', 'selesai'].includes(normalized)) {
+    return 'Disetujui'
+  }
+
+  if (['rejected', 'ditolak', 'perlu_revisi'].includes(normalized)) {
+    return 'Ditolak'
+  }
+
+  return 'Diproses'
+}
+
+function normalizeSurat(raw: Record<string, any>): SuratAntrean {
+  return {
+    ...raw,
+    id_surat: Number(raw.id_surat ?? raw.id_pengajuan ?? raw.id ?? 0),
+    id_pengajuan: Number(raw.id_pengajuan ?? raw.id_surat ?? raw.id ?? 0),
+    nomor_surat: raw.nomor_surat ?? null,
+    perihal: raw.perihal ?? raw.template_nama ?? raw.perkara ?? '',
+    perkara: raw.perkara ?? raw.perihal ?? raw.template_nama ?? '',
+    deskripsi: raw.deskripsi ?? raw.description ?? '',
+    description: raw.description ?? raw.deskripsi ?? '',
+    kategori: raw.kategori ?? raw.template_jenis ?? raw.jenis_surat ?? '-',
+    template_id:
+      raw.template_id !== undefined && raw.template_id !== null ? Number(raw.template_id) : null,
+    template_nama: raw.template_nama ?? raw.perihal ?? raw.perkara ?? '',
+    template_jenis: raw.template_jenis ?? raw.kategori ?? raw.jenis_surat ?? '',
+    siswa_nama: raw.siswa_nama ?? '',
+    klasifikasi: raw.klasifikasi ?? '',
+    form_data: raw.form_data ?? null,
+    parsed_variables: Array.isArray(raw.parsed_variables) ? raw.parsed_variables : [],
+    filled_variables:
+      raw.filled_variables && typeof raw.filled_variables === 'object' ? raw.filled_variables : {},
+    latest_verification_note: String(raw.latest_verification_note || raw.verification_note || '').trim(),
+    latest_rejection_note: String(raw.latest_rejection_note || raw.rejection_note || '').trim(),
+    nama_pengaju:
+      raw.nama_pengaju ?? raw.siswa_nama ?? raw.nama_pengusul ?? raw.pengaju ?? '-',
+    tanggal_pengajuan:
+      raw.tanggal_pengajuan ?? raw.created_at ?? raw.updated_at ?? new Date().toISOString(),
+    // `status` from serializer is role-aware (per logged-in user).
+    // Keep `status_surat` only as fallback to avoid mixing global final status.
+    status: mapBackendStatusToUi(raw.status ?? raw.status_surat),
+    file_surat: raw.file_surat ?? raw.file_lampiran ?? null,
+    next_level:
+      raw.next_level !== undefined && raw.next_level !== null
+        ? Number(raw.next_level)
+        : null,
+  }
 }
 
 export const useSuratAntreanStore = defineStore('surat-antrean', {
@@ -38,7 +126,8 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
       this.loading = true
       try {
         const response = await api.get('/api/letters/queue/', { params: { page } })
-        const allData = response.data.data || []
+        const rawData = Array.isArray(response.data?.data) ? response.data.data : []
+        const allData = rawData.map((item: Record<string, any>) => normalizeSurat(item))
 
         // Sort FIFO (First In First Out) - oldest first
         allData.sort((a: SuratAntrean, b: SuratAntrean) => {
@@ -47,12 +136,13 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
           return dateA - dateB
         })
 
-        // Ambil semua data (frontend akan filter berdasarkan status)
         this.suratList = allData
 
         // Hitung stats dari semua data
         this.stats.total = allData.length
-        this.stats.diproses = allData.filter((s: SuratAntrean) => s.status === 'Diproses').length
+        this.stats.diproses = allData.filter((s: SuratAntrean) =>
+          s.status === 'Diproses' || s.status === 'Menunggu Verifikasi Kepsek'
+        ).length
         this.stats.disetujui = allData.filter((s: SuratAntrean) => s.status === 'Disetujui').length
         this.stats.ditolak = allData.filter((s: SuratAntrean) => s.status === 'Ditolak').length
 
@@ -72,7 +162,17 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
       this.selectedSurat = null
       try {
         const response = await api.get(`/api/letters/queue/${id}/`)
-        this.selectedSurat = response.data.data
+        const normalizedDetail = normalizeSurat(response.data?.data || {})
+
+        // Prefer role-aware status from list item when available to avoid mixing with global status.
+        const matchedFromList = this.suratList.find(
+          (item: SuratAntrean) => item.id_surat === id || item.id_pengajuan === id
+        )
+
+        this.selectedSurat = {
+          ...normalizedDetail,
+          status: matchedFromList?.status || normalizedDetail.status,
+        }
       } catch (error) {
         console.error('Fetch Detail Error:', error)
         throw error
@@ -81,60 +181,56 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
       }
     },
 
-    async approveSurat(id: number) {
+    async verifySurat(id: number, decision: VerifyDecision, notes?: string) {
       this.actionLoading = true
       try {
-        const response = await api.patch(`/api/letters/queue/${id}/`, {
-          status: 'Disetujui'
-        })
-        const index = this.suratList.findIndex(s => s.id_surat === id)
-        if (index !== -1 && this.suratList[index]) {
-          this.suratList[index]!.status = 'Disetujui'
+        const surat =
+          this.selectedSurat ||
+          this.suratList.find((item: SuratAntrean) => item.id_surat === id || item.id_pengajuan === id)
+
+        const payload: Record<string, string> = {
+          decision,
         }
-        if (this.selectedSurat?.id_surat === id) {
-          this.selectedSurat!.status = 'Disetujui'
+
+        const role = String(localStorage.getItem('user_role') || '').toUpperCase()
+        const templateJenis = String(surat?.template_jenis || '').toUpperCase()
+
+        const levelOneRoleByJenis: Record<string, string> = {
+          KESISWAAN: 'BIDANG_KESISWAAN',
+          AKADEMIK: 'BIDANG_AKADEMIK',
+          KEAGAMAAN: 'BIDANG_AGAMA',
         }
-        // Update stats
-        this.stats.total = this.stats.total
-        this.stats.diproses = Math.max(0, this.stats.diproses - 1)
-        this.stats.disetujui = this.stats.disetujui + 1
-        this.stats.ditolak = this.stats.ditolak
+
+        const requiredLevelOneRole = levelOneRoleByJenis[templateJenis]
+
+        if (requiredLevelOneRole && role !== 'ADMIN' && role !== 'KEPSEK' && role !== requiredLevelOneRole) {
+          throw new Error('Anda tidak memiliki akses verifikasi untuk jenis template ini.')
+        }
+
+        if (notes && notes.trim()) {
+          payload.notes = notes.trim()
+        }
+
+        const response = await api.put(`/api/letters/${id}/verify`, payload)
+
+        const currentPage = this.pagination.halaman_saat_ini || 1
+        await Promise.allSettled([this.fetchAntreanList(currentPage), this.fetchSuratDetail(id)])
+
         return response.data
       } catch (error) {
-        console.error('Approve Error:', error)
+        console.error('Verify Error:', error)
         throw error
       } finally {
         this.actionLoading = false
       }
     },
 
+    async approveSurat(id: number, notes?: string) {
+      return this.verifySurat(id, 'Approve', notes)
+    },
+
     async rejectSurat(id: number, reason: string) {
-      this.actionLoading = true
-      try {
-        const response = await api.patch(`/api/letters/queue/${id}/`, {
-          status: 'Ditolak',
-          alasan_penolakan: reason
-        })
-        // Update local data
-        const index = this.suratList.findIndex(s => s.id_surat === id)
-        if (index !== -1 && this.suratList[index]) {
-          this.suratList[index]!.status = 'Ditolak'
-        }
-        if (this.selectedSurat?.id_surat === id) {
-          this.selectedSurat!.status = 'Ditolak'
-        }
-        // Update stats
-        this.stats.total = this.stats.total
-        this.stats.diproses = Math.max(0, this.stats.diproses - 1)
-        this.stats.disetujui = this.stats.disetujui
-        this.stats.ditolak = this.stats.ditolak + 1
-        return response.data
-      } catch (error) {
-        console.error('Reject Error:', error)
-        throw error
-      } finally {
-        this.actionLoading = false
-      }
+      return this.verifySurat(id, 'Reject', reason)
     },
 
     clearSelectedSurat() {

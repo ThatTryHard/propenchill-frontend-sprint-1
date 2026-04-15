@@ -12,13 +12,13 @@
         :key="item.name"
         :to="item.path"
         custom
-        v-slot="{ isActive, navigate }"
+        v-slot="{ navigate }"
       >
         <button
           @click="navigate"
           :class="[
             'flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 w-full text-left',
-            item.isActive || isActive
+            isNavItemActive(item)
               ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
               : 'text-[#4a5568] hover:bg-[#d4e8da]/60',
           ]"
@@ -65,6 +65,7 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue'
+import { useRoute } from 'vue-router'
 import { UserRound } from 'lucide-vue-next'
 
 export interface NavItem {
@@ -72,6 +73,7 @@ export interface NavItem {
   label: string
   path: string
   icon: Component
+  matchPaths?: string[]
   isActive?: boolean
 }
 
@@ -88,6 +90,90 @@ const props = defineProps<{
   userName?: string
   userEmail?: string
 }>()
+
+const route = useRoute()
+
+function normalizePath(path: string) {
+  if (!path) return '/'
+  const [withoutQuery] = path.split('?')
+  const [withoutHash] = (withoutQuery || '/').split('#')
+  const normalized = (withoutHash || '/').replace(/\/+$/, '')
+  return normalized || '/'
+}
+
+function isPathWithinModule(currentPath: string, modulePath: string) {
+  if (modulePath === '/') {
+    return currentPath === '/'
+  }
+
+  return currentPath === modulePath || currentPath.startsWith(`${modulePath}/`)
+}
+
+function getMatchScore(currentPath: string, itemPath: string) {
+  if (currentPath === itemPath) {
+    // Exact match has highest priority.
+    return 2000 + itemPath.length
+  }
+
+  if (isPathWithinModule(currentPath, itemPath)) {
+    // Prefix/module match gets lower priority than exact.
+    return 1000 + itemPath.length
+  }
+
+  return -1
+}
+
+function getItemPathCandidates(item: NavItem) {
+  const explicitPaths = Array.isArray(item.matchPaths) ? item.matchPaths : []
+  return [item.path, ...explicitPaths].map((path) => normalizePath(path))
+}
+
+function getItemBestScore(currentPath: string, item: NavItem) {
+  const candidates = getItemPathCandidates(item)
+  let best = -1
+
+  for (const itemPath of candidates) {
+    const score = getMatchScore(currentPath, itemPath)
+    if (score > best) {
+      best = score
+    }
+  }
+
+  return best
+}
+
+function getHighestMatchScore(currentPath: string) {
+  let highest = -1
+
+  for (const item of props.navItems) {
+    const score = getItemBestScore(currentPath, item)
+    if (score > highest) {
+      highest = score
+    }
+  }
+
+  return highest
+}
+
+function isNavItemActive(item: NavItem) {
+  if (item.isActive) return true
+
+  const currentPath = normalizePath(route.path)
+  const itemScore = getItemBestScore(currentPath, item)
+
+  if (itemScore < 0) {
+    return false
+  }
+
+  const highestScore = getHighestMatchScore(currentPath)
+
+  // Only keep the most specific matching menu item active.
+  if (itemScore < highestScore) {
+    return false
+  }
+
+  return true
+}
 
 const handleBottomItemClick = (item: BottomNavItem) => {
   if (item.action) {
