@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/users/auth'
 import VSidebar from '@/components/common/VSidebar.vue'
 import type { NavItem, BottomNavItem } from '@/components/common/VSidebar.vue'
 import {
+  ClipboardCheck,
   Users,
   BarChart3,
   Settings,
@@ -32,6 +33,12 @@ const displayUserName = computed(() => props.userName || authStore.user?.nama ||
 const displayUserEmail = computed(() => props.userEmail || authStore.user?.email || '-')
 
 const defaultNavItems: NavItem[] = [
+  {
+    name: 'verification',
+    label: 'Verifikasi dan Persetujuan Berjenjang',
+    path: '/admin/surat-antrean',
+    icon: ClipboardCheck,
+  },
   { name: 'parents', label: 'Kelola Wali Murid', path: '/admin/parents', icon: Users },
   {
     name: 'students',

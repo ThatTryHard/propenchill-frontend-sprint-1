@@ -29,10 +29,10 @@
             </div>
           </div>
 
-          <div class="flex flex-col gap-2">
+          <div v-if="isWaliMurid" class="flex flex-col gap-2">
             <label class="hifi-label">Nama Siswa (Anak)</label>
             <div class="relative w-full">
-              <select v-model="formData.id_siswa" required class="hifi-select-white">
+              <select v-model="formData.id_siswa" :required="isWaliMurid" class="hifi-select-white">
                 <option value="" disabled>Pilih nama anak Anda...</option>
                 <option v-for="siswa in listSiswa" :key="siswa.id_siswa" :value="siswa.id_siswa">
                   {{ siswa.nama }}
@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
+import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/plugins/axios';
 import { useAuthStore } from '@/stores/users/auth';
@@ -103,6 +103,9 @@ import { LayoutGrid, Mail, Settings, HelpCircle, LogOut, ChevronDown, Lock, Plus
 
 const authStore = useAuthStore();
 const router = useRouter();
+
+const currentRole = computed(() => String(authStore.role || '').toUpperCase());
+const isWaliMurid = computed(() => currentRole.value === 'WALI_MURID');
 
 interface Siswa { id_siswa: number; nama: string; }
 interface TemplateSurat { 
@@ -127,7 +130,13 @@ const formData = reactive({
 });
 
 const navItems = [
-  { name: 'surat-keluar', label: 'Daftar Pengajuan Surat Keluar', path: '/surat-keluar/riwayat', icon: LayoutGrid },
+  {
+    name: 'surat-keluar',
+    label: 'Daftar Pengajuan Surat Keluar',
+    path: '/surat-keluar/riwayat',
+    matchPaths: ['/surat-keluar/detail'],
+    icon: LayoutGrid,
+  },
   { name: 'buat-pengajuan', label: 'Buat Pengajuan Surat', path: '/surat-keluar/pengajuan', icon: PlusCircle },
 ];
 
@@ -157,25 +166,29 @@ const formatLabel = (str: string) => str.split('_').map(w => w.charAt(0).toUpper
 
 const fetchInitialData = async () => {
   try {
-    const [siswaRes, templateRes] = await Promise.all([
-      api.get('/api/siswa/'),
-      api.get('/api/letter_templates/')
-    ]);
-    
-    listSiswa.value = siswaRes?.data?.data || [];
-    
-    const allTemplates = templateRes?.data?.data || []; 
-    const allowedRoles = [
-      'WALI_MURID', 
-      'ADMIN', 
-      'BIDANG_AGAMA', 
-      'BIDANG_KESISWAAN', 
-      'BIDANG_AKADEMIK'
-    ];
+    const templateRes = await api.get('/api/letter_templates/');
 
-    listTemplate.value = allTemplates.filter((t: TemplateSurat) => 
-      t.allowed_roles.some(role => allowedRoles.includes(role))
-    );
+    if (isWaliMurid.value) {
+      const siswaRes = await api.get('/api/siswa/');
+      listSiswa.value = siswaRes?.data?.data || [];
+    } else {
+      listSiswa.value = [];
+      formData.id_siswa = '';
+    }
+
+    const allTemplates = templateRes?.data?.data || []; 
+
+    listTemplate.value = allTemplates.filter((t: TemplateSurat) => {
+      const allowedRoles = Array.isArray(t.allowed_roles)
+        ? t.allowed_roles.map((role) => String(role).toUpperCase())
+        : [];
+
+      if (allowedRoles.length === 0) {
+        return true;
+      }
+
+      return allowedRoles.includes(currentRole.value);
+    });
   } catch (error) {
     console.error(error);
   }

@@ -126,11 +126,13 @@ const handleLogin = async () => {
 
     // Logic redirect berdasarkan role
     if (role === 'ADMIN') {
-      redirectPath = '/surat-antrean'
-    } else if (['KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_KURIKULUM'].includes(role)) {
-      redirectPath = '/department-teachers/surat-masuk/create'
-    } else if (role === 'WALI_MURID') {
-      redirectPath = '/wali/dashboard'
+      redirectPath = '/admin/surat-antrean'
+    } else if (role === 'KEPSEK') {
+      redirectPath = '/kepsek/surat-antrean'
+    } else if (['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(role)) {
+      redirectPath = '/department-teachers/surat-antrean'
+    } else if (['GURU', 'WALI_MURID'].includes(role)) {
+      redirectPath = '/surat-keluar/riwayat'
     }
 
     setTimeout(() => {
