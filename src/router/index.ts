@@ -223,9 +223,9 @@ const router = createRouter({
         roleAccess: ['ADMIN', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK']
       },
     },
-    {
-      path: '/admin/surat-antrean',
-      name: 'admin-surat-antrean-list',
+    { 
+      path: '/surat-antrean',
+      name: 'surat-antrean-list',
       component: SuratAntreanListView,
       meta: {
         requiresAuth: true,
