@@ -107,11 +107,12 @@ export const useLetterTemplateStore = defineStore('letterTemplate', {
     isFetching: false,
     isFetchingDetail: false,
     isDeleting: false,
+    isFetchingTemplates: false,
 
     error: '',
     successMessage: '',
 
-    templates: [] as any[], 
+    templates: [] as any[],
     pagination: null as TemplatePagination | null,
     selectedTemplate: null as any,
     config: null as any,

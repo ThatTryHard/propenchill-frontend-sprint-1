@@ -350,25 +350,14 @@ onMounted(async () => {
   <DashboardLayout>
     <template #sidebar>
       <AdminSidebar v-if="isAdmin" />
-      <KepsekSidebar
-        v-else-if="isKepsek"
-        :userName="authStore.user?.nama"
-        :userEmail="authStore.user?.email"
-      />
-      <DepartmentTeacherSidebar
-        v-else
-        :userName="authStore.user?.nama"
-        :userEmail="authStore.user?.email"
-      />
+      <KepsekSidebar v-else-if="isKepsek" :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
+      <DepartmentTeacherSidebar v-else :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans']">
       <section class="mb-4">
-        <button
-          type="button"
-          class="flex items-center gap-2 text-[#71757b] hover:text-[#111827] transition-colors"
-          @click="goBack"
-        >
+        <button type="button" class="flex items-center gap-2 text-[#71757b] hover:text-[#111827] transition-colors"
+          @click="goBack">
           <ArrowLeft class="h-5 w-5" />
           <span class="text-[14px] font-medium">Kembali</span>
         </button>
@@ -376,10 +365,12 @@ onMounted(async () => {
 
       <section>
         <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
-        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage" @close="successMessage = ''" />
+        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
+          @close="successMessage = ''" />
       </section>
 
-      <section v-if="loading" class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section v-if="loading"
+        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
         Memuat detail surat...
       </section>
 
@@ -389,7 +380,8 @@ onMounted(async () => {
             <h3 class="text-[18px] font-bold leading-[1.4] text-[#111827] flex-1">
               {{ getLetterTitle() }}
             </h3>
-            <span :class="['px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap', getStatusClass(surat.status)]">
+            <span
+              :class="['px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap', getStatusClass(surat.status)]">
               {{ surat.status }}
             </span>
           </div>
@@ -420,7 +412,8 @@ onMounted(async () => {
             <template v-if="formDataEntries.length > 0">
               <div v-for="entry in formDataEntries" :key="entry.key" class="min-w-0">
                 <p class="text-[13px] leading-[145%] text-[#6b7280]">{{ entry.label }}</p>
-                <p class="mt-1 text-[18px] leading-[150%] font-semibold text-[#111827] break-words">{{ entry.value }}</p>
+                <p class="mt-1 text-[18px] leading-[150%] font-semibold text-[#111827] break-words">{{ entry.value }}
+                </p>
               </div>
             </template>
 
@@ -430,16 +423,15 @@ onMounted(async () => {
           </div>
         </section>
 
-        <section
-          v-if="isRejectedStatus && rejectionReason"
-          class="rounded-[20px] border border-[#f3d2ce] bg-[#fff6f5] px-6 py-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-        >
+        <section v-if="isRejectedStatus && rejectionReason"
+          class="rounded-[20px] border border-[#f3d2ce] bg-[#fff6f5] px-6 py-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
           <h2 class="text-[18px] font-bold text-[#7a2e26] mb-2">Alasan Penolakan</h2>
           <p class="text-[15px] leading-[155%] text-[#92392f] break-words">{{ rejectionReason }}</p>
         </section>
 
         <div v-if="canVerify" class="flex items-center justify-center gap-4">
-          <VButton variant="secondary" class="!rounded-full !px-6 w-150" :disabled="actionLoading" @click="openRejectModal">
+          <VButton variant="secondary" class="!rounded-full !px-6 w-150" :disabled="actionLoading"
+            @click="openRejectModal">
             Tolak
           </VButton>
 
@@ -454,12 +446,7 @@ onMounted(async () => {
       </section>
     </div>
 
-    <VerificationRejectModal
-      :isOpen="isRejectModalOpen"
-      :loading="actionLoading"
-      :errorMessage="rejectNotesError"
-      @update:isOpen="closeRejectModal"
-      @submit="handleReject"
-    />
+    <VerificationRejectModal :isOpen="isRejectModalOpen" :loading="actionLoading" :errorMessage="rejectNotesError"
+      @update:isOpen="closeRejectModal" @submit="handleReject" />
   </DashboardLayout>
 </template>

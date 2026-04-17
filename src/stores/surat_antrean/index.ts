@@ -5,7 +5,6 @@ export interface SuratAntrean {
   id_surat: number
   id_pengajuan?: number
   nomor_surat: string | null
-  perihal?: string
   perkara: string
   deskripsi: string
   description?: string
@@ -23,10 +22,10 @@ export interface SuratAntrean {
   nama_pengaju: string
   tanggal_pengajuan: string
   status:
-    | 'Diproses'
-    | 'Menunggu Verifikasi Kepsek'
-    | 'Disetujui'
-    | 'Ditolak'
+  | 'Diproses'
+  | 'Menunggu Verifikasi Kepsek'
+  | 'Disetujui'
+  | 'Ditolak'
   file_surat?: string | null
   created_at?: string
   next_level?: number | null
@@ -125,8 +124,21 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
     async fetchAntreanList(page = 1) {
       this.loading = true
       try {
-        const response = await api.get('/api/letters/queue/', { params: { page } })
-        const rawData = Array.isArray(response.data?.data) ? response.data.data : []
+        const response = await api.get('/api/antrean/letters/queue/', { params: { page } })
+
+        // Handle different response structures
+        const responseData = response.data
+        let rawData: Record<string, any>[] = []
+
+        // Try multiple possible data paths
+        if (Array.isArray(responseData?.data)) {
+          rawData = responseData.data
+        } else if (Array.isArray(responseData?.results)) {
+          rawData = responseData.results
+        } else if (Array.isArray(responseData)) {
+          rawData = responseData
+        }
+
         const allData = rawData.map((item: Record<string, any>) => normalizeSurat(item))
 
         // Sort FIFO (First In First Out) - oldest first
@@ -146,12 +158,16 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
         this.stats.disetujui = allData.filter((s: SuratAntrean) => s.status === 'Disetujui').length
         this.stats.ditolak = allData.filter((s: SuratAntrean) => s.status === 'Ditolak').length
 
-        if (response.data.pagination) {
-          this.pagination.total_data = response.data.pagination.total_data
-          this.pagination.halaman_saat_ini = response.data.pagination.halaman_saat_ini
+        // Handle pagination from various possible structures
+        const paginationData = responseData?.pagination || responseData
+        if (paginationData) {
+          this.pagination.total_data = paginationData.total_data || paginationData.count || allData.length
+          this.pagination.halaman_saat_ini = paginationData.halaman_saat_ini || paginationData.current_page || page
         }
       } catch (error) {
         console.error('PBI Antrean Error:', error)
+        this.suratList = []
+        this.stats = { total: 0, diproses: 0, disetujui: 0, ditolak: 0 }
       } finally {
         this.loading = false
       }
@@ -161,7 +177,7 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
       this.detailLoading = true
       this.selectedSurat = null
       try {
-        const response = await api.get(`/api/letters/queue/${id}/`)
+        const response = await api.get(`/api/antrean/letters/queue/${id}/`)
         const normalizedDetail = normalizeSurat(response.data?.data || {})
 
         // Prefer role-aware status from list item when available to avoid mixing with global status.

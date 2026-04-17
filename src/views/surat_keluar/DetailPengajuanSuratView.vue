@@ -596,13 +596,23 @@ const getStatusClass = (status) => {
 const formatDate = (d) => (d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-');
 const formatDateTime = (d) => (d ? new Date(d).toLocaleString('id-ID') : '-');
 
-const handleDownload = () => {
-  const url = detail.value.download_url || detail.value.file_url || detail.value.document_url;
-  if (!url) {
-    alert('File surat tidak tersedia untuk diunduh.');
-    return;
+const handleDownload = async () => {
+  try {
+    const response = await api.get(`/api/letters/requests/${detail.value.id_pengajuan}/download`, {
+      responseType: 'blob',
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `surat_${detail.value.id_pengajuan}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Download error:', error);
+    alert(error.response?.data?.error || 'Gagal mengunduh surat.');
   }
-  window.open(url, '_blank');
 };
 
 const navigateToRevision = () => {

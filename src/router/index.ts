@@ -171,31 +171,31 @@ const router = createRouter({
       component: VerifyEmailView,
     },
     {
-    path: '/surat-keluar/pengajuan',
-    name: 'FormPengajuanSurat',
-    component: FormPengajuanSuratView,
-    meta: {
-      requiresAuth: true,
-      roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
-    },
-    },
-    {
-    path: '/surat-keluar/riwayat',
-    name: 'RiwayatPengajuanSurat',
-    component: RiwayatPengajuanSuratView,
-    meta: {
-      requiresAuth: true,
-      roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
-    },
+      path: '/surat-keluar/pengajuan',
+      name: 'FormPengajuanSurat',
+      component: FormPengajuanSuratView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+      },
     },
     {
-    path: '/surat-keluar/detail/:id',
-    name: 'DetailPengajuanSurat',
-    component: DetailPengajuanSuratView,
-    meta: {
-      requiresAuth: true,
-      roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+      path: '/surat-keluar/riwayat',
+      name: 'RiwayatPengajuanSurat',
+      component: RiwayatPengajuanSuratView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+      },
     },
+    {
+      path: '/surat-keluar/detail/:id',
+      name: 'DetailPengajuanSurat',
+      component: DetailPengajuanSuratView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+      },
     },
     {
       path: '/letter_templates',
