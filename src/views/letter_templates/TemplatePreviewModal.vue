@@ -1,7 +1,20 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { X, Download } from 'lucide-vue-next'
-import { type TemplateItem } from '@/stores/letter_templates'
+
+interface TemplateItem {
+  id_template: string | number
+  nama_template: string
+  jenis?: string
+  template_mode: string
+  is_active: boolean
+  created_at?: string
+  created_by?: number
+  created_by_name?: string
+  allowed_roles?: string[]
+  parsed_variables?: string[]
+  original_file_name?: string
+}
 
 const props = defineProps<{
   isOpen: boolean

@@ -102,11 +102,11 @@ const filteredSuratList = computed(() => {
   return result
 })
 
-function getLetterTitle(item: SuratAntrean) {
-  return item.perihal || item.template_nama || item.perkara || 'Tanpa Perihal'
+function getLetterTitle(item: SuratAntrean): string {
+  return String(item.perihal || item.template_nama || item.perkara || 'Tanpa Perihal')
 }
 
-function getLetterDescription(item: SuratAntrean) {
+function getLetterDescription(item: SuratAntrean): string {
   return item.description || item.deskripsi || 'Tidak ada deskripsi surat.'
 }
 

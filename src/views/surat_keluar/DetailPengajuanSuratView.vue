@@ -194,6 +194,9 @@ import { useAuthStore } from '@/stores/users/auth';
 import VSidebar from '@/components/common/VSidebar.vue';
 import VSteps from '@/components/common/VSteps.vue';
 import { FileText, FilePen, CheckCircle2, Clock, User, LayoutGrid, Mail, Settings, HelpCircle, LogOut } from 'lucide-vue-next';
+import { useSuratKeluarStore } from '@/stores/surat_keluar/index';
+
+const suratKeluarStore = useSuratKeluarStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -257,8 +260,10 @@ const cancelRequest = async () => {
   isCancelling.value = true;
   try {
     const response = await api.put(`/api/letters/requests/${detail.value.id_pengajuan}/cancel`);
+    
     if (response.status === 200) {
       detail.value.status = 'Dibatalkan';
+      
       detail.value.tracking_status = [
         {
           status: 'Dibatalkan',
@@ -267,11 +272,18 @@ const cancelRequest = async () => {
         },
         ...(detail.value.tracking_status || []),
       ];
+
       showCancelDialog.value = false;
-      alert('Pengajuan berhasil dibatalkan');
+
+      suratKeluarStore.triggerAlert('Berhasil', 'Pengajuan surat telah dibatalkan.', 'success');
+      
+      setTimeout(() => {
+        router.push('/surat-keluar/riwayat');
+      }, 1500);
     }
   } catch (error) {
-    alert(error.response?.data?.error || 'Gagal membatalkan surat');
+    const errorMsg = error.response?.data?.error || 'Gagal membatalkan surat';
+    suratKeluarStore.triggerAlert('Gagal', errorMsg, 'error');
   } finally {
     isCancelling.value = false;
   }
@@ -331,15 +343,20 @@ const submittedBy = computed(() => {
 });
 
 const isApproved = computed(() => {
-  const status = normalizeStatus(detail.value.status);
-  return ['disetujui', 'selesai', 'verified', 'approved'].includes(status);
+  return detail.value.status === 'Verified'; 
 });
 
 const isRejected = computed(() => {
-  const status = normalizeStatus(detail.value.status);
-  return ['ditolak', 'rejected'].includes(status);
+  return detail.value.status === 'Rejected';
 });
 
+const showEditButton = computed(() => isRejected.value); 
+const editButtonLabel = computed(() => 'Ajukan Revisi');
+
+const formCardSubtitle = computed(() => {
+  if (isRejected.value) return 'Perbaiki data pengajuan sesuai catatan dan ajukan kembali.';
+  return 'Detail data surat yang Anda ajukan.';
+});
 const isCancelable = computed(() => {
   const status = normalizeStatus(detail.value.status);
   return status === 'pending';
@@ -364,14 +381,6 @@ const latestNote = computed(() => {
 });
 
 const formCardTitle = computed(() => (isRejected.value ? 'Revisi Surat' : 'Data Form'));
-const formCardSubtitle = computed(() => {
-  if (isRejected.value) return 'Perbaiki data pengajuan dan ajukan kembali.';
-  if (isApproved.value) return 'Salinan data pengajuan surat yang telah disetujui.';
-  return 'Lihat detail data surat Anda sebelum proses verifikasi selesai.';
-});
-
-const showEditButton = computed(() => isRejected.value || isApproved.value);
-const editButtonLabel = computed(() => (isRejected.value ? 'Edit' : 'Ajukan Revisi'));
 
 const trackingSummary = computed(() => {
   const history = Array.isArray(detail.value.tracking_status) ? detail.value.tracking_status : [];
@@ -486,101 +495,39 @@ const latestStatusNote = computed(() => {
 const formDataEntries = computed(() => {
   const readObject = (source) => {
     if (!source) return {};
-    if (typeof source === 'object') return source;
+    if (typeof source === 'object' && !Array.isArray(source)) return source;
     if (typeof source === 'string') {
       try {
-        return JSON.parse(
-          source
-            .replace(/'/g, '"')
-            .replace(/None/g, 'null')
-            .replace(/True/g, 'true')
-            .replace(/False/g, 'false')
-        );
-      } catch {
-        return {};
-      }
+        return JSON.parse(source.replace(/'/g, '"').replace(/None/g, 'null'));
+      } catch { return {}; }
     }
     return {};
   };
 
   const formatLabel = (value) =>
-    String(value || '')
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (l) => l.toUpperCase());
+    String(value || '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
-  const toDisplayValue = (value) => {
-    if (value === null || value === undefined || value === '') return '-';
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      return String(value);
-    }
-    if (Array.isArray(value)) {
-      return value.length ? value.join(', ') : '-';
-    }
-    if (typeof value === 'object') {
-      if ('value' in value && (typeof value.value === 'string' || typeof value.value === 'number')) {
-        return String(value.value);
-      }
-      return JSON.stringify(value);
-    }
-    return String(value);
-  };
+  const data1 = readObject(detail.value.filled_variables);
+  const data2 = readObject(detail.value.form_data);
+  const data3 = detail.value.dynamic_data || {}; 
 
-  const buildEntries = (source) => {
-    if (Array.isArray(source)) {
-      return source
-        .map((item, index) => {
-          if (item && typeof item === 'object' && ('key' in item || 'value' in item)) {
-            const key = String(item.key || `field_${index + 1}`);
-            return {
-              key,
-              label: formatLabel(key),
-              value: toDisplayValue(item.value),
-            };
-          }
+  const combinedData = { ...data3, ...data2, ...data1 };
 
-          return {
-            key: `field_${index + 1}`,
-            label: `Field ${index + 1}`,
-            value: toDisplayValue(item),
-          };
-        })
-        .filter((item) => item.value !== '-');
-    }
+  const entries = Object.keys(combinedData).map((key) => ({
+    key,
+    label: formatLabel(key),
+    value: combinedData[key] || '-'
+  }));
 
-    if (source && typeof source === 'object') {
-      return Object.keys(source).map((key) => ({
-        key,
-        label: formatLabel(key),
-        value: toDisplayValue(source[key]),
-      }));
-    }
-
-    return [];
-  };
-
-  const filled = readObject(detail.value.filled_variables);
-  const formData = readObject(detail.value.form_data);
-  const parsedVariables = Array.isArray(detail.value.parsed_variables) ? detail.value.parsed_variables : [];
-
-  const filledEntries = buildEntries(filled);
-  if (filledEntries.length > 0) {
-    return filledEntries;
-  }
-
-  const formDataEntries = buildEntries(formData);
-  if (formDataEntries.length > 0) {
-    return formDataEntries;
-  }
-
-  if (parsedVariables.length > 0) {
-    return parsedVariables.map((key) => ({
+  if (entries.length === 0 && Array.isArray(detail.value.parsed_variables)) {
+    return detail.value.parsed_variables.map(key => ({
       key,
       label: formatLabel(key),
       value: '-'
     }));
   }
 
-  return [];
+  return entries;
 });
 
 const getStatusClass = (status) => {

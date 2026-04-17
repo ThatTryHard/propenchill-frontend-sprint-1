@@ -63,13 +63,13 @@ const userName = computed(() => {
     currentUser.value?.nama ||
     currentUser.value?.full_name ||
     currentUser.value?.name ||
-    authStore.nama ||
+    authStore.user?.nama ||
     'User'
   )
 })
 
 const userEmail = computed(() => {
-  return currentUser.value?.email || authStore.email || '-'
+  return currentUser.value?.email || authStore.user?.email || '-'
 })
 
 const placeholderNama = '{nama}'
@@ -116,8 +116,8 @@ const modeOptions = [
 ]
 
 const statusOptions = [
-  { label: 'Aktif', value: true },
-  { label: 'Nonaktif', value: false },
+  { label: 'Aktif', value: 'true' },   
+  { label: 'Nonaktif', value: 'false' } 
 ]
 
 const roleOptions = [
@@ -147,6 +147,13 @@ const form = reactive<TemplateForm>({
   allowed_roles: [],
   file_template: null,
 })
+
+const isActiveString = computed({
+  get: () => String(form.is_active),
+  set: (val: string) => {
+    form.is_active = val === 'true'; 
+  }
+});
 
 const generalError = ref('')
 const successMessage = ref('')
@@ -210,9 +217,9 @@ async function fetchTemplateDetail() {
     isLoadingDetail.value = true
     generalError.value = ''
 
-    const result = await templateStore.fetchTemplateDetail(idTemplate)
+    const result = (await templateStore.fetchTemplateDetail(idTemplate)) as any
 
-    if (!result.ok || !result.data) {
+    if (!result.ok || !('data' in result) || !result.data) {
       generalError.value = result.error || 'Gagal mengambil detail template.'
       return
     }
@@ -309,7 +316,7 @@ async function submitUpdate() {
 
   const idTemplate = Number(route.params.id)
 
-  const result = await templateStore.updateTemplate(idTemplate, {
+  const result = (await templateStore.updateTemplate(idTemplate, {
     nama_template: form.nama_template,
     jenis: form.jenis,
     is_active: form.is_active,
@@ -317,7 +324,7 @@ async function submitUpdate() {
     konten_template: form.konten_template,
     allowed_roles: form.allowed_roles,
     file_template: form.file_template,
-  })
+  })) as any
 
   if (!result.ok) {
     if (result.details && typeof result.details === 'object' && !Array.isArray(result.details)) {
@@ -445,7 +452,7 @@ function goBack() {
                       Status
                     </label>
                     <VDropdown
-                      v-model="form.is_active"
+                      v-model="isActiveString"
                       :options="statusOptions"
                       placeholder="Pilih status"
                     />

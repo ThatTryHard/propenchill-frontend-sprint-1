@@ -2,8 +2,10 @@
 import { Toaster } from 'vue-sonner'
 import VAlert from '@/components/common/VAlert.vue'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
+import { useSuratKeluarStore } from '@/stores/surat_keluar'
 
 const { alertState, closeAlert } = useGlobalAlert()
+const suratKeluarStore = useSuratKeluarStore()
 </script>
 
 <template>
@@ -23,6 +25,7 @@ const { alertState, closeAlert } = useGlobalAlert()
         },
       }"
     />
+
     <VAlert
       v-if="alertState.show"
       :type="alertState.type"
@@ -30,6 +33,15 @@ const { alertState, closeAlert } = useGlobalAlert()
       :message="alertState.message"
       @close="closeAlert"
     />
+
+    <VAlert
+      v-if="suratKeluarStore.alertState.show"
+      :type="suratKeluarStore.alertState.type"
+      :title="suratKeluarStore.alertState.title"
+      :message="suratKeluarStore.alertState.message"
+      @close="suratKeluarStore.closeAlert"
+    />
+
     <router-view />
   </div>
 </template>
