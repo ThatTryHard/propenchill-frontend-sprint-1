@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { FileText, PlusCircle, Settings, CircleHelp, LogOut, InfoIcon } from 'lucide-vue-next'
+import {
+  FileText,
+  PlusCircle,
+  Settings,
+  CircleHelp,
+  LogOut,
+  InfoIcon,
+} from 'lucide-vue-next'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
@@ -56,13 +63,13 @@ const userName = computed(() => {
     currentUser.value?.nama ||
     currentUser.value?.full_name ||
     currentUser.value?.name ||
-    authStore.user?.nama ||
+    authStore.nama ||
     'User'
   )
 })
 
 const userEmail = computed(() => {
-  return currentUser.value?.email || authStore.user?.email || '-'
+  return currentUser.value?.email || authStore.email || '-'
 })
 
 const placeholderNama = '{nama}'
@@ -450,7 +457,7 @@ function goBack() {
                 </button>
               </div>
 
-              <span v-if="fieldErrors.allowed_roles" class="text-xs text-[#A0453B]">
+              <span v-if="fieldErrors.allowed_roles" class="text-[12px] font-light text-[#A0453B]">
                 {{ fieldErrors.allowed_roles }}
               </span>
             </div>
@@ -508,11 +515,41 @@ function goBack() {
                   </label>
 
                   <div class="mb-3 flex flex-wrap gap-2">
-                    <button type="button" @click="insertPlaceholder('{nama}')">Masukkan {nama}</button>
-                    <button type="button" @click="insertPlaceholder('{nis}')">Masukkan {nis}</button>
-                    <button type="button" @click="insertPlaceholder('{kelas}')">Masukkan {kelas}</button>
-                    <button type="button" @click="insertPlaceholder('{tanggal}')">Masukkan {tanggal}</button>
-                    <button type="button" @click="insertPlaceholder('{keperluan}')">Masukkan {keperluan}</button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{nama}')"
+                    >
+                      Masukkan {nama}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{nis}')"
+                    >
+                      Masukkan {nis}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{kelas}')"
+                    >
+                      Masukkan {kelas}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{tanggal}')"
+                    >
+                      Masukkan {tanggal}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{keperluan}')"
+                    >
+                      Masukkan {keperluan}
+                    </button>
                   </div>
                   <div
                     class="overflow-hidden rounded-[16px] border"
