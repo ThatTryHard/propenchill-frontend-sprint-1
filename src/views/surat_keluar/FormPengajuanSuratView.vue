@@ -20,7 +20,7 @@
           </div>
         </div>
 
-        <form @submit.prevent="submitForm" class="flex flex-col gap-6 w-full">
+        <form @submit.prevent="handleSubmit" class="flex flex-col gap-6 w-full">
           <div class="flex flex-col gap-2">
             <label class="hifi-label">Pengaju Surat</label>
             <div class="relative w-full">
@@ -84,7 +84,12 @@
             </div>
           </div>
 
-          <button type="submit" :disabled="isSubmitting" class="hifi-btn-submit mt-4">
+          <button 
+            type="submit" 
+            :disabled="isSubmitting" 
+            class="hifi-btn-submit mt-4"
+            @click.prevent="handleSubmit"
+          >
             {{ isSubmitting ? 'Mengirim...' : 'Ajukan Surat' }}
           </button>
         </form>
@@ -100,6 +105,7 @@ import api from '@/plugins/axios';
 import { useAuthStore } from '@/stores/users/auth';
 import VSidebar from '@/components/common/VSidebar.vue';
 import { LayoutGrid, Mail, Settings, HelpCircle, LogOut, ChevronDown, Lock, PlusCircle } from 'lucide-vue-next';
+import { useSuratKeluarStore } from '@/stores/surat_keluar/index';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -147,6 +153,31 @@ const bottomItems = [
   { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout }
 ];
 
+const suratKeluarStore = useSuratKeluarStore()
+
+const handleSubmit = async () => {
+  isSubmitting.value = true;
+  try {
+    const payload = {
+      template: formData.id_template, 
+      siswa: isWaliMurid.value ? Number(formData.id_siswa) : null,
+      klasifikasi: formData.klasifikasi,
+      form_data: { ...dynamicData } 
+    };
+
+    await api.post('/api/letters/requests', payload);
+    
+    suratKeluarStore.triggerAlert('Berhasil', 'Pengajuan berhasil!', 'success');
+    router.push('/surat-keluar/riwayat');
+  } catch (error: any) {
+    if (error.response?.status === 400) {
+      suratKeluarStore.triggerAlert('Gagal', 'Cek kembali isian form Anda.', 'error');
+    }
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
 watch(() => formData.id_template, (newId) => {
   dynamicFields.value = [];
   Object.keys(dynamicData).forEach(key => delete dynamicData[key]);
@@ -176,45 +207,10 @@ const fetchInitialData = async () => {
       formData.id_siswa = '';
     }
 
-    const allTemplates = templateRes?.data?.data || []; 
+    listTemplate.value = templateRes?.data?.data || []; 
 
-    listTemplate.value = allTemplates.filter((t: TemplateSurat) => {
-      const allowedRoles = Array.isArray(t.allowed_roles)
-        ? t.allowed_roles.map((role) => String(role).toUpperCase())
-        : [];
-
-      if (allowedRoles.length === 0) {
-        return true;
-      }
-
-      return allowedRoles.includes(currentRole.value);
-    });
   } catch (error) {
-    console.error(error);
-  }
-};
-
-const submitForm = async () => {
-  isSubmitting.value = true;
-  try {
-    const payload = {
-      template: formData.id_template, 
-      siswa: formData.id_siswa === '' ? null : formData.id_siswa,
-      klasifikasi: formData.klasifikasi,
-      form_data: { ...dynamicData } 
-    };
-
-    console.log("Data yang mau dikirim:", payload); 
-
-    await api.post('/api/letters/requests', payload);
-    alert('Pengajuan berhasil diajukan!');
-    router.push('/surat-keluar/riwayat');
-  } catch (error: any) {
-    console.error("Detail Error 400 dari Backend:", error.response?.data);
-    const errorDetails = error.response?.data ? JSON.stringify(error.response.data) : 'Gagal mengirim pengajuan.';
-    alert("Gagal! Cek pesan ini: " + errorDetails);
-  } finally {
-    isSubmitting.value = false;
+    console.error("Gagal mengambil data awal:", error);
   }
 };
 

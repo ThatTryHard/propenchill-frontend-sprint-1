@@ -52,10 +52,11 @@
             <div class="hifi-dropdown">
               <select v-model="filterStatus">
                 <option value="">Status</option>
-                <option value="Disetujui">Disetujui</option>
-                <option value="Ditolak">Ditolak</option>
+                <option value="Verified">Verified</option>
+                <option value="Rejected">Rejected</option>
                 <option value="Pending">Pending</option>
                 <option value="Menunggu Verifikasi Kepsek">Menunggu Verifikasi Kepsek</option>
+                <option value="Dibatalkan">Dibatalkan</option>
               </select>
               <ChevronDown :size="18" class="chevron-icon" />
             </div>
@@ -112,7 +113,7 @@ import VTable from '@/components/common/VTable.vue';
 import VButton from '@/components/common/VButton.vue';
 import VPagination from '@/components/common/VPagination.vue';
 import { 
-  LayoutGrid, Mail, Settings, HelpCircle, LogOut, Plus, Search, ChevronDown 
+  LayoutGrid, Mail, Settings, HelpCircle, LogOut, Plus, Search, ChevronDown, PlusCircle 
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -135,6 +136,9 @@ const navItems = [
     matchPaths: ['/surat-keluar/detail'],
     icon: LayoutGrid,
   },
+
+  { name: 'buat-pengajuan', label: 'Buat Pengajuan Surat', path: '/surat-keluar/pengajuan', icon: PlusCircle },
+
 ];
 
 const handleLogout = () => { authStore.logout(); router.push('/login'); };
