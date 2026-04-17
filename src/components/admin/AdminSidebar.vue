@@ -1,5 +1,6 @@
 <template>
-  <VSidebar :navItems="mergedNavItems" :bottomItems="mergedBottomItems" :userName="displayUserName" :userEmail="displayUserEmail" />
+  <VSidebar :navItems="mergedNavItems" :bottomItems="mergedBottomItems" :userName="displayUserName"
+    :userEmail="displayUserEmail" />
 </template>
 
 <script setup lang="ts">
@@ -32,13 +33,7 @@ const authStore = useAuthStore()
 const displayUserName = computed(() => props.userName || authStore.user?.nama || 'User')
 const displayUserEmail = computed(() => props.userEmail || authStore.user?.email || '-')
 
-const defaultNavItems: NavItem[] = [
-  {
-    name: 'verification',
-    label: 'Verifikasi dan Persetujuan Berjenjang',
-    path: '/admin/surat-antrean',
-    icon: ClipboardCheck,
-  },
+const navItems = [
   { name: 'parents', label: 'Kelola Wali Murid', path: '/admin/parents', icon: Users },
   {
     name: 'students',
@@ -71,6 +66,6 @@ const defaultBottomItems: BottomNavItem[] = [
   { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout },
 ]
 
-const mergedNavItems = computed(() => props.navItems ?? defaultNavItems)
+const mergedNavItems = computed(() => props.navItems ?? navItems)
 const mergedBottomItems = computed(() => props.bottomItems ?? defaultBottomItems)
 </script>

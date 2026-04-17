@@ -27,20 +27,23 @@ const isDepartmentTeacher = computed(() => departmentRoles.includes(authStore.ro
 const statusFilterOptions = [
   { label: 'Semua', value: '' },
   { label: 'Proses', value: 'Diproses' },
+  { label: 'Menunggu Verifikasi Kepsek', value: 'Menunggu Verifikasi Kepsek' },
   { label: 'Disetujui', value: 'Disetujui' },
   { label: 'Ditolak', value: 'Ditolak' },
 ]
 
-const approverOptions = [
-  { label: 'Kepala Sekolah', value: 'KEPSEK' },
-  { label: 'Kepala Kebidangan', value: 'LEVEL_1' },
+const bidangOptions = [
+  { label: 'Pilih Bidang', value: '' },
+  { label: 'Bidang Keagamaan', value: 'BIDANG_AGAMA' },
+  { label: 'Bidang Akademik', value: 'BIDANG_AKADEMIK' },
+  { label: 'Bidang Kesiswaan', value: 'BIDANG_KESISWAAN' },
 ]
 
 const search = ref('')
 const selectedStatusFilter = ref('')
 const currentPage = ref(1)
 const limit = ref(10)
-const selectedApprover = ref('')
+const selectedBidang = ref('')
 const generalError = ref('')
 const successMessage = ref('')
 
@@ -81,6 +84,19 @@ const filteredSuratList = computed(() => {
         kategori.includes(query)
       )
     })
+  }
+
+  // Filter by bidang if selected
+  if (selectedBidang.value) {
+    const bidangMap: Record<string, string> = {
+      'BIDANG_AGAMA': 'KEAGAMAAN',
+      'BIDANG_AKADEMIK': 'AKADEMIK',
+      'BIDANG_KESISWAAN': 'KESISWAAN',
+    }
+    const targetJenis = bidangMap[selectedBidang.value]
+    if (targetJenis) {
+      result = result.filter((s) => s.template_jenis === targetJenis || s.kategori === targetJenis)
+    }
   }
 
   return result
@@ -163,16 +179,8 @@ onMounted(() => {
   <DashboardLayout>
     <template #sidebar>
       <AdminSidebar v-if="isAdmin" />
-      <KepsekSidebar
-        v-else-if="isKepsek"
-        :userName="authStore.user?.nama"
-        :userEmail="authStore.user?.email"
-      />
-      <DepartmentTeacherSidebar
-        v-else
-        :userName="authStore.user?.nama"
-        :userEmail="authStore.user?.email"
-      />
+      <KepsekSidebar v-else-if="isKepsek" :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
+      <DepartmentTeacherSidebar v-else :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans']">
@@ -185,37 +193,30 @@ onMounted(() => {
             <p class="text-[13px] md:text-[14px] leading-[145%] text-[#858a91]">Verifikasi Surat</p>
           </div>
 
-          <VDropdown
-            v-if="isAdmin"
-            v-model="selectedApprover"
-            :options="approverOptions"
-            placeholder="Pilih Verifikator"
-            class="!w-[220px]"
-          />
+          <VDropdown v-if="isAdmin" v-model="selectedBidang" :options="bidangOptions"
+            placeholder="Pilih Bidang" class="!w-[220px]" />
         </div>
 
         <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
 
-        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage" @close="successMessage = ''" />
+        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
+          @close="successMessage = ''" />
       </section>
 
       <section class="mb-4">
         <div class="relative">
           <Search class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#b2b5ba]" />
-          <input
-            v-model="search"
-            type="text"
-            placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
+          <input v-model="search" type="text" placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
             class="h-[46px] w-full rounded-[14px] border border-[#d9e2e7] bg-white pl-12 pr-4 text-[16px] text-[#111827] outline-none transition placeholder:text-[#b2b5ba] focus:border-[#3f9760]"
-            @keyup.enter="handleApplyFilter"
-          />
+            @keyup.enter="handleApplyFilter" />
         </div>
       </section>
 
       <section class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-90">
-            <img :src="mailIcon" alt="Mail Icon" class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img :src="mailIcon" alt="Mail Icon"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[#111827]">Total Surat</p>
@@ -225,7 +226,8 @@ onMounted(() => {
 
         <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="diprosesIcon" alt="Diproses" class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img :src="diprosesIcon" alt="Diproses"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[#111827]">Diproses</p>
@@ -235,7 +237,8 @@ onMounted(() => {
 
         <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="disetujuiIcon" alt="Disetujui" class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img :src="disetujuiIcon" alt="Disetujui"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[#111827]">Disetujui</p>
@@ -245,7 +248,8 @@ onMounted(() => {
 
         <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="ditolakIcon" alt="Ditolak" class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img :src="ditolakIcon" alt="Ditolak"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[#111827]">Ditolak</p>
@@ -256,42 +260,36 @@ onMounted(() => {
 
       <section class="mb-6">
         <div class="relative flex h-[46px] items-center rounded-full bg-[#d4e8d9] p-1">
-          <button
-            v-for="option in statusFilterOptions"
-            :key="option.value"
-            type="button"
-            :class="[
-              'relative flex-1 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-300',
-              selectedStatusFilter === option.value
-                ? 'bg-[#3f9760] text-white shadow-[0px_2px_8px_rgba(63,150,96,0.4)]'
-                : 'text-[#71757b] hover:text-[#3f9760]'
-            ]"
-            @click="selectedStatusFilter = option.value"
-          >
+          <button v-for="option in statusFilterOptions" :key="option.value" type="button" :class="[
+            'relative flex-1 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-300',
+            selectedStatusFilter === option.value
+              ? 'bg-[#3f9760] text-white shadow-[0px_2px_8px_rgba(63,150,96,0.4)]'
+              : 'text-[#71757b] hover:text-[#3f9760]'
+          ]" @click="selectedStatusFilter = option.value">
             {{ option.label }}
           </button>
         </div>
       </section>
 
-      <section v-if="store.loading" class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section v-if="store.loading"
+        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
         Memuat data surat...
       </section>
 
-      <section v-else-if="filteredSuratList.length === 0" class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section v-else-if="filteredSuratList.length === 0"
+        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
         Belum ada surat yang sesuai filter.
       </section>
 
       <section v-else class="flex flex-col gap-4">
-        <article
-          v-for="item in filteredSuratList"
-          :key="item.id_surat"
-          class="rounded-[20px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5"
-        >
+        <article v-for="item in filteredSuratList" :key="item.id_surat"
+          class="rounded-[20px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5">
           <div class="flex items-start justify-between gap-4 mb-3">
             <h3 class="text-[18px] font-bold leading-[1.4] text-[#111827] flex-1">
               {{ getLetterTitle(item) }}
             </h3>
-            <span :class="['px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap', getStatusClass(item.status)]">
+            <span
+              :class="['px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap', getStatusClass(item.status)]">
               {{ item.status }}
             </span>
           </div>
@@ -317,11 +315,9 @@ onMounted(() => {
             </div>
           </div>
 
-          <button
-            type="button"
+          <button type="button"
             class="w-full sm:w-auto bg-[#d4e8d9] hover:bg-[#c5dbcc] text-[#1f2937] px-8 py-2.5 rounded-[12px] text-[14px] font-semibold transition-all duration-300 hover:-translate-y-0.5"
-            @click="goToDetail(item)"
-          >
+            @click="goToDetail(item)">
             Detail
           </button>
         </article>
@@ -330,24 +326,19 @@ onMounted(() => {
       <section class="mt-6">
         <div class="mt-3 flex items-center justify-between px-2 text-sm text-[#858a91]">
           <span>
-            Menampilkan halaman {{ pagination?.halaman_saat_ini || 1 }} dari {{ Math.ceil((pagination?.total_data || 0) / limit) || 1 }}
+            Menampilkan halaman {{ pagination?.halaman_saat_ini || 1 }} dari {{ Math.ceil((pagination?.total_data || 0)
+              /
+            limit) || 1 }}
           </span>
           <div class="flex items-center gap-4">
-            <button
-              type="button"
-              class="disabled:opacity-50"
-              :disabled="!pagination || pagination.halaman_saat_ini <= 1"
-              @click="currentPage--; fetchData()"
-            >
+            <button type="button" class="disabled:opacity-50"
+              :disabled="!pagination || pagination.halaman_saat_ini <= 1" @click="currentPage--; fetchData()">
               Sebelumnya
             </button>
             <span class="font-semibold text-[#111827]">{{ pagination?.halaman_saat_ini || 1 }}</span>
-            <button
-              type="button"
-              class="disabled:opacity-50"
+            <button type="button" class="disabled:opacity-50"
               :disabled="!pagination || pagination.halaman_saat_ini >= Math.ceil((pagination?.total_data || 0) / limit)"
-              @click="currentPage++; fetchData()"
-            >
+              @click="currentPage++; fetchData()">
               Berikutnya
             </button>
           </div>
