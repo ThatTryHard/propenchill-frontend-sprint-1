@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   FileText,
@@ -13,6 +13,9 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
 import { useAuthStore } from '@/stores/users/auth'
+import { useLetterTemplateStore, type TemplateMode } from '@/stores/letter_templates'
+import { useTemplateForm } from '@/forms/useTemplateForm'
+
 import VInputFile from '@/components/common/VInputFile.vue'
 import VSidebar from '@/components/common/VSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
@@ -22,25 +25,30 @@ import VCard from '@/components/common/VCard.vue'
 import VButton from '@/components/common/VButton.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import VTooltip from '@/components/common/VTooltip.vue'
-import { useLetterTemplateStore, type TemplateMode } from '@/stores/letter_templates'
-
-interface TemplateForm {
-  nama_template: string
-  jenis: string
-  is_active: boolean
-  template_mode: TemplateMode
-  konten_template: string
-  allowed_roles: string[]
-  file_template: File | null
-}
 
 const route = useRoute()
 const router = useRouter()
 const templateStore = useLetterTemplateStore()
 const authStore = useAuthStore()
 
+const {
+  form,
+  fieldErrors,
+  generalError,
+  successMessage,
+  isActiveString,
+  clearErrors,
+  applyTemplateDetail,
+  toggleRole,
+  handleFileChange,
+  insertPlaceholder,
+  handleTemplateModeChange,
+  validateForm,
+} = useTemplateForm()
+
 function parseJsonSafely<T>(value: string | null): T | null {
   if (!value) return null
+
   try {
     return JSON.parse(value) as T
   } catch {
@@ -54,6 +62,7 @@ const localUser = computed<Record<string, any> | null>(() => {
 
 const currentUser = computed<Record<string, any> | null>(() => {
   if (localUser.value) return localUser.value
+
   const authAny = authStore as unknown as Record<string, any>
   return authAny.user || authAny.currentUser || null
 })
@@ -76,8 +85,8 @@ const placeholderNama = '{nama}'
 const placeholderNis = '{nis}'
 const placeholderKelas = '{kelas}'
 
-const headerHtml = ref('')
-const isLoadingConfig = ref(false)
+const headerHtml = computed(() => templateStore.config?.header_html || '')
+const isLoadingConfig = computed(() => templateStore.isFetchingConfig)
 const isLoadingDetail = ref(false)
 
 const quillRef = ref()
@@ -116,8 +125,8 @@ const modeOptions = [
 ]
 
 const statusOptions = [
-  { label: 'Aktif', value: 'true' },   
-  { label: 'Nonaktif', value: 'false' } 
+  { label: 'Aktif', value: 'true' },
+  { label: 'Nonaktif', value: 'false' },
 ]
 
 const roleOptions = [
@@ -138,72 +147,15 @@ const editorToolbar = [
   ['clean'],
 ]
 
-const form = reactive<TemplateForm>({
-  nama_template: '',
-  jenis: '',
-  is_active: true,
-  template_mode: 'DOCX',
-  konten_template: '',
-  allowed_roles: [],
-  file_template: null,
-})
-
-const isActiveString = computed({
-  get: () => String(form.is_active),
-  set: (val: string) => {
-    form.is_active = val === 'true'; 
-  }
-});
-
-const generalError = ref('')
-const successMessage = ref('')
-const fieldErrors = reactive<Record<string, string>>({})
-
 watch(
   () => form.template_mode,
-  (newMode) => {
-    delete fieldErrors.file_template
-    delete fieldErrors.konten_template
-
-    if (newMode === 'MANUAL') {
-      form.file_template = null
-    }
-
-    if (newMode === 'DOCX') {
-      form.konten_template = ''
-    }
-  }
+  (newMode) => handleTemplateModeChange(newMode as TemplateMode)
 )
 
 onMounted(() => {
-  fetchLetterConfig()
+  templateStore.fetchLetterConfig()
   fetchTemplateDetail()
 })
-
-async function fetchLetterConfig() {
-  try {
-    isLoadingConfig.value = true
-
-    const baseUrl = import.meta.env.VITE_API_URL || ''
-    const token = localStorage.getItem('access_token')
-
-    const response = await fetch(`${baseUrl}/api/letter_templates/config/`, {
-      method: 'GET',
-      headers: token
-        ? { Authorization: `Bearer ${token}` }
-        : undefined,
-    })
-
-    const result = await response.json()
-
-    if (!response.ok) return
-    headerHtml.value = result?.data?.header_html || ''
-  } catch (error) {
-    console.error('Gagal mengambil konfigurasi surat:', error)
-  } finally {
-    isLoadingConfig.value = false
-  }
-}
 
 async function fetchTemplateDetail() {
   const idTemplate = Number(route.params.id)
@@ -217,106 +169,27 @@ async function fetchTemplateDetail() {
     isLoadingDetail.value = true
     generalError.value = ''
 
-    const result = (await templateStore.fetchTemplateDetail(idTemplate)) as any
+    const result = await templateStore.fetchTemplateDetail(idTemplate)
 
-    if (!result.ok || !('data' in result) || !result.data) {
+    if (!result.ok || !result.data) {
       generalError.value = result.error || 'Gagal mengambil detail template.'
       return
     }
 
-    const data = result.data
-
-    form.nama_template = data.nama_template || ''
-    form.jenis = data.jenis || ''
-    form.is_active = Boolean(data.is_active)
-    form.template_mode = (data.template_mode || 'DOCX') as TemplateMode
-    form.konten_template = data.konten_template || ''
-    form.allowed_roles = Array.isArray(data.allowed_roles) ? [...data.allowed_roles] : []
-    form.file_template = null
+    applyTemplateDetail(result.data)
   } finally {
     isLoadingDetail.value = false
   }
 }
 
-function clearErrors() {
-  generalError.value = ''
-  successMessage.value = ''
-  Object.keys(fieldErrors).forEach((key) => delete fieldErrors[key])
-}
-
-function toggleRole(role: string) {
-  const index = form.allowed_roles.indexOf(role)
-  if (index >= 0) {
-    form.allowed_roles.splice(index, 1)
-  } else {
-    form.allowed_roles.push(role)
-  }
-}
-
-function handleFileChange(file: File | null) {
-  if (!file) {
-    form.file_template = null
-    return
-  }
-
-  if (!file.name.toLowerCase().endsWith('.docx')) {
-    fieldErrors.file_template = 'File template harus berformat .docx.'
-    form.file_template = null
-    return
-  }
-
-  if (file.size > 10 * 1024 * 1024) {
-    fieldErrors.file_template = 'Ukuran file maksimal 10 MB.'
-    form.file_template = null
-    return
-  }
-
-  delete fieldErrors.file_template
-  form.file_template = file
-}
-
-function insertPlaceholder(value: string) {
-  form.konten_template = `${form.konten_template}${value}`
-}
-
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, '').trim()
-}
-
-function validateForm() {
-  clearErrors()
-
-  if (!form.nama_template.trim()) {
-    fieldErrors.nama_template = 'Nama template wajib diisi.'
-  }
-
-  if (!form.jenis) {
-    fieldErrors.jenis = 'Jenis template wajib dipilih.'
-  }
-
-  if (!form.template_mode) {
-    fieldErrors.template_mode = 'Metode template wajib dipilih.'
-  }
-
-  if (form.allowed_roles.length === 0) {
-    fieldErrors.allowed_roles = 'Pilih minimal satu role akses.'
-  }
-
-  if (form.template_mode === 'MANUAL' && !stripHtml(form.konten_template)) {
-    fieldErrors.konten_template = 'Konten template wajib diisi untuk mode MANUAL.'
-  }
-
-  return Object.keys(fieldErrors).length === 0
-}
-
 async function submitUpdate() {
-  if (!validateForm()) return
+  if (!validateForm({ requireDocxFile: false })) return
 
   clearErrors()
 
   const idTemplate = Number(route.params.id)
 
-  const result = (await templateStore.updateTemplate(idTemplate, {
+  const result = await templateStore.updateTemplate(idTemplate, {
     nama_template: form.nama_template,
     jenis: form.jenis,
     is_active: form.is_active,
@@ -324,7 +197,7 @@ async function submitUpdate() {
     konten_template: form.konten_template,
     allowed_roles: form.allowed_roles,
     file_template: form.file_template,
-  })) as any
+  })
 
   if (!result.ok) {
     if (result.details && typeof result.details === 'object' && !Array.isArray(result.details)) {
@@ -341,9 +214,8 @@ async function submitUpdate() {
     return
   }
 
-  await router.push('/letter_templates')
-
   successMessage.value = templateStore.successMessage || 'Template surat berhasil diperbarui.'
+  await router.push('/letter_templates')
 }
 
 function goBack() {
@@ -496,7 +368,7 @@ function goBack() {
                 >
                   <VChip
                     :label="role.label"
-                    :variant="form.allowed_roles.includes(role.value) ? 'primary' : 'tertiary'"
+                    :variant="form.allowed_roles.includes(role.value) ? 'deep' : 'tertiary'"
                   />
                 </button>
               </div>

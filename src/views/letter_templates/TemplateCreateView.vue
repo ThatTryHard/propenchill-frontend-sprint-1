@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   FileText,
@@ -13,6 +13,9 @@ import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
 import { useAuthStore } from '@/stores/users/auth'
+import { useLetterTemplateStore } from '@/stores/letter_templates'
+import { useTemplateForm } from '@/forms/useTemplateForm'
+
 import VInputFile from '@/components/common/VInputFile.vue'
 import VSidebar from '@/components/common/VSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
@@ -22,20 +25,24 @@ import VCard from '@/components/common/VCard.vue'
 import VButton from '@/components/common/VButton.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import VTooltip from '@/components/common/VTooltip.vue'
-import { useLetterTemplateStore, type TemplateMode } from '@/stores/letter_templates'
-
-interface TemplateForm {
-  nama_template: string
-  jenis: string
-  template_mode: TemplateMode
-  konten_template: string
-  allowed_roles: string[]
-  file_template: File | null
-}
 
 const router = useRouter()
 const templateStore = useLetterTemplateStore()
 const authStore = useAuthStore()
+
+const {
+  form,
+  fieldErrors,
+  generalError,
+  successMessage,
+  clearErrors,
+  resetForm,
+  toggleRole,
+  handleFileChange,
+  insertPlaceholder,
+  handleTemplateModeChange,
+  validateForm,
+} = useTemplateForm()
 
 function parseJsonSafely<T>(value: string | null): T | null {
   if (!value) return null
@@ -69,22 +76,18 @@ const userName = computed(() => {
 })
 
 const userEmail = computed(() => {
-  return (
-    currentUser.value?.email ||
-    authStore.user?.email ||
-    '-'
-  )
+  return currentUser.value?.email || authStore.user?.email || '-'
 })
 
 const placeholderNama = '{nama}'
 const placeholderNis = '{nis}'
 const placeholderKelas = '{kelas}'
 
-const headerHtml = ref('')
-const isLoadingConfig = ref(false)
-
 const quillRef = ref()
 const fileInputRef = ref<InstanceType<typeof VInputFile> | null>(null)
+
+const headerHtml = computed(() => templateStore.config?.header_html || '')
+const isLoadingConfig = computed(() => templateStore.isFetchingConfig)
 
 const navItems = [
   {
@@ -136,147 +139,17 @@ const editorToolbar = [
   ['clean'],
 ]
 
-const form = reactive<TemplateForm>({
-  nama_template: '',
-  jenis: '',
-  template_mode: 'DOCX',
-  konten_template: '',
-  allowed_roles: [],
-  file_template: null,
-})
-
-const generalError = ref('')
-const successMessage = ref('')
-const fieldErrors = reactive<Record<string, string>>({})
-
 watch(
   () => form.template_mode,
-  (newMode) => {
-    delete fieldErrors.file_template
-    delete fieldErrors.konten_template
-
-    if (newMode === 'MANUAL') {
-      form.file_template = null
-    }
-
-    if (newMode === 'DOCX') {
-      form.konten_template = ''
-    }
-  },
+  (newMode) => handleTemplateModeChange(newMode)
 )
 
 onMounted(() => {
-  fetchLetterConfig()
+  templateStore.fetchLetterConfig()
 })
 
-async function fetchLetterConfig() {
-  try {
-    isLoadingConfig.value = true
-
-    const baseUrl = import.meta.env.VITE_API_URL || ''
-    const token = localStorage.getItem('access_token')
-
-    const response = await fetch(`${baseUrl}/api/letter_templates/config/`, {
-      method: 'GET',
-      headers: token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : undefined,
-    })
-
-    const result = await response.json()
-
-    if (!response.ok) {
-      return
-    }
-
-    headerHtml.value = result?.data?.header_html || ''
-  } catch (error) {
-    console.error('Gagal mengambil konfigurasi surat:', error)
-  } finally {
-    isLoadingConfig.value = false
-  }
-}
-
-function clearErrors() {
-  generalError.value = ''
-  successMessage.value = ''
-  Object.keys(fieldErrors).forEach((key) => delete fieldErrors[key])
-}
-
-function toggleRole(role: string) {
-  const index = form.allowed_roles.indexOf(role)
-
-  if (index >= 0) {
-    form.allowed_roles.splice(index, 1)
-  } else {
-    form.allowed_roles.push(role)
-  }
-}
-
-function handleFileChange(file: File | null) {
-  if (!file) {
-    form.file_template = null
-    return
-  }
-
-  if (!file.name.toLowerCase().endsWith('.docx')) {
-    fieldErrors.file_template = 'File template harus berformat .docx.'
-    form.file_template = null
-    return
-  }
-
-  if (file.size > 10 * 1024 * 1024) {
-    fieldErrors.file_template = 'Ukuran file maksimal 10 MB.'
-    form.file_template = null
-    return
-  }
-
-  delete fieldErrors.file_template
-  form.file_template = file
-}
-
-function insertPlaceholder(value: string) {
-  form.konten_template = `${form.konten_template}${value}`
-}
-
-function stripHtml(html: string) {
-  return html.replace(/<[^>]*>/g, '').trim()
-}
-
-function validateForm() {
-  clearErrors()
-
-  if (!form.nama_template.trim()) {
-    fieldErrors.nama_template = 'Nama template wajib diisi.'
-  }
-
-  if (!form.jenis) {
-    fieldErrors.jenis = 'Jenis template wajib dipilih.'
-  }
-
-  if (!form.template_mode) {
-    fieldErrors.template_mode = 'Metode template wajib dipilih.'
-  }
-
-  if (form.allowed_roles.length === 0) {
-    fieldErrors.allowed_roles = 'Pilih minimal satu role akses.'
-  }
-
-  if (form.template_mode === 'DOCX' && !form.file_template) {
-    fieldErrors.file_template = 'File template wajib diisi untuk mode DOCX.'
-  }
-
-  if (form.template_mode === 'MANUAL' && !stripHtml(form.konten_template)) {
-    fieldErrors.konten_template = 'Konten template wajib diisi untuk mode MANUAL.'
-  }
-
-  return Object.keys(fieldErrors).length === 0
-}
-
 async function submitTemplate() {
-  if (!validateForm()) return
+  if (!validateForm({ requireDocxFile: true })) return
 
   clearErrors()
 
@@ -290,29 +163,23 @@ async function submitTemplate() {
   })
 
   if (!result.ok) {
-    if ('details' in result && result.details && typeof result.details === 'object' && !Array.isArray(result.details)) {
+    if (result.details && typeof result.details === 'object' && !Array.isArray(result.details)) {
       Object.entries(result.details).forEach(([key, value]) => {
         fieldErrors[key] = Array.isArray(value) ? String(value[0]) : String(value)
       })
 
       if (!Object.keys(fieldErrors).length) {
-        generalError.value = ('error' in result ? result.error : null) || 'Gagal membuat template.'
+        generalError.value = result.error || 'Gagal membuat template.'
       }
     } else {
-      generalError.value = ('error' in result ? result.error : null) || 'Gagal membuat template.'
+      generalError.value = result.error || 'Gagal membuat template.'
     }
 
     return
   }
 
   successMessage.value = templateStore.successMessage || 'Template surat berhasil dibuat.'
-
-  form.nama_template = ''
-  form.jenis = ''
-  form.template_mode = 'DOCX'
-  form.konten_template = ''
-  form.allowed_roles = []
-  form.file_template = null
+  resetForm()
 }
 
 function goBack() {
@@ -450,7 +317,7 @@ function goBack() {
                 >
                   <VChip
                     :label="role.label"
-                    :variant="form.allowed_roles.includes(role.value) ? 'primary' : 'tertiary'"
+                    :variant="form.allowed_roles.includes(role.value) ? 'deep' : 'tertiary'"
                   />
                 </button>
               </div>
@@ -482,6 +349,10 @@ function goBack() {
                 :max-size-mb="10"
                 @update:modelValue="handleFileChange"
               />
+
+              <p v-if="fieldErrors.file_template" class="text-xs text-[#A0453B]">
+                {{ fieldErrors.file_template }}
+              </p>
             </div>
           </VCard>
 
@@ -514,12 +385,43 @@ function goBack() {
                   </label>
 
                   <div class="mb-3 flex flex-wrap gap-2">
-                    <button type="button" @click="insertPlaceholder('{nama}')">Masukkan {nama}</button>
-                    <button type="button" @click="insertPlaceholder('{nis}')">Masukkan {nis}</button>
-                    <button type="button" @click="insertPlaceholder('{kelas}')">Masukkan {kelas}</button>
-                    <button type="button" @click="insertPlaceholder('{tanggal}')">Masukkan {tanggal}</button>
-                    <button type="button" @click="insertPlaceholder('{keperluan}')">Masukkan {keperluan}</button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{nama}')"
+                    >
+                      Masukkan {nama}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{nis}')"
+                    >
+                      Masukkan {nis}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{kelas}')"
+                    >
+                      Masukkan {kelas}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{tanggal}')"
+                    >
+                      Masukkan {tanggal}
+                    </button>
+                    <button
+                      type="button"
+                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
+                      @click="insertPlaceholder('{keperluan}')"
+                    >
+                      Masukkan {keperluan}
+                    </button>
                   </div>
+
                   <div
                     class="rounded-[16px] border"
                     :class="fieldErrors.konten_template ? 'border-[#A0453B]' : 'border-[#d9e2e7]'"
