@@ -26,8 +26,7 @@ const isDepartmentTeacher = computed(() => departmentRoles.includes(authStore.ro
 
 const statusFilterOptions = [
   { label: 'Semua', value: '' },
-  { label: 'Proses', value: 'Diproses' },
-  { label: 'Menunggu Verifikasi Kepsek', value: 'Menunggu Verifikasi Kepsek' },
+  { label: 'Diproses', value: 'Diproses' },
   { label: 'Disetujui', value: 'Disetujui' },
   { label: 'Ditolak', value: 'Ditolak' },
 ]
@@ -49,8 +48,8 @@ const successMessage = ref('')
 
 const suratList = computed(() => store.suratList)
 const stats = computed(() => store.stats)
-const pagination = computed(() => store.pagination)
 
+// --- MENGHITUNG DATA YANG SUDAH DIFILTER ---
 const filteredSuratList = computed(() => {
   const withChronologicalOrder = (items: SuratAntrean[]) => {
     return [...items].sort((a, b) => {
@@ -86,7 +85,6 @@ const filteredSuratList = computed(() => {
     })
   }
 
-  // Filter by bidang if selected
   if (selectedBidang.value) {
     const bidangMap: Record<string, string> = {
       'BIDANG_AGAMA': 'KEAGAMAAN',
@@ -101,6 +99,18 @@ const filteredSuratList = computed(() => {
 
   return result
 })
+
+// --- MEMBUAT LOGIKA PAGINATION DI FRONTEND ---
+const totalPages = computed(() => {
+  return Math.ceil(filteredSuratList.value.length / limit.value) || 1
+})
+
+const paginatedSuratList = computed(() => {
+  const start = (currentPage.value - 1) * limit.value
+  const end = start + limit.value
+  return filteredSuratList.value.slice(start, end)
+})
+
 
 function getLetterTitle(item: SuratAntrean): string {
   return String(item.perihal || item.template_nama || item.perkara || 'Tanpa Perihal')
@@ -159,15 +169,15 @@ async function fetchData() {
   successMessage.value = ''
 
   try {
-    await store.fetchAntreanList(currentPage.value)
+    // Nggak perlu kirim currentPage lagi, backend ngirim semua datanya
+    await store.fetchAntreanList()
   } catch {
     generalError.value = 'Gagal memuat data antrean verifikasi surat.'
   }
 }
 
 function handleApplyFilter() {
-  currentPage.value = 1
-  fetchData()
+  currentPage.value = 1 // Reset halaman ke 1 setiap filter berubah
 }
 
 onMounted(() => {
@@ -198,7 +208,6 @@ onMounted(() => {
         </div>
 
         <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
-
         <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
           @close="successMessage = ''" />
       </section>
@@ -265,7 +274,7 @@ onMounted(() => {
             selectedStatusFilter === option.value
               ? 'bg-[#3f9760] text-white shadow-[0px_2px_8px_rgba(63,150,96,0.4)]'
               : 'text-[#71757b] hover:text-[#3f9760]'
-          ]" @click="selectedStatusFilter = option.value">
+          ]" @click="selectedStatusFilter = option.value; handleApplyFilter()">
             {{ option.label }}
           </button>
         </div>
@@ -282,7 +291,7 @@ onMounted(() => {
       </section>
 
       <section v-else class="flex flex-col gap-4">
-        <article v-for="item in filteredSuratList" :key="item.id_surat"
+        <article v-for="item in paginatedSuratList" :key="item.id_surat"
           class="rounded-[20px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5">
           <div class="flex items-start justify-between gap-4 mb-3">
             <h3 class="text-[18px] font-bold leading-[1.4] text-[#111827] flex-1">
@@ -326,19 +335,17 @@ onMounted(() => {
       <section class="mt-6">
         <div class="mt-3 flex items-center justify-between px-2 text-sm text-[#858a91]">
           <span>
-            Menampilkan halaman {{ pagination?.halaman_saat_ini || 1 }} dari {{ Math.ceil((pagination?.total_data || 0)
-              /
-            limit) || 1 }}
+            Menampilkan halaman {{ currentPage }} dari {{ totalPages }}
           </span>
           <div class="flex items-center gap-4">
             <button type="button" class="disabled:opacity-50"
-              :disabled="!pagination || pagination.halaman_saat_ini <= 1" @click="currentPage--; fetchData()">
+              :disabled="currentPage <= 1" @click="currentPage--">
               Sebelumnya
             </button>
-            <span class="font-semibold text-[#111827]">{{ pagination?.halaman_saat_ini || 1 }}</span>
+            <span class="font-semibold text-[#111827]">{{ currentPage }}</span>
             <button type="button" class="disabled:opacity-50"
-              :disabled="!pagination || pagination.halaman_saat_ini >= Math.ceil((pagination?.total_data || 0) / limit)"
-              @click="currentPage++; fetchData()">
+              :disabled="currentPage >= totalPages"
+              @click="currentPage++">
               Berikutnya
             </button>
           </div>

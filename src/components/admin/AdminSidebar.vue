@@ -53,6 +53,12 @@ const navItems = [
     path: '/admin/teachers',
     icon: UserRound,
   },
+  {
+    name: 'surat-antrean',
+    label: 'Verifikasi dan Persetujuan Berjenjang',
+    path: '/admin/surat-antrean',
+    icon: ClipboardCheck,
+  },
 ]
 
 const handleLogout = () => {
