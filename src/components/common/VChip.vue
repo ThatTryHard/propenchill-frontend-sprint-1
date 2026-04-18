@@ -37,6 +37,8 @@ const variantStyles = computed(() => {
       return 'bg-[#f2e0d0]'
     case 'tertiary':
       return 'bg-[#f9fdfb]'
+    case 'deep':
+      return 'bg-[#4A8B50] text-[#F8FAFC]'
     default:
       return 'bg-[#c7e1d0]'
   }

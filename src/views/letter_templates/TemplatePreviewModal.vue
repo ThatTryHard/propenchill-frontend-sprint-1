@@ -1,24 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { X, Download } from 'lucide-vue-next'
-
-interface TemplateItem {
-  id_template: string | number
-  nama_template: string
-  jenis?: string
-  template_mode: string
-  is_active: boolean
-  created_at?: string
-  created_by?: number
-  created_by_name?: string
-  allowed_roles?: string[]
-  parsed_variables?: string[]
-  original_file_name?: string
-}
+import type { LetterTemplateItem } from '@/stores/letter_templates'
 
 const props = defineProps<{
   isOpen: boolean
-  template: TemplateItem | null
+  template: LetterTemplateItem | null
   isLoading?: boolean
 }>()
 
@@ -108,7 +95,7 @@ async function handleDownloadTemplate() {
         const errorData = await response.json()
         errorMessage = errorData?.error || errorData?.detail || errorMessage
       } catch {
-        // ignore json parse failure
+        // ignore
       }
 
       throw new Error(errorMessage)
@@ -202,63 +189,74 @@ async function handleDownloadTemplate() {
           </div>
 
           <div class="rounded-[18px] bg-white/70 px-4 py-4">
+            <p class="text-[12px] text-[#858a91]">Terakhir diperbarui</p>
+            <p class="mt-1 text-[#111827]">{{ formatDateTime(template.updated_at || template.created_at) }}</p>
+          </div>
+
+          <div class="rounded-[18px] bg-white/70 px-4 py-4">
             <p class="text-[12px] text-[#858a91]">Dibuat oleh</p>
-            <p class="mt-1 text-[#111827]">
-              {{ template.created_by_name || (template.created_by ? `User #${template.created_by}` : '-') }}
-            </p>
+            <p class="mt-1 text-[#111827]">{{ template.created_by_name || '-' }}</p>
           </div>
 
           <div class="rounded-[18px] bg-white/70 px-4 py-4">
             <p class="text-[12px] text-[#858a91]">Role Akses</p>
-
-            <div v-if="template.allowed_roles?.length" class="mt-2 flex flex-wrap gap-2">
+            <div class="mt-2 flex flex-wrap gap-2">
               <span
-                v-for="role in template.allowed_roles"
+                v-for="role in template.allowed_roles || []"
                 :key="role"
-                class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1 text-[12px] text-[#111827]"
+                class="rounded-full bg-[#dcefe1] px-3 py-1 text-[12px] font-medium text-[#2f6d3d]"
               >
                 {{ formatRoleLabel(role) }}
               </span>
+              <span v-if="!template.allowed_roles || template.allowed_roles.length === 0" class="text-[#111827]">
+                -
+              </span>
             </div>
-
-            <p v-else class="mt-2 text-[13px] text-[#9aa1a9]">
-              Tidak ada role akses.
-            </p>
           </div>
 
           <div class="rounded-[18px] bg-white/70 px-4 py-4">
             <p class="text-[12px] text-[#858a91]">Variabel Terdeteksi</p>
-
-            <div v-if="template.parsed_variables?.length" class="mt-2 flex flex-wrap gap-2">
+            <div class="mt-2 flex flex-wrap gap-2">
               <span
-                v-for="variable in template.parsed_variables"
+                v-for="variable in template.parsed_variables || []"
                 :key="variable"
-                class="rounded-full bg-[#dff3e5] px-3 py-1 text-[12px] font-medium text-[#2f7a4b]"
+                class="rounded-full bg-[#f4f7fb] px-3 py-1 text-[12px] font-medium text-[#111827]"
               >
                 {{ formatPlaceholder(variable) }}
               </span>
+              <span v-if="!template.parsed_variables || template.parsed_variables.length === 0" class="text-[#111827]">
+                Tidak ada variabel terdeteksi.
+              </span>
             </div>
-
-            <p v-else class="mt-2 text-[13px] text-[#9aa1a9]">
-              Tidak ada variabel terdeteksi.
-            </p>
           </div>
 
-          <p v-if="downloadError" class="text-[13px] text-[#A0453B]">
-            {{ downloadError }}
-          </p>
+          <div v-if="template.preview_text" class="rounded-[18px] bg-white/70 px-4 py-4">
+            <p class="text-[12px] text-[#858a91]">Preview Template</p>
+            <div class="mt-2 whitespace-pre-line text-[14px] leading-[160%] text-[#111827]">
+              {{ template.preview_text }}
+            </div>
+          </div>
 
-          <button
-            v-if="canDownload"
-            type="button"
-            class="inline-flex items-center justify-center gap-2 rounded-full bg-[#1f5f2f] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#184c25] disabled:cursor-not-allowed disabled:opacity-60"
-            :disabled="isDownloading"
-            @click="handleDownloadTemplate"
-          >
-            <Download class="h-4 w-4" />
-            {{ isDownloading ? 'Mengunduh...' : 'Download Template' }}
-          </button>
+          <div v-if="downloadError" class="rounded-[18px] bg-[#fef2f2] px-4 py-3 text-[13px] text-[#b42318]">
+            {{ downloadError }}
+          </div>
+
+          <div class="flex justify-end">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 rounded-full bg-[#0c4923] px-4 py-2 text-[14px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              :disabled="!canDownload || isDownloading"
+              @click="handleDownloadTemplate"
+            >
+              <Download class="h-4 w-4" />
+              {{ isDownloading ? 'Mengunduh...' : 'Unduh Template' }}
+            </button>
+          </div>
         </div>
+      </div>
+
+      <div v-else class="px-6 py-10 text-center text-[#858a91]">
+        Data template tidak tersedia.
       </div>
     </div>
   </div>

@@ -66,13 +66,13 @@
 
             <slot></slot>
 
-            <div v-if="buttons.length > 0" class="w-full flex flex-col gap-[8px] mt-[24px]">
+            <div v-if="buttons.length > 0" class="w-full flex justify-end gap-[12px] mt-[24px]">
               <button
                 v-for="(btn, index) in buttons"
                 :key="index"
                 @click="handleButtonClick(btn.action)"
                 :class="[
-                  'w-full py-[12px] px-[32px] rounded-[20px] text-[16px] font-semibold leading-[120%] transition-transform active:scale-95',
+                  'py-[12px] px-[28px] min-w-[120px] rounded-[20px] text-[16px] font-semibold leading-[120%] transition-transform active:scale-95',
                   btn.variant === 'primary'
                     ? 'text-[#f8fafc] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset]'
                     : 'text-[#111827] bg-[#c9e9da] shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset]',
