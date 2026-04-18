@@ -5,6 +5,7 @@ export interface SuratAntrean {
   id_surat: number
   id_pengajuan?: number
   nomor_surat: string | null
+  perihal?: string
   perkara: string
   deskripsi: string
   description?: string

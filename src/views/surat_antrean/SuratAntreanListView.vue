@@ -26,7 +26,7 @@ const isDepartmentTeacher = computed(() => departmentRoles.includes(authStore.ro
 
 const statusFilterOptions = [
   { label: 'Semua', value: '' },
-  { label: 'Diproses', value: 'Diproses' },
+  { label: 'Proses', value: 'Diproses' },
   { label: 'Disetujui', value: 'Disetujui' },
   { label: 'Ditolak', value: 'Ditolak' },
 ]
@@ -217,15 +217,15 @@ onMounted(() => {
           <Search class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#b2b5ba]" />
           <input v-model="search" type="text" placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
             class="h-[46px] w-full rounded-[14px] border border-[#d9e2e7] bg-white pl-12 pr-4 text-[16px] text-[#111827] outline-none transition placeholder:text-[#b2b5ba] focus:border-[#3f9760]"
-            @keyup.enter="handleApplyFilter" />
+            @keyup.enter="handleApplyFilter"
+          />
         </div>
       </section>
 
       <section class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-90">
-            <img :src="mailIcon" alt="Mail Icon"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img :src="mailIcon" alt="Mail Icon" class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[#111827]">Total Surat</p>
@@ -285,8 +285,7 @@ onMounted(() => {
         Memuat data surat...
       </section>
 
-      <section v-else-if="filteredSuratList.length === 0"
-        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section v-else-if="filteredSuratList.length === 0" class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
         Belum ada surat yang sesuai filter.
       </section>
 
@@ -326,7 +325,8 @@ onMounted(() => {
 
           <button type="button"
             class="w-full sm:w-auto bg-[#d4e8d9] hover:bg-[#c5dbcc] text-[#1f2937] px-8 py-2.5 rounded-[12px] text-[14px] font-semibold transition-all duration-300 hover:-translate-y-0.5"
-            @click="goToDetail(item)">
+            @click="goToDetail(item)"
+          >
             Detail
           </button>
         </article>
