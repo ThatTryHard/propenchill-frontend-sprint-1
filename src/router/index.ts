@@ -224,7 +224,7 @@ const router = createRouter({
       },
     },
     { 
-      path: '/surat-antrean',
+      path: '/admin/surat-antrean',
       name: 'surat-antrean-list',
       component: SuratAntreanListView,
       meta: {
