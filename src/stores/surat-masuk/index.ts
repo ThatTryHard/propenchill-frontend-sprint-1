@@ -41,6 +41,8 @@ export interface SuratMasukResponse {
 
 type ApiErrorMap = Record<string, string>
 
+type UnknownRecord = Record<string, unknown>
+
 const firstError = (value: unknown): string => {
   if (Array.isArray(value) && value.length > 0) {
     return String(value[0])
@@ -97,6 +99,105 @@ const normalizeCreateErrors = (error: any): ApiErrorMap => {
   return errors
 }
 
+const toObject = (value: unknown): UnknownRecord => {
+  return value && typeof value === 'object' ? (value as UnknownRecord) : {}
+}
+
+const extractArrayPayload = (value: unknown): unknown[] => {
+  if (Array.isArray(value)) {
+    return value
+  }
+
+  const container = toObject(value)
+
+  if (Array.isArray(container.data)) {
+    return container.data
+  }
+
+  if (Array.isArray(container.results)) {
+    return container.results
+  }
+
+  if (Array.isArray(container.items)) {
+    return container.items
+  }
+
+  const nestedData = toObject(container.data)
+  if (Array.isArray(nestedData.results)) {
+    return nestedData.results
+  }
+
+  if (Array.isArray(nestedData.items)) {
+    return nestedData.items
+  }
+
+  return []
+}
+
+const toNullableText = (value: unknown): string | null | undefined => {
+  if (value === null) {
+    return null
+  }
+
+  if (value === undefined) {
+    return undefined
+  }
+
+  const text = String(value).trim()
+  return text || undefined
+}
+
+const normalizePengirimItem = (value: unknown): Pengirim | null => {
+  const raw = toObject(value)
+  const namaInstansi =
+    toNullableText(raw.nama_instansi) ||
+    toNullableText(raw.namaInstansi) ||
+    toNullableText(raw.instansi) ||
+    toNullableText(raw.nama)
+
+  if (!namaInstansi) {
+    return null
+  }
+
+  const idCandidate = raw.id_pengirim ?? raw.id ?? raw.pengirim_id
+  const idNumber = Number(idCandidate)
+
+  return {
+    id_pengirim: Number.isFinite(idNumber) ? idNumber : undefined,
+    nama_instansi: namaInstansi,
+    alamat: toNullableText(raw.alamat),
+    kontak: toNullableText(raw.kontak),
+  }
+}
+
+const normalizePengirimList = (value: unknown): Pengirim[] => {
+  const seen = new Set<string>()
+  const result: Pengirim[] = []
+
+  for (const item of extractArrayPayload(value)) {
+    const normalized = normalizePengirimItem(item)
+    if (!normalized) {
+      continue
+    }
+
+    const key = normalized.nama_instansi.trim().toLowerCase()
+    if (!key || seen.has(key)) {
+      continue
+    }
+
+    seen.add(key)
+    result.push(normalized)
+  }
+
+  return result
+}
+
+const extractPengirimFromSuratList = (value: unknown): Pengirim[] => {
+  const items = extractArrayPayload(value)
+  const senders = items.map((item) => toObject(item).pengirim)
+  return normalizePengirimList(senders)
+}
+
 export interface PaginationParams {
   page?: number
   limit?: number
@@ -141,9 +242,10 @@ export const useSuratMasukStore = defineStore('surat-masuk', {
       this.error = ''
 
       try {
-        const response = await api.get('/api/pengirim')
-        const data = Array.isArray(response.data) ? response.data : response.data?.data
-        this.pengirimList = Array.isArray(data) ? data : []
+        const listResponse = await api.get('/api/surat-masuk/list/', {
+          params: { page: 1, limit: 200 },
+        })
+        this.pengirimList = extractPengirimFromSuratList(listResponse.data)
       } catch (error: any) {
         this.error = error?.response?.data?.error || 'Gagal memuat data pengirim.'
         this.pengirimList = []
