@@ -184,7 +184,7 @@ const router = createRouter({
       component: FormPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID'],
+        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN'],
       },
     },
     {
@@ -193,7 +193,7 @@ const router = createRouter({
       component: RiwayatPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID'],
+        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN'],
       },
     },
     {
@@ -202,7 +202,7 @@ const router = createRouter({
       component: DetailPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID'],
+        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN'],
       },
     },
     {

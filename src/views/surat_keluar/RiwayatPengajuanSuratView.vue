@@ -4,7 +4,7 @@
       <SIMPSidebar />
     </template>
 
-    <main class="flex-1 overflow-y-auto layout-bg">
+    <div class="layout-bg min-h-full">
       <div class="main-content-wrapper">
         <div class="header-section">
           <div class="title-group">
@@ -15,10 +15,7 @@
               Lihat dan kelola pengajuan surat yang telah dibuat
             </p>
           </div>
-          <VButton 
-            class="hifi-btn-custom-green" 
-            @click="$router.push('/surat-keluar/pengajuan')"
-          >
+          <VButton class="hifi-btn-custom-green" @click="$router.push('/surat-keluar/pengajuan')">
             <template #left-icon>
               <Plus :size="20" :stroke-width="3" color="white" class="mr-2" />
             </template>
@@ -39,7 +36,7 @@
             <div class="hifi-dropdown">
               <VDropdown v-model="filterMonth" :options="monthOptions" placeholder="Bulan" />
             </div>
-            <div class="hifi-dropdown">
+            <div class="hifi-dropdown-status">
               <VDropdown v-model="filterStatus" :options="statusOptions" placeholder="Status" />
             </div>
           </div>
@@ -54,49 +51,59 @@
                 </tr>
               </thead>
               <tbody>
-                <template v-if="filteredSurat.length > 0">
-                  <tr v-for="(row, index) in filteredSurat" :key="row.id_pengajuan">
-                    <td class="cell-center">{{ index + 1 }}</td>
+                <template v-if="isLoading">
+                  <tr>
+                    <td colspan="6" class="loading-state">Memuat data pengajuan surat...</td>
+                  </tr>
+                </template>
+                <template v-else-if="filteredSurat.length > 0">
+                  <tr v-for="(row, index) in paginatedSurat" :key="row.id_pengajuan">
+                    <td class="cell-center">{{ rowStartIndex + index + 1 }}</td>
                     <td class="cell-jenis-surat">{{ row.template_nama }}</td>
                     <td class="cell-center">{{ row.nomor_surat || '-' }}</td>
                     <td class="cell-center">{{ formatDate(row.tanggal_pengajuan) }}</td>
                     <td class="cell-status">{{ row.status }}</td>
-                    <td class="cell-action" @click="$router.push(`/surat-keluar/detail/${row.id_pengajuan}`)">
+                    <td
+                      class="cell-action"
+                      @click="$router.push(`/surat-keluar/detail/${row.id_pengajuan}`)"
+                    >
                       Detail
                     </td>
                   </tr>
                 </template>
                 <template v-else>
                   <tr>
-                    <td colspan="6" class="empty-state">Tidak ada data pengajuan surat yang tersedia.</td>
+                    <td colspan="6" class="empty-state">
+                      Tidak ada data pengajuan surat yang tersedia.
+                    </td>
                   </tr>
                 </template>
               </tbody>
             </table>
           </div>
-          <div class="show-all">Show All</div>
+          <div class="show-all">
+            Menampilkan {{ paginatedSurat.length }} dari {{ filteredSurat.length }} data
+          </div>
         </div>
 
         <div class="pagination-container">
-          <VPagination v-model:current-page="currentPage" :total-pages="10" />
+          <VPagination v-model:current-page="currentPage" :total-pages="totalPages" />
         </div>
       </div>
-    </main>
+    </div>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import api from '@/plugins/axios';
-import DashboardLayout from '@/components/common/DashboardLayout.vue';
-import SIMPSidebar from '@/components/layout/SIMPSidebar.vue';
-import VButton from '@/components/common/VButton.vue';
-import VPagination from '@/components/common/VPagination.vue';
-import VInputField from '@/components/common/VInputField.vue';
-import VDropdown from '@/components/common/VDropdown.vue';
-import { 
-  Plus
-} from 'lucide-vue-next';
+import { ref, computed, onMounted, watch } from 'vue'
+import api from '@/plugins/axios'
+import DashboardLayout from '@/components/common/DashboardLayout.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
+import VButton from '@/components/common/VButton.vue'
+import VPagination from '@/components/common/VPagination.vue'
+import VInputField from '@/components/common/VInputField.vue'
+import VDropdown from '@/components/common/VDropdown.vue'
+import { Plus } from 'lucide-vue-next'
 
 interface RiwayatItem {
   id_pengajuan: number
@@ -113,21 +120,41 @@ const headers = [
   { text: 'Tanggal Pengajuan', value: 'tanggal_pengajuan' },
   { text: 'Status', value: 'status' },
   { text: 'Aksi', value: 'aksi' },
-];
+]
 
-const listPengajuan = ref<RiwayatItem[]>([]);
-const filterStatus = ref('');
-const filterMonth = ref('');
-const searchQuery = ref('');
-const currentPage = ref(1);
+const listPengajuan = ref<RiwayatItem[]>([])
+const filterStatus = ref('')
+const filterMonth = ref('')
+const searchQuery = ref('')
+const currentPage = ref(1)
+const itemsPerPage = 10
+const isLoading = ref(false)
+
+const getMonthName = (m: number) => {
+  const months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ]
+  return months[m - 1]
+}
 
 const monthOptions = [
   { label: 'Bulan', value: '' },
   ...Array.from({ length: 12 }, (_, index) => {
-    const month = index + 1;
-    return { label: getMonthName(month) || `Bulan ${month}`, value: String(month) };
+    const month = index + 1
+    return { label: getMonthName(month) || `Bulan ${month}`, value: String(month) }
   }),
-];
+]
 
 const statusOptions = [
   { label: 'Status', value: '' },
@@ -136,41 +163,68 @@ const statusOptions = [
   { label: 'Pending', value: 'Pending' },
   { label: 'Menunggu Verifikasi Kepsek', value: 'Menunggu Verifikasi Kepsek' },
   { label: 'Dibatalkan', value: 'Dibatalkan' },
-];
-
-const getMonthName = (m: number) => {
-  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  return months[m - 1];
-};
+]
 
 const fetchRiwayat = async () => {
+  isLoading.value = true
   try {
-    const response = await api.get('/api/letters/my-requests');
+    const response = await api.get('/api/letters/my-requests')
     listPengajuan.value = Array.isArray(response.data?.data)
       ? response.data.data
       : Array.isArray(response.data)
         ? response.data
-        : [];
-  } catch (error) { console.error(error); }
-};
+        : []
+  } catch (error) {
+    console.error(error)
+  } finally {
+    isLoading.value = false
+  }
+}
 
-const normalizeStatus = (status: string | null | undefined) => String(status || '').toLowerCase();
+const normalizeStatus = (status: string | null | undefined) => String(status || '').toLowerCase()
 
 const filteredSurat = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase();
+  const query = searchQuery.value.trim().toLowerCase()
   return listPengajuan.value.filter((surat) => {
-    const matchesSearch = !query || surat.template_nama?.toLowerCase().includes(query);
-    const matchesMonth = !filterMonth.value || new Date(surat.tanggal_pengajuan || '').getMonth() + 1 === parseInt(filterMonth.value);
+    const matchesSearch = !query || surat.template_nama?.toLowerCase().includes(query)
+    const matchesMonth =
+      !filterMonth.value ||
+      new Date(surat.tanggal_pengajuan || '').getMonth() + 1 === parseInt(filterMonth.value)
     const matchesStatus =
-      !filterStatus.value ||
-      normalizeStatus(surat.status) === normalizeStatus(filterStatus.value);
-    return matchesSearch && matchesMonth && matchesStatus;
-  });
-});
+      !filterStatus.value || normalizeStatus(surat.status) === normalizeStatus(filterStatus.value)
+    return matchesSearch && matchesMonth && matchesStatus
+  })
+})
 
-const formatDate = (d?: string) => d ? new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+const totalPages = computed(() => {
+  const total = Math.ceil(filteredSurat.value.length / itemsPerPage)
+  return total > 0 ? total : 1
+})
 
-onMounted(fetchRiwayat);
+const rowStartIndex = computed(() => (currentPage.value - 1) * itemsPerPage)
+
+const paginatedSurat = computed(() => {
+  const start = rowStartIndex.value
+  const end = start + itemsPerPage
+  return filteredSurat.value.slice(start, end)
+})
+
+watch([searchQuery, filterMonth, filterStatus], () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (newTotalPages) => {
+  if (currentPage.value > newTotalPages) {
+    currentPage.value = newTotalPages
+  }
+})
+
+const formatDate = (d?: string) =>
+  d
+    ? new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '-'
+
+onMounted(fetchRiwayat)
 </script>
 
 <style scoped>
@@ -180,7 +234,7 @@ onMounted(fetchRiwayat);
 }
 
 .layout-bg {
-  background: var(--Gradient-Primary-Background, linear-gradient(180deg, #FFF 0%, #EAF7EF 100%));
+  background: var(--Gradient-Primary-Background, linear-gradient(180deg, #fff 0%, #eaf7ef 100%));
 }
 
 .header-section {
@@ -202,8 +256,10 @@ onMounted(fetchRiwayat);
   color: #ffffff !important;
   font-weight: 700 !important;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background: radial-gradient(77.91% 77.91% at 50% 100%, #3F9760 4.91%, #0C4923 100%) !important;
-  box-shadow: 0 -2px 0 0 rgba(0, 0, 0, 0.40) inset, 0 1px 0 0 rgba(248, 250, 252, 0.40) inset !important;
+  background: radial-gradient(77.91% 77.91% at 50% 100%, #3f9760 4.91%, #0c4923 100%) !important;
+  box-shadow:
+    0 -2px 0 0 rgba(0, 0, 0, 0.4) inset,
+    0 1px 0 0 rgba(248, 250, 252, 0.4) inset !important;
   position: relative;
   z-index: 10;
 }
@@ -218,7 +274,7 @@ onMounted(fetchRiwayat);
   width: 100%;
   padding: 14px 20px 14px 54px;
   border-radius: 12px;
-  border: 1px solid #D1D5DB;
+  border: 1px solid #d1d5db;
   font-size: 16px;
 }
 
@@ -227,7 +283,11 @@ onMounted(fetchRiwayat);
   left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  color: #9CA3AF;
+  color: #9ca3af;
+}
+
+.search-section {
+  margin-bottom: 12px;
 }
 
 .filter-section {
@@ -243,6 +303,14 @@ onMounted(fetchRiwayat);
 
 .hifi-dropdown {
   position: relative;
+  width: 180px;
+  flex: 0 0 180px;
+}
+
+.hifi-dropdown-status {
+  position: relative;
+  width: 300px;
+  flex: 0 0 300px;
 }
 
 .hifi-dropdown select {
@@ -265,7 +333,7 @@ onMounted(fetchRiwayat);
 .table-wrapper {
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #E5E7EB;
+  border: 1px solid #e5e7eb;
   background-color: white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
@@ -276,7 +344,7 @@ onMounted(fetchRiwayat);
 }
 
 .hifi-table thead th {
-  background-color: #C6DECF;
+  background-color: #c6decf;
   color: #111827;
   font-weight: 700;
   font-size: 18px;
@@ -285,21 +353,28 @@ onMounted(fetchRiwayat);
 }
 
 .hifi-table tbody tr:nth-child(even) {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .hifi-table tbody td {
   padding: 16px 20px;
   font-size: 16px;
   color: #111827;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
 }
 
 .empty-state {
   text-align: center;
   padding: 40px !important;
-  color: #6B7280;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px !important;
+  color: #334155;
   font-style: italic;
 }
 
@@ -328,13 +403,33 @@ onMounted(fetchRiwayat);
 }
 
 .show-all {
-  color: #9B9FA5;
+  color: #9b9fa5;
   font-size: 14px;
   margin-top: 12px;
   font-weight: 500;
 }
 
-.pagination-container { display: flex; justify-content: center; margin-top: 40px; }
-.inline-block { display: inline-block; }
-.mr-2 { margin-right: 8px; }
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+.inline-block {
+  display: inline-block;
+}
+.mr-2 {
+  margin-right: 8px;
+}
+
+@media (max-width: 900px) {
+  .dropdown-group {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .hifi-dropdown {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+}
 </style>

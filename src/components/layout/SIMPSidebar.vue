@@ -91,6 +91,19 @@ const currentNavItems = computed(() => {
         path: '/letter_templates/create',
         icon: PlusCircle,
       },
+      {
+        name: 'surat-keluar',
+        label: 'Pengajuan Surat Keluar',
+        path: '/surat-keluar/pengajuan',
+        icon: FilePlus2,
+      },
+      {
+        name: 'riwayat-pengajuan',
+        label: 'Riwayat Pengajuan Surat',
+        path: '/surat-keluar/riwayat',
+        icon: FileText,
+        matchPaths: ['/surat-keluar/detail'],
+      },
     ]
 
     return adminItems
