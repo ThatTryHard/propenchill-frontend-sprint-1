@@ -131,7 +131,7 @@ const wrapperStyles = computed(() => {
   // Ini mencegah terjadinya layout shift (loncat/pop) saat diklik.
   const base = 'p-[2px]'
 
-  if (actualState.value === 'active')
+  if (actualState.value === 'active' || isFocused.value)
     return `${base} bg-[linear-gradient(90.74deg,#3f9760,#d1955f)]`
   if (actualState.value === 'error') return `${base} bg-[linear-gradient(91.01deg,#c37973,#81413c)]`
   if (actualState.value === 'success')

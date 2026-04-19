@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Folder, User, Calendar, Search } from 'lucide-vue-next'
+import { Folder, User, Calendar } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/users/auth'
 import { useSuratAntreanStore, type SuratAntrean } from '@/stores/surat_antrean'
 import mailIcon from '@/assets/mail.png'
 import diprosesIcon from '@/assets/diproses.png'
 import disetujuiIcon from '@/assets/disetujui.png'
 import ditolakIcon from '@/assets/ditolak.png'
+import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import VPagination from '@/components/common/VPagination.vue'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
-import DepartmentTeacherSidebar from '@/components/department_teachers/DepartmentTeacherSidebar.vue'
-import KepsekSidebar from '@/components/kepsek/KepsekSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 
 const router = useRouter()
 const store = useSuratAntreanStore()
@@ -87,9 +87,9 @@ const filteredSuratList = computed(() => {
 
   if (selectedBidang.value) {
     const bidangMap: Record<string, string> = {
-      'BIDANG_AGAMA': 'KEAGAMAAN',
-      'BIDANG_AKADEMIK': 'AKADEMIK',
-      'BIDANG_KESISWAAN': 'KESISWAAN',
+      BIDANG_AGAMA: 'KEAGAMAAN',
+      BIDANG_AKADEMIK: 'AKADEMIK',
+      BIDANG_KESISWAAN: 'KESISWAAN',
     }
     const targetJenis = bidangMap[selectedBidang.value]
     if (targetJenis) {
@@ -110,7 +110,6 @@ const paginatedSuratList = computed(() => {
   const end = start + limit.value
   return filteredSuratList.value.slice(start, end)
 })
-
 
 function getLetterTitle(item: SuratAntrean): string {
   return String(item.perihal || item.template_nama || item.perkara || 'Tanpa Perihal')
@@ -180,6 +179,15 @@ function handleApplyFilter() {
   currentPage.value = 1 // Reset halaman ke 1 setiap filter berubah
 }
 
+function handleStatusFilterSelect(value: string) {
+  selectedStatusFilter.value = value
+  handleApplyFilter()
+}
+
+function handlePageChange(page: number) {
+  currentPage.value = page
+}
+
 onMounted(() => {
   fetchData()
 })
@@ -188,9 +196,7 @@ onMounted(() => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar v-if="isAdmin" />
-      <KepsekSidebar v-else-if="isKepsek" :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
-      <DepartmentTeacherSidebar v-else :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
+      <SIMPSidebar />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans']">
@@ -203,64 +209,108 @@ onMounted(() => {
             <p class="text-[13px] md:text-[14px] leading-[145%] text-[#858a91]">Verifikasi Surat</p>
           </div>
 
-          <VDropdown v-if="isAdmin" v-model="selectedBidang" :options="bidangOptions"
-            placeholder="Pilih Bidang" class="!w-[220px]" />
+          <VDropdown
+            v-if="isAdmin"
+            v-model="selectedBidang"
+            :options="bidangOptions"
+            placeholder="Pilih Bidang"
+            class="!w-[220px]"
+          />
         </div>
 
-        <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
-        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
-          @close="successMessage = ''" />
+        <VAlert
+          v-if="generalError"
+          type="error"
+          title="Gagal"
+          :message="generalError"
+          @close="generalError = ''"
+        />
+        <VAlert
+          v-if="successMessage"
+          type="success"
+          title="Berhasil"
+          :message="successMessage"
+          @close="successMessage = ''"
+        />
       </section>
 
       <section class="mb-4">
-        <div class="relative">
-          <Search class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#b2b5ba]" />
-          <input v-model="search" type="text" placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
-            class="h-[46px] w-full rounded-[14px] border border-[#d9e2e7] bg-white pl-12 pr-4 text-[16px] text-[#111827] outline-none transition placeholder:text-[#b2b5ba] focus:border-[#3f9760]"
-            @keyup.enter="handleApplyFilter"
-          />
-        </div>
+        <VInputField
+          v-model="search"
+          state="search"
+          placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
+          @keydown.enter="handleApplyFilter"
+        />
       </section>
 
       <section class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm"
+        >
           <div class="absolute bottom-0 left-0 opacity-90">
-            <img :src="mailIcon" alt="Mail Icon" class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img
+              :src="mailIcon"
+              alt="Mail Icon"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
+            />
           </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
+          <div
+            class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center"
+          >
             <p class="text-[28px] font-semibold text-[#111827]">Total Surat</p>
             <h2 class="mt-4 text-[35px] font-bold text-[#111827]">{{ stats.total }}</h2>
           </div>
         </div>
 
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm"
+        >
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="diprosesIcon" alt="Diproses"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img
+              :src="diprosesIcon"
+              alt="Diproses"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
+            />
           </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
+          <div
+            class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center"
+          >
             <p class="text-[28px] font-semibold text-[#111827]">Diproses</p>
             <h2 class="mt-4 text-[35px] font-bold text-[#111827]">{{ stats.diproses }}</h2>
           </div>
         </div>
 
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm"
+        >
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="disetujuiIcon" alt="Disetujui"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img
+              :src="disetujuiIcon"
+              alt="Disetujui"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
+            />
           </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
+          <div
+            class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center"
+          >
             <p class="text-[28px] font-semibold text-[#111827]">Disetujui</p>
             <h2 class="mt-4 text-[35px] font-bold text-[#111827]">{{ stats.disetujui }}</h2>
           </div>
         </div>
 
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm"
+        >
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="ditolakIcon" alt="Ditolak"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <img
+              :src="ditolakIcon"
+              alt="Ditolak"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
+            />
           </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
+          <div
+            class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center"
+          >
             <p class="text-[28px] font-semibold text-[#111827]">Ditolak</p>
             <h2 class="mt-4 text-[35px] font-bold text-[#111827]">{{ stats.ditolak }}</h2>
           </div>
@@ -269,35 +319,53 @@ onMounted(() => {
 
       <section class="mb-6">
         <div class="relative flex h-[46px] items-center rounded-full bg-[#d4e8d9] p-1">
-          <button v-for="option in statusFilterOptions" :key="option.value" type="button" :class="[
-            'relative flex-1 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-300',
-            selectedStatusFilter === option.value
-              ? 'bg-[#3f9760] text-white shadow-[0px_2px_8px_rgba(63,150,96,0.4)]'
-              : 'text-[#71757b] hover:text-[#3f9760]'
-          ]" @click="selectedStatusFilter = option.value; handleApplyFilter()">
+          <button
+            v-for="option in statusFilterOptions"
+            :key="option.value"
+            type="button"
+            :class="[
+              'relative flex-1 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-300',
+              selectedStatusFilter === option.value
+                ? 'bg-[#3f9760] text-white shadow-[0px_2px_8px_rgba(63,150,96,0.4)]'
+                : 'text-[#71757b] hover:text-[#3f9760]',
+            ]"
+            @click="handleStatusFilterSelect(option.value)"
+          >
             {{ option.label }}
           </button>
         </div>
       </section>
 
-      <section v-if="store.loading"
-        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section
+        v-if="store.loading"
+        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]"
+      >
         Memuat data surat...
       </section>
 
-      <section v-else-if="filteredSuratList.length === 0" class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section
+        v-else-if="filteredSuratList.length === 0"
+        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]"
+      >
         Belum ada surat yang sesuai filter.
       </section>
 
       <section v-else class="flex flex-col gap-4">
-        <article v-for="item in paginatedSuratList" :key="item.id_surat"
-          class="rounded-[20px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5">
+        <article
+          v-for="item in paginatedSuratList"
+          :key="item.id_surat"
+          class="rounded-[20px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)] transition-all duration-300 hover:shadow-[0_4px_16px_rgba(0,0,0,0.1)] hover:-translate-y-0.5"
+        >
           <div class="flex items-start justify-between gap-4 mb-3">
             <h3 class="text-[18px] font-bold leading-[1.4] text-[#111827] flex-1">
               {{ getLetterTitle(item) }}
             </h3>
             <span
-              :class="['px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap', getStatusClass(item.status)]">
+              :class="[
+                'px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap',
+                getStatusClass(item.status),
+              ]"
+            >
               {{ item.status }}
             </span>
           </div>
@@ -323,7 +391,8 @@ onMounted(() => {
             </div>
           </div>
 
-          <button type="button"
+          <button
+            type="button"
             class="w-full sm:w-auto bg-[#d4e8d9] hover:bg-[#c5dbcc] text-[#1f2937] px-8 py-2.5 rounded-[12px] text-[14px] font-semibold transition-all duration-300 hover:-translate-y-0.5"
             @click="goToDetail(item)"
           >
@@ -332,24 +401,13 @@ onMounted(() => {
         </article>
       </section>
 
-      <section class="mt-6">
-        <div class="mt-3 flex items-center justify-between px-2 text-sm text-[#858a91]">
-          <span>
-            Menampilkan halaman {{ currentPage }} dari {{ totalPages }}
-          </span>
-          <div class="flex items-center gap-4">
-            <button type="button" class="disabled:opacity-50"
-              :disabled="currentPage <= 1" @click="currentPage--">
-              Sebelumnya
-            </button>
-            <span class="font-semibold text-[#111827]">{{ currentPage }}</span>
-            <button type="button" class="disabled:opacity-50"
-              :disabled="currentPage >= totalPages"
-              @click="currentPage++">
-              Berikutnya
-            </button>
-          </div>
-        </div>
+      <section v-if="totalPages > 1" class="mt-6 flex justify-end">
+        <VPagination
+          :currentPage="currentPage"
+          :totalPages="totalPages"
+          :siblingCount="1"
+          @page-change="handlePageChange"
+        />
       </section>
     </div>
   </DashboardLayout>

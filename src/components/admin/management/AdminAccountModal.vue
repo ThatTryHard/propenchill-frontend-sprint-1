@@ -171,7 +171,7 @@ const handleSubmit = () => {
                       <option value="ADMIN">ADMIN</option>
                       <option value="BIDANG_AGAMA">BIDANG AGAMA</option>
                       <option value="BIDANG_KESISWAAN">BIDANG KESISWAAN</option>
-                      <option value="BIDANG_KURIKULUM">BIDANG KURIKULUM</option>
+                      <option value="BIDANG_AKADEMIK">BIDANG AKADEMIK</option>
                       <option value="KEPSEK">KEPALA SEKOLAH</option>
                     </select>
                   </div>

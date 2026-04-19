@@ -3,13 +3,14 @@
     <div
       @click="toggle"
       :class="[
-        'w-full rounded-[12px] p-[2px] cursor-pointer transition-all duration-200 select-none shadow-sm hover:shadow-md',
+        'w-full rounded-[12px] p-[2px] transition-all duration-200 select-none shadow-sm',
+        disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-md',
         'bg-[linear-gradient(90.74deg,#3f9760,#d1955f)]',
       ]"
     >
       <div
         :class="[
-          'w-full flex items-center justify-between px-[14px] py-[8px] rounded-[10px] font-semibold leading-[120%] transition-colors duration-200',
+          'w-full flex items-center justify-between px-[19px] py-[14px] text-[16px] rounded-[10px] font-semibold leading-[150%] transition-colors duration-200',
           isOpen ? 'bg-transparent text-[#f8fafc]' : 'bg-[#f8fafc] text-[#111827]',
         ]"
       >
@@ -86,6 +87,10 @@ const props = defineProps({
     // Placeholder default, bisa diubah sesuai kebutuhan
     default: 'Get Started',
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['update:modelValue', 'change'])
@@ -94,10 +99,12 @@ const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)
 
 const toggle = () => {
+  if (props.disabled) return
   isOpen.value = !isOpen.value
 }
 
 const selectOption = (option: DropdownOption) => {
+  if (props.disabled) return
   emit('update:modelValue', option.value)
   emit('change', option)
   isOpen.value = false

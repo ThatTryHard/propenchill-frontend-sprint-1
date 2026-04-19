@@ -23,21 +23,7 @@
     />
 
     <form @submit.prevent="handleVerifyOTP" class="w-full flex flex-col items-center gap-6">
-      <div class="flex items-center justify-center gap-2 sm:gap-3 w-full" @paste="handlePaste">
-        <input
-          v-for="(digit, index) in otp"
-          :key="index"
-          :ref="(el) => (inputRefs[index] = el)"
-          v-model="otp[index]"
-          type="text"
-          inputmode="numeric"
-          maxlength="1"
-          class="w-[45px] h-[55px] sm:w-[50px] sm:h-[60px] text-center text-[24px] font-bold text-[#111827] bg-[#f8fafc] border-2 border-[#d4e8da] rounded-[12px] focus:border-[#3f9760] focus:ring-2 focus:ring-[#3f9760]/20 focus:outline-none transition-all shadow-sm"
-          @input="handleInput($event, index)"
-          @keydown="handleKeydown($event, index)"
-          :disabled="isLoading"
-        />
-      </div>
+      <VOtpInput v-model="otpJoined" :disabled="isLoading" @complete="handleVerifyOTP" />
 
       <VButton
         type="submit"
@@ -63,12 +49,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { usePasswordStore } from '@/stores/users/password'
 import { MailOpenIcon } from 'lucide-vue-next'
 import VButton from '@/components/common/VButton.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import VOtpInput from '@/components/common/VOTPInput.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -79,11 +66,26 @@ const isLoading = ref(false)
 const isResending = ref(false)
 
 const alert = reactive({ visible: false, type: 'error', title: '', message: '' })
+const otpJoined = ref('')
 
-const otp = ref(['', '', '', '', '', ''])
-const inputRefs = ref<any[]>([])
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error === 'object' && error !== null) {
+    const maybeResponse = error as {
+      response?: { data?: { error?: string } }
+      message?: string
+    }
 
-const otpJoined = computed(() => otp.value.join(''))
+    if (typeof maybeResponse.response?.data?.error === 'string') {
+      return maybeResponse.response.data.error
+    }
+
+    if (typeof maybeResponse.message === 'string' && maybeResponse.message.length > 0) {
+      return maybeResponse.message
+    }
+  }
+
+  return fallback
+}
 
 const emailMasked = computed(() => {
   if (!email.value) return ''
@@ -94,57 +96,14 @@ const emailMasked = computed(() => {
 
 onMounted(() => {
   if (!email.value) {
-    router.push({ name: 'set-new-password' })
-    return
-  }
-  nextTick(() => {
-    if (inputRefs.value[0]) inputRefs.value[0].focus()
-  })
-})
-
-// Auto-submit saat OTP lengkap
-watch(otpJoined, (newVal) => {
-  if (newVal.length === 6 && !isLoading.value) {
-    handleVerifyOTP()
+    router.push({ name: 'password-reset' })
   }
 })
-
-// Logika input OTP
-const handleInput = (event: any, index: number) => {
-  const value = event.target.value
-  const numericValue = value.replace(/[^0-9]/g, '')
-  otp.value[index] = numericValue.slice(-1)
-
-  if (numericValue && index < 5) {
-    inputRefs.value[index + 1].focus()
-  }
-}
-
-// Logika backspace untuk pindah fokus ke input sebelumnya
-const handleKeydown = (event: KeyboardEvent, index: number) => {
-  if (event.key === 'Backspace' && !otp.value[index] && index > 0) {
-    inputRefs.value[index - 1].focus()
-  }
-}
-
-// Logika paste untuk OTP, jika user copy-paste langsung ke 6 digitnya bisa masuk semua
-const handlePaste = (event: ClipboardEvent) => {
-  event.preventDefault()
-  const pastedData = event.clipboardData?.getData('text')
-  if (!pastedData) return
-
-  const numericData = pastedData.replace(/[^0-9]/g, '').slice(0, 6)
-
-  for (let i = 0; i < numericData.length; i++) {
-    otp.value[i] = numericData[i] || ''
-  }
-
-  const nextEmptyIndex = Math.min(numericData.length, 5)
-  inputRefs.value[nextEmptyIndex].focus()
-}
 
 // Logika verifikasi OTP
 const handleVerifyOTP = async () => {
+  if (otpJoined.value.length < 6) return
+
   alert.visible = false
   isLoading.value = true
 
@@ -154,13 +113,12 @@ const handleVerifyOTP = async () => {
 
     // Auto-lempar ke halaman Set New Password kalau bener
     router.push({ name: 'set-new-password' })
-  } catch (error: any) {
+  } catch (error: unknown) {
     alert.visible = true
     alert.type = 'error'
-    alert.message = error.response?.data?.error || 'Kode OTP salah atau telah kadaluarsa.'
+    alert.message = getApiErrorMessage(error, 'Kode OTP salah atau telah kadaluarsa.')
 
-    otp.value = ['', '', '', '', '', '']
-    inputRefs.value[0].focus()
+    otpJoined.value = ''
   } finally {
     isLoading.value = false
   }
@@ -173,10 +131,10 @@ const handleResendOTP = async () => {
     alert.visible = true
     alert.type = 'success'
     alert.message = 'Kode OTP baru telah dikirim ke email Anda.'
-  } catch (error: any) {
+  } catch (error: unknown) {
     alert.visible = true
     alert.type = 'error'
-    alert.message = error.response?.data?.error || 'Gagal mengirim ulang OTP.'
+    alert.message = getApiErrorMessage(error, 'Gagal mengirim ulang OTP.')
   } finally {
     isResending.value = false
   }

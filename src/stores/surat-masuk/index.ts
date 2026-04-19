@@ -14,6 +14,7 @@ export interface SuratMasukPayload {
   tanggal_terima: string
   perihal: string
   jenis_surat?: string
+  file_lampiran?: File | null
   pengirim: {
     nama_instansi: string
     alamat?: string
@@ -34,8 +35,17 @@ export interface SuratMasukResponse {
     jenis_surat: string | null
     status: string
     pengirim: Pengirim
+    pencatat_id: number | null
+    pencatat_nama: string
+    disposisi_terakhir: {
+      from_user_nama: string
+      instruksi: string
+      sifat: string
+      created_at: string
+    } | null
     created_at: string
     deleted_at: string | null
+    file_lampiran: string | null
   }
 }
 
@@ -259,7 +269,23 @@ export const useSuratMasukStore = defineStore('surat-masuk', {
       this.error = ''
 
       try {
-        const response = await api.post<SuratMasukResponse>('/api/surat-masuk', payload)
+        const formData = new FormData()
+        formData.append('nomor_surat_pengirim', payload.nomor_surat_pengirim)
+        formData.append('tanggal_surat', payload.tanggal_surat)
+        formData.append('tanggal_terima', payload.tanggal_terima)
+        formData.append('perihal', payload.perihal)
+
+        if (payload.jenis_surat) {
+          formData.append('jenis_surat', payload.jenis_surat)
+        }
+
+        formData.append('pengirim', JSON.stringify(payload.pengirim))
+
+        if (payload.file_lampiran) {
+          formData.append('file_lampiran', payload.file_lampiran)
+        }
+
+        const response = await api.post<SuratMasukResponse>('/api/surat-masuk', formData)
         return response.data
       } catch (error: any) {
         const normalizedErrors = normalizeCreateErrors(error)

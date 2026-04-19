@@ -1,10 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-    <AdminSidebar 
-        :userName="authStore.user?.nama || 'Matcha Addict'" 
-        :userEmail="authStore.user?.email || 'matcha.addict@gmail.com'" 
-      />
+      <SIMPSidebar />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full font-sans">
@@ -42,19 +39,43 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="border-b border-[#e2e8f0] bg-[#f8fafc]">
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">No</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Nama</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Email</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Role</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider text-center">Aksi</th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  No
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  Nama
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  Email
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                >
+                  Role
+                </th>
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider text-center"
+                >
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="adminStore.isLoading">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">Memuat data admin...</td>
+                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                  Memuat data admin...
+                </td>
               </tr>
               <tr v-else-if="adminStore.admins.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">Data tidak tersedia</td>
+                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                  Data tidak tersedia
+                </td>
               </tr>
               <tr
                 v-else
@@ -66,7 +87,9 @@
                 <td class="px-6 py-4 text-[14px] font-medium text-[#1a202c]">{{ admin.nama }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ admin.email }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">
-                  <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold uppercase">
+                  <span
+                    class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold uppercase"
+                  >
                     {{ admin.role }}
                   </span>
                 </td>
@@ -97,7 +120,11 @@
       <VModal
         v-model:is-open="formModal.show"
         :title="isEdit ? 'Edit Informasi Admin' : 'Tambah Admin Baru'"
-        :description="isEdit ? 'Perbarui data pengelola sistem agar tetap akurat.' : 'Daftarkan akun admin baru untuk mengelola sistem SIMP.'"
+        :description="
+          isEdit
+            ? 'Perbarui data pengelola sistem agar tetap akurat.'
+            : 'Daftarkan akun admin baru untuk mengelola sistem SIMP.'
+        "
         :buttons="formButtons"
       >
         <template #icon>
@@ -123,20 +150,15 @@
             :message="errors.email"
             :disabled="formModal.loading"
           />
-          
+
           <div class="flex flex-col gap-2">
             <label class="text-[16px] font-semibold text-[#111827]">Role Akses</label>
-            <select 
+            <VDropdown
               v-model="form.role"
-              class="w-full p-[14px] rounded-[12px] border-2 border-[#b2b5ba] focus:border-[#3f9760] outline-none bg-white text-[16px]"
+              :options="roleOptions"
+              placeholder="Pilih Role"
               :disabled="formModal.loading"
-            >
-              <option value="ADMIN">ADMIN</option>
-              <option value="BIDANG_AGAMA">BIDANG AGAMA</option>
-              <option value="BIDANG_KESISWAAN">BIDANG KESISWAAN</option>
-              <option value="BIDANG_KURIKULUM">BIDANG KURIKULUM</option>
-              <option value="KEPSEK">KEPALA SEKOLAH</option>
-            </select>
+            />
           </div>
         </div>
       </VModal>
@@ -160,18 +182,26 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { Plus, Pencil, Trash2, UserPlus, UserCheck, UserX } from 'lucide-vue-next'
 import { useAdminStore } from '@/stores/admin'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
+import VDropdown from '@/components/common/VDropdown.vue'
 import VModal from '@/components/common/VModal.vue'
 import VAlert from '@/components/common/VAlert.vue'
-import { useAuthStore } from '@/stores/users/auth'
+
+interface AdminListItem {
+  id: number
+  nama: string
+  email: string
+  role: string
+}
+
+type AlertType = 'success' | 'error' | 'warning' | 'information'
 
 const adminStore = useAdminStore()
 const searchQuery = ref('')
 const isEdit = ref(false)
 const selectedId = ref<number | null>(null)
-const authStore = useAuthStore()
 
 const alert = reactive({
   visible: false,
@@ -182,13 +212,20 @@ const alert = reactive({
 
 const formModal = reactive({ show: false, loading: false })
 const deleteModal = reactive({ show: false, adminName: '', loading: false })
+const roleOptions = [
+  { label: 'ADMIN', value: 'ADMIN' },
+  { label: 'BIDANG AGAMA', value: 'BIDANG_AGAMA' },
+  { label: 'BIDANG KESISWAAN', value: 'BIDANG_KESISWAAN' },
+  { label: 'BIDANG AKADEMIK', value: 'BIDANG_AKADEMIK' },
+  { label: 'KEPALA SEKOLAH', value: 'KEPSEK' },
+]
 
 const form = ref({ nama: '', email: '', role: 'ADMIN' })
 const errors = ref<Record<string, string>>({})
 
 onMounted(() => adminStore.fetchAdmins())
 
-let searchTimeout: any = null
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const debouncedSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -196,22 +233,7 @@ const debouncedSearch = () => {
   }, 400)
 }
 
-const openAddModal = () => {
-  isEdit.value = false
-  form.value = { nama: '', email: '', role: 'ADMIN' }
-  errors.value = {}
-  formModal.show = true
-}
-
-const openEditModal = (admin: any) => {
-  isEdit.value = true
-  selectedId.value = admin.id
-  form.value = { nama: admin.nama, email: admin.email, role: admin.role }
-  errors.value = {}
-  formModal.show = true
-}
-
-const openDeleteConfirm = (admin: any) => {
+const openDeleteConfirm = (admin: AdminListItem) => {
   selectedId.value = admin.id
   deleteModal.adminName = admin.nama
   deleteModal.show = true
@@ -224,7 +246,7 @@ const handleDelete = async () => {
     await adminStore.deleteAdmin(selectedId.value)
     showAlert('success', 'Terhapus!', 'Akun berhasil dinonaktifkan.')
     deleteModal.show = false
-  } catch (err) {
+  } catch {
     showAlert('error', 'Gagal!', 'Tidak bisa menghapus akun sendiri.')
     deleteModal.show = false
   } finally {
@@ -232,7 +254,7 @@ const handleDelete = async () => {
   }
 }
 
-const showAlert = (type: string, title: string, message: string) => {
+const showAlert = (type: AlertType, title: string, message: string) => {
   alert.visible = true
   alert.type = type
   alert.title = title
@@ -240,8 +262,8 @@ const showAlert = (type: string, title: string, message: string) => {
 }
 
 const handleSave = async () => {
-  errors.value = {} 
-  
+  errors.value = {}
+
   if (!form.value.nama.trim()) {
     errors.value.nama = 'Nama wajib diisi!'
     return
@@ -268,9 +290,12 @@ const handleSave = async () => {
       showAlert('success', 'Berhasil!', 'Admin baru berhasil didaftarkan.')
     }
     closeModal()
-  } catch (err: any) {
-    if (err.data) {
-      errors.value = err.data 
+  } catch (err: unknown) {
+    if (typeof err === 'object' && err !== null && 'data' in err) {
+      const apiError = err as { data?: Record<string, string> }
+      if (apiError.data) {
+        errors.value = apiError.data
+      }
     } else {
       errors.value.email = 'Format email tidak valid!'
     }
@@ -287,37 +312,43 @@ const closeModal = () => {
 
 const formButtons = computed(
   (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
-  {
-    label: formModal.loading ? 'Memproses...' : (isEdit.value ? 'Simpan Perubahan' : 'Tambah Admin'),
-    variant: 'primary',
-    action: () => {
-      if (!formModal.loading) handleSave()
-    }
-  },
-  {
-    label: 'Batal',
-    variant: 'secondary',
-    action: () => {
-      closeModal()
-    }
-  }
-])
+    {
+      label: formModal.loading
+        ? 'Memproses...'
+        : isEdit.value
+          ? 'Simpan Perubahan'
+          : 'Tambah Admin',
+      variant: 'primary',
+      action: () => {
+        if (!formModal.loading) handleSave()
+      },
+    },
+    {
+      label: 'Batal',
+      variant: 'secondary',
+      action: () => {
+        closeModal()
+      },
+    },
+  ],
+)
 
 const deleteButtons = computed(
   (): Array<{ label: string; variant: 'primary' | 'secondary'; action: () => void }> => [
-  {
-    label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
-    variant: 'primary',
-    action: () => {
-      if (!deleteModal.loading) handleDelete()
-    }
-  },
-  {
-    label: 'Batal',
-    variant: 'secondary',
-    action: () => {
-      deleteModal.show = false
-    }
-  }
-])
+    {
+      label: deleteModal.loading ? 'Menghapus...' : 'Hapus',
+      variant: 'primary',
+      action: () => {
+        if (!deleteModal.loading) handleDelete()
+      },
+    },
+    {
+      label: 'Batal',
+      variant: 'secondary',
+      action: () => {
+        deleteModal.show = false
+      },
+    },
+  ],
+)
 </script>

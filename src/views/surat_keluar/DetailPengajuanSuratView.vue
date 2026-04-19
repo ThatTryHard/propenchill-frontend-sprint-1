@@ -1,13 +1,10 @@
 <template>
-  <div class="flex h-screen layout-bg">
-    <VSidebar
-      :navItems="navItems"
-      :bottomItems="bottomItems"
-      :userName="authStore.user?.nama"
-      :userEmail="authStore.user?.email"
-    />
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto layout-bg">
       <div class="main-content-wrapper">
         <div class="header-section mb-10">
           <div class="title-group">
@@ -183,18 +180,71 @@
         </div>
       </div>
     </div>
-  </div>
+  </DashboardLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '@/plugins/axios';
+import type { AxiosError } from 'axios';
 import { useAuthStore } from '@/stores/users/auth';
-import VSidebar from '@/components/common/VSidebar.vue';
+import DashboardLayout from '@/components/common/DashboardLayout.vue';
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue';
 import VSteps from '@/components/common/VSteps.vue';
-import { FileText, FilePen, CheckCircle2, Clock, User, LayoutGrid, Mail, Settings, HelpCircle, LogOut } from 'lucide-vue-next';
+import { FileText, FilePen, CheckCircle2, Clock, User } from 'lucide-vue-next';
 import { useSuratKeluarStore } from '@/stores/surat_keluar/index';
+
+type GenericRecord = Record<string, unknown>;
+
+interface TrackingStatus extends GenericRecord {
+  status?: string;
+  status_surat?: string;
+  state?: string;
+  aktivitas?: string;
+  keterangan?: string;
+  catatan?: string;
+  user?: string;
+  nama_pengguna?: string;
+  role?: string;
+  jabatan?: string;
+  position?: string;
+  waktu?: string;
+  tanggal?: string;
+  updated_at?: string;
+  created_at?: string;
+}
+
+interface DetailState extends GenericRecord {
+  id_pengajuan?: number | string;
+  template_nama?: string;
+  nama_template?: string;
+  nomor_surat?: string;
+  tanggal_pengajuan?: string;
+  created_at?: string;
+  klasifikasi?: string;
+  status?: string;
+  latest_rejection_note?: string;
+  latest_verification_note?: string;
+  catatan?: string;
+  note?: string;
+  notes?: string;
+  pengaju_obj?: GenericRecord;
+  requester?: GenericRecord;
+  requested_by?: GenericRecord;
+  user?: GenericRecord;
+  pengaju_detail?: GenericRecord;
+  verif_1_time?: string;
+  verif_2_time?: string;
+  tanggal_ditolak?: string;
+  tanggal_disetujui?: string;
+  updated_at?: string;
+  filled_variables?: GenericRecord | string;
+  dynamic_data?: GenericRecord;
+  parsed_variables?: string[];
+  form_data: GenericRecord | string;
+  tracking_status: TrackingStatus[];
+}
 
 const suratKeluarStore = useSuratKeluarStore();
 
@@ -202,37 +252,17 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
-const navItems = [
-  {
-    name: 'surat-keluar',
-    label: 'Daftar Pengajuan Surat Keluar',
-    path: '/surat-keluar/riwayat',
-    matchPaths: ['/surat-keluar/detail'],
-    icon: LayoutGrid,
-  },
-];
-
-const handleLogout = () => {
-  authStore.logout();
-  router.push('/login');
-};
-
-const bottomItems = [
-  { name: 'settings', label: 'Settings', icon: Settings },
-  { name: 'help', label: 'Help', icon: HelpCircle },
-  { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout },
-];
-
-const detail = ref({ form_data: {}, tracking_status: [] });
+const detail = ref<DetailState>({ form_data: {}, tracking_status: [] });
 const showCancelDialog = ref(false);
 const isCancelling = ref(false);
 
-const normalizeStatus = (status) => String(status || '').trim().toLowerCase();
+const normalizeStatus = (status: unknown) => String(status || '').trim().toLowerCase();
 
-const normalizeDetailPayload = (payload) => {
+const normalizeDetailPayload = (payload: unknown): DetailState => {
   if (!payload || typeof payload !== 'object') return { form_data: {}, tracking_status: [] };
-  if (payload.data && typeof payload.data === 'object') return payload.data;
-  return payload;
+  const payloadObj = payload as GenericRecord;
+  if (payloadObj.data && typeof payloadObj.data === 'object') return payloadObj.data as DetailState;
+  return payload as DetailState;
 };
 
 const fetchDetail = async () => {
@@ -243,7 +273,7 @@ const fetchDetail = async () => {
     console.error("Gagal ambil detail:", error);
     try {
       const listResponse = await api.get('/api/letters/my-requests');
-      const listData = Array.isArray(listResponse.data?.data)
+      const listData: DetailState[] = Array.isArray(listResponse.data?.data)
         ? listResponse.data.data
         : Array.isArray(listResponse.data)
           ? listResponse.data
@@ -281,8 +311,9 @@ const cancelRequest = async () => {
         router.push('/surat-keluar/riwayat');
       }, 1500);
     }
-  } catch (error) {
-    const errorMsg = error.response?.data?.error || 'Gagal membatalkan surat';
+  } catch (error: unknown) {
+    const apiError = error as AxiosError<{ error?: string }>;
+    const errorMsg = apiError.response?.data?.error || 'Gagal membatalkan surat';
     suratKeluarStore.triggerAlert('Gagal', errorMsg, 'error');
   } finally {
     isCancelling.value = false;
@@ -326,12 +357,13 @@ const submittedBy = computed(() => {
 
   for (const source of nestedSources) {
     if (source && typeof source === 'object') {
+      const nestedSource = source as GenericRecord;
       const nestedName =
-        source.nama ||
-        source.full_name ||
-        source.name ||
-        source.nama_pengaju ||
-        source.user_name;
+        nestedSource.nama ||
+        nestedSource.full_name ||
+        nestedSource.name ||
+        nestedSource.nama_pengaju ||
+        nestedSource.user_name;
 
       if (typeof nestedName === 'string' && nestedName.trim()) {
         return nestedName.trim();
@@ -459,7 +491,10 @@ const statusSteps = computed(() => {
 
   return baseSteps.map((item, index) => ({
     ...item,
-    status: index < activeIndex ? 'completed' : index === activeIndex ? 'current' : 'upcoming',
+    status: (index < activeIndex ? 'completed' : index === activeIndex ? 'current' : 'upcoming') as
+      | 'completed'
+      | 'current'
+      | 'upcoming',
   }));
 });
 
@@ -493,9 +528,9 @@ const latestStatusNote = computed(() => {
 });
 
 const formDataEntries = computed(() => {
-  const readObject = (source) => {
+  const readObject = (source: unknown): GenericRecord => {
     if (!source) return {};
-    if (typeof source === 'object' && !Array.isArray(source)) return source;
+    if (typeof source === 'object' && !Array.isArray(source)) return source as GenericRecord;
     if (typeof source === 'string') {
       try {
         return JSON.parse(source.replace(/'/g, '"').replace(/None/g, 'null'));
@@ -504,7 +539,7 @@ const formDataEntries = computed(() => {
     return {};
   };
 
-  const formatLabel = (value) =>
+  const formatLabel = (value: string) =>
     String(value || '').replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
 
   const data1 = readObject(detail.value.filled_variables);
@@ -516,7 +551,7 @@ const formDataEntries = computed(() => {
   const entries = Object.keys(combinedData).map((key) => ({
     key,
     label: formatLabel(key),
-    value: combinedData[key] || '-'
+    value: String(combinedData[key] ?? '-')
   }));
 
   if (entries.length === 0 && Array.isArray(detail.value.parsed_variables)) {
@@ -530,7 +565,7 @@ const formDataEntries = computed(() => {
   return entries;
 });
 
-const getStatusClass = (status) => {
+const getStatusClass = (status: unknown) => {
   const normalized = normalizeStatus(status);
   if (['pending', 'diproses', 'menunggu verifikasi kepsek', 'menunggu_verifikasi_kepsek'].includes(normalized)) {
     return 'status-pending';
@@ -540,8 +575,8 @@ const getStatusClass = (status) => {
   return 'status-default';
 };
 
-const formatDate = (d) => (d ? new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-');
-const formatDateTime = (d) => (d ? new Date(d).toLocaleString('id-ID') : '-');
+const formatDate = (d: unknown) => (d ? new Date(String(d)).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-');
+const formatDateTime = (d: unknown) => (d ? new Date(String(d)).toLocaleString('id-ID') : '-');
 
 const handleDownload = async () => {
   try {
@@ -556,9 +591,10 @@ const handleDownload = async () => {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Download error:', error);
-    alert(error.response?.data?.error || 'Gagal mengunduh surat.');
+    const apiError = error as AxiosError<{ error?: string }>;
+    alert(apiError.response?.data?.error || 'Gagal mengunduh surat.');
   }
 };
 

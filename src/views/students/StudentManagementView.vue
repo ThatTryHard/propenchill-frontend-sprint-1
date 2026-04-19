@@ -16,7 +16,7 @@ import { useStudentStore, type Student } from '@/stores/students'
 import { useAuthStore } from '@/stores/users/auth'
 
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import StudentSidebar from '@/components/admin/students/StudentSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VButton from '@/components/common/VButton.vue'
 import VCard from '@/components/common/VCard.vue'
 import VTable from '@/components/common/VTable.vue'
@@ -208,10 +208,7 @@ onMounted(async () => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <StudentSidebar
-        :userName="authStore.user?.nama"
-        :userEmail="authStore.user?.email"
-      />
+      <SIMPSidebar />
     </template>
 
     <div class="w-full max-w-[1180px] mx-auto px-10 py-8 flex flex-col gap-6 max-[768px]:px-4">

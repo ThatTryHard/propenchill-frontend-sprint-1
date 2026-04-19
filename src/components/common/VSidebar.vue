@@ -1,8 +1,8 @@
 <template>
   <aside
-    class="flex flex-col h-screen w-[260px] min-w-[260px] bg-gradient-to-b from-[#f0f7f2] to-[#e8f3eb] border-r border-[#d4e8da] py-6 px-4 overflow-hidden"
+    class="flex flex-col h-screen w-[210px] min-w-[210px] bg-gradient-to-b from-[#f0f7f2] to-[#e8f3eb] border-r border-[#d4e8da] py-4 px-3 overflow-hidden"
   >
-    <div class="flex items-center mb-6">
+    <div class="flex items-center mb-5">
       <img src="@/assets/SIMP_logo.png" alt="SIMP" class="h-24 object-contain" />
     </div>
 
@@ -17,7 +17,7 @@
         <button
           @click="navigate"
           :class="[
-            'flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-semibold transition-all duration-200 w-full text-left',
+            'flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10.5px] font-semibold transition-all duration-200 w-full text-left',
             isNavItemActive(item)
               ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
               : 'text-[#4a5568] hover:bg-[#d4e8da]/60',
@@ -35,7 +35,7 @@
           v-for="item in bottomItems"
           :key="item.name"
           @click="handleBottomItemClick(item)"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-medium text-[#4a5568] hover:bg-[#d4e8da]/60 transition-all duration-200 w-full text-left"
+          class="flex items-center gap-3 px-4 py-1.5 rounded-xl text-[10.5px] font-medium text-[#4a5568] hover:bg-[#d4e8da]/60 transition-all duration-200 w-full text-left"
         >
           <component :is="item.icon" :size="20" :stroke-width="2" />
           <span>{{ item.label }}</span>
@@ -44,17 +44,17 @@
 
       <!-- User Profile -->
       <div class="flex items-center gap-3 px-3 py-3 bg-[#4d8b47] rounded-2xl">
-        <div class="profile-ring flex items-center justify-center w-11 h-11 rounded-full">
-          <div class="flex items-center justify-center w-9 h-9 rounded-full bg-[#f0f7f2]">
-            <UserRound :size="22" class="text-[#3F9760]" />
+        <div class="profile-ring flex items-center justify-center w-9 h-9 rounded-full">
+          <div class="flex items-center justify-center w-7 h-7 rounded-full bg-[#f0f7f2]">
+            <UserRound :size="18" class="text-[#3F9760]" />
           </div>
         </div>
 
         <div class="flex flex-col leading-tight overflow-hidden">
-          <span class="text-[13px] font-semibold text-white truncate">
+          <span class="text-[10.5px] font-semibold text-white truncate">
             {{ userName || 'User' }}
           </span>
-          <span class="text-[11px] text-white/85 truncate">
+          <span class="text-[9px] text-white/85 truncate">
             {{ userEmail || '-' }}
           </span>
         </div>
