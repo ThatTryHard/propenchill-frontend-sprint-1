@@ -147,6 +147,7 @@ const handleSubmit = async () => {
     perihal: form.perihal.trim(),
     jenis_surat: form.jenis_surat.trim(),
     pengirim: {
+      id_pengirim: selectedPengirimId.value ?? undefined,
       nama_instansi: form.nama_instansi.trim(),
       alamat: form.alamat.trim(),
       kontak: form.kontak.trim(),

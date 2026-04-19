@@ -16,6 +16,7 @@ export interface SuratMasukPayload {
   jenis_surat?: string
   file_lampiran?: File | null
   pengirim: {
+    id_pengirim?: number
     nama_instansi: string
     alamat?: string
     kontak?: string
