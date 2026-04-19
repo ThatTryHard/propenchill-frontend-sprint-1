@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar />
+      <SIMPSidebar />
     </template>
 
     <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[#f8fafc]">
@@ -52,7 +52,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Trash2 } from 'lucide-vue-next'
 import { useAdminStore } from '@/stores/admin'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VButton from '@/components/common/VButton.vue'
 import VAlert from '@/components/common/VAlert.vue'
@@ -119,10 +119,13 @@ const handleUpdate = async () => {
       path: '/admin/management',
       query: { success: 'Data admin berhasil diperbarui!' }
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Update gagal:", err)
-    if (err.data) {
-      errors.value = err.data
+    if (typeof err === 'object' && err !== null && 'data' in err) {
+      const apiError = err as { data?: Record<string, string> }
+      if (apiError.data) {
+        errors.value = apiError.data
+      }
     }
     showAlert('error', 'Error Alert', 'Gagal memperbarui data admin.')
   } finally {

@@ -1,13 +1,10 @@
 <template>
-  <div class="flex h-screen layout-bg">
-    <VSidebar
-      :navItems="navItems"
-      :bottomItems="bottomItems"
-      :userName="authStore.user?.nama"
-      :userEmail="authStore.user?.email"
-    />
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto layout-bg">
       <div class="main-content-wrapper">
         <div class="header-section">
           <div class="title-group">
@@ -34,31 +31,16 @@
         </div>
 
         <div class="search-section">
-          <div class="hifi-search-bar">
-            <Search :size="20" class="search-icon" />
-            <input v-model="searchQuery" type="text" placeholder="Cari Surat" />
-          </div>
+          <VInputField v-model="searchQuery" state="search" placeholder="Cari Surat" />
         </div>
 
         <div class="filter-section">
           <div class="dropdown-group">
             <div class="hifi-dropdown">
-              <select v-model="filterMonth">
-                <option value="">Bulan</option>
-                <option v-for="m in 12" :key="m" :value="m">{{ getMonthName(m) }}</option>
-              </select>
-              <ChevronDown :size="18" class="chevron-icon" />
+              <VDropdown v-model="filterMonth" :options="monthOptions" placeholder="Bulan" />
             </div>
             <div class="hifi-dropdown">
-              <select v-model="filterStatus">
-                <option value="">Status</option>
-                <option value="Verified">Verified</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Pending">Pending</option>
-                <option value="Menunggu Verifikasi Kepsek">Menunggu Verifikasi Kepsek</option>
-                <option value="Dibatalkan">Dibatalkan</option>
-              </select>
-              <ChevronDown :size="18" class="chevron-icon" />
+              <VDropdown v-model="filterStatus" :options="statusOptions" placeholder="Status" />
             </div>
           </div>
         </div>
@@ -100,24 +82,29 @@
         </div>
       </div>
     </main>
-  </div>
+  </DashboardLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import api from '@/plugins/axios';
-import { useAuthStore } from '@/stores/users/auth';
-import VSidebar from '@/components/common/VSidebar.vue';
-import VTable from '@/components/common/VTable.vue';
+import DashboardLayout from '@/components/common/DashboardLayout.vue';
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue';
 import VButton from '@/components/common/VButton.vue';
 import VPagination from '@/components/common/VPagination.vue';
+import VInputField from '@/components/common/VInputField.vue';
+import VDropdown from '@/components/common/VDropdown.vue';
 import { 
-  LayoutGrid, Mail, Settings, HelpCircle, LogOut, Plus, Search, ChevronDown, PlusCircle 
+  Plus
 } from 'lucide-vue-next';
 
-const authStore = useAuthStore();
-const router = useRouter();
+interface RiwayatItem {
+  id_pengajuan: number
+  template_nama?: string
+  nomor_surat?: string
+  tanggal_pengajuan?: string
+  status?: string
+}
 
 const headers = [
   { text: 'ID Surat', value: 'id_surat' },
@@ -128,33 +115,30 @@ const headers = [
   { text: 'Aksi', value: 'aksi' },
 ];
 
-const navItems = [
-  {
-    name: 'surat-keluar',
-    label: 'Daftar Pengajuan Surat Keluar',
-    path: '/surat-keluar/riwayat',
-    matchPaths: ['/surat-keluar/detail'],
-    icon: LayoutGrid,
-  },
-
-  { name: 'buat-pengajuan', label: 'Buat Pengajuan Surat', path: '/surat-keluar/pengajuan', icon: PlusCircle },
-
-];
-
-const handleLogout = () => { authStore.logout(); router.push('/login'); };
-const bottomItems = [
-  { name: 'settings', label: 'Settings', icon: Settings },
-  { name: 'help', label: 'Help', icon: HelpCircle },
-  { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout }
-];
-
-const listPengajuan = ref([]);
+const listPengajuan = ref<RiwayatItem[]>([]);
 const filterStatus = ref('');
 const filterMonth = ref('');
 const searchQuery = ref('');
 const currentPage = ref(1);
 
-const getMonthName = (m) => {
+const monthOptions = [
+  { label: 'Bulan', value: '' },
+  ...Array.from({ length: 12 }, (_, index) => {
+    const month = index + 1;
+    return { label: getMonthName(month) || `Bulan ${month}`, value: String(month) };
+  }),
+];
+
+const statusOptions = [
+  { label: 'Status', value: '' },
+  { label: 'Verified', value: 'Verified' },
+  { label: 'Rejected', value: 'Rejected' },
+  { label: 'Pending', value: 'Pending' },
+  { label: 'Menunggu Verifikasi Kepsek', value: 'Menunggu Verifikasi Kepsek' },
+  { label: 'Dibatalkan', value: 'Dibatalkan' },
+];
+
+const getMonthName = (m: number) => {
   const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
   return months[m - 1];
 };
@@ -170,13 +154,13 @@ const fetchRiwayat = async () => {
   } catch (error) { console.error(error); }
 };
 
-const normalizeStatus = (status) => String(status || '').toLowerCase();
+const normalizeStatus = (status: string | null | undefined) => String(status || '').toLowerCase();
 
 const filteredSurat = computed(() => {
   const query = searchQuery.value.trim().toLowerCase();
   return listPengajuan.value.filter((surat) => {
     const matchesSearch = !query || surat.template_nama?.toLowerCase().includes(query);
-    const matchesMonth = !filterMonth.value || new Date(surat.tanggal_pengajuan).getMonth() + 1 === parseInt(filterMonth.value);
+    const matchesMonth = !filterMonth.value || new Date(surat.tanggal_pengajuan || '').getMonth() + 1 === parseInt(filterMonth.value);
     const matchesStatus =
       !filterStatus.value ||
       normalizeStatus(surat.status) === normalizeStatus(filterStatus.value);
@@ -184,7 +168,7 @@ const filteredSurat = computed(() => {
   });
 });
 
-const formatDate = (d) => d ? new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
+const formatDate = (d?: string) => d ? new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-';
 
 onMounted(fetchRiwayat);
 </script>

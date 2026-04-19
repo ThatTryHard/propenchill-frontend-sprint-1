@@ -13,9 +13,7 @@ import { useSuratAntreanStore } from '@/stores/surat_antrean'
 import VButton from '@/components/common/VButton.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
-import DepartmentTeacherSidebar from '@/components/department_teachers/DepartmentTeacherSidebar.vue'
-import KepsekSidebar from '@/components/kepsek/KepsekSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VerificationRejectModal from '@/components/department_teachers/VerificationRejectModal.vue'
 
 const route = useRoute()
@@ -268,7 +266,15 @@ function goBack() {
 }
 
 function mapApiError(error: unknown) {
-  const err = error as AxiosError<any>
+  type ApiErrorPayload = {
+    error?: string
+    message?: string
+    details?: {
+      notes?: string[]
+    }
+  }
+
+  const err = error as AxiosError<ApiErrorPayload>
   const data = err.response?.data
 
   const notesErrors = data?.details?.notes
@@ -349,9 +355,7 @@ onMounted(async () => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar v-if="isAdmin" />
-      <KepsekSidebar v-else-if="isKepsek" :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
-      <DepartmentTeacherSidebar v-else :userName="authStore.user?.nama" :userEmail="authStore.user?.email" />
+      <SIMPSidebar />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans']">

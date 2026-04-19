@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar />
+      <SIMPSidebar />
     </template>
     <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[#f8fafc]">
       <!-- Header -->
@@ -126,7 +126,7 @@ import { useRouter } from 'vue-router'
 import { ArrowLeft, UserPlus } from 'lucide-vue-next'
 import { useParentStore, validateParentForm } from '@/stores/parents'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VModal from '@/components/common/VModal.vue'

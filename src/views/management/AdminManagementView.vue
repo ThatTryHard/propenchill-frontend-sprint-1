@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar />
+      <SIMPSidebar />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full font-sans">
@@ -34,7 +34,9 @@
         />
       </div>
 
-      <div class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 flex flex-col shadow-sm">
+      <div
+        class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 flex flex-col shadow-sm"
+      >
         <div class="overflow-x-auto flex-1">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -83,7 +85,9 @@
                 :key="admin.id"
                 class="border-b border-[#f1f5f9] hover:bg-[#f8fafc] transition-colors"
               >
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ (currentPage - 1) * pageSize + index + 1 }}</td>
+                <td class="px-6 py-4 text-[14px] text-[#4a5568]">
+                  {{ (currentPage - 1) * pageSize + index + 1 }}
+                </td>
                 <td class="px-6 py-4 text-[14px] font-medium text-[#1a202c]">{{ admin.nama }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ admin.email }}</td>
                 <td class="px-6 py-4 text-[14px] text-[#4a5568]">
@@ -127,10 +131,7 @@
             Halaman {{ currentPage }} dari {{ totalPages }} ({{ adminStore.admins.length }} data)
           </span>
 
-          <VPagination
-            v-model:currentPage="currentPage"
-            :totalPages="totalPages"
-          />
+          <VPagination v-model:currentPage="currentPage" :totalPages="totalPages" />
         </div>
       </div>
 
@@ -163,13 +164,22 @@ import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { useAdminStore } from '@/stores/admin'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import AdminAccountModal from '@/components/admin/management/AdminAccountModal.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import VPagination from '@/components/common/VPagination.vue'
+
+interface AdminListItem {
+  id: number
+  nama: string
+  email: string
+  role: string
+}
+
+type AlertType = 'success' | 'error' | 'warning' | 'information'
 
 const adminStore = useAdminStore()
 const searchQuery = ref('')
@@ -207,7 +217,7 @@ watch(
   },
 )
 
-let searchTimeout: any = null
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
 const debouncedSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
@@ -223,7 +233,7 @@ const openAddModal = () => {
   formModal.show = true
 }
 
-const openEditModal = (admin: any) => {
+const openEditModal = (admin: AdminListItem) => {
   isEdit.value = true
   selectedId.value = admin.id
   form.value = { nama: admin.nama, email: admin.email, role: admin.role }
@@ -231,7 +241,7 @@ const openEditModal = (admin: any) => {
   formModal.show = true
 }
 
-const openDeleteConfirm = (admin: any) => {
+const openDeleteConfirm = (admin: AdminListItem) => {
   selectedId.value = admin.id
   deleteModal.adminName = admin.nama
   deleteModal.error = ''
@@ -246,7 +256,7 @@ const handleDelete = async () => {
     await adminStore.deleteAdmin(selectedId.value)
     showAlert('success', 'Terhapus!', 'Akun berhasil dinonaktifkan.')
     deleteModal.show = false
-  } catch (err) {
+  } catch {
     deleteModal.error = 'Tidak bisa menghapus akun sendiri.'
     showAlert('error', 'Gagal!', 'Tidak bisa menghapus akun sendiri.')
     deleteModal.show = false
@@ -255,7 +265,7 @@ const handleDelete = async () => {
   }
 }
 
-const showAlert = (type: string, title: string, message: string) => {
+const showAlert = (type: AlertType, title: string, message: string) => {
   alert.visible = true
   alert.type = type
   alert.title = title
@@ -275,8 +285,12 @@ const handleSave = async (payload: { nama: string; email: string; role: string }
     }
     closeModal()
     currentPage.value = 1
-  } catch (err: any) {
-    formModal.error = err?.data?.error || err?.data?.message || 'Terjadi kesalahan pada sistem.'
+  } catch (err: unknown) {
+    const errorData =
+      typeof err === 'object' && err !== null && 'data' in err
+        ? (err as { data?: { error?: string; message?: string } }).data
+        : undefined
+    formModal.error = errorData?.error || errorData?.message || 'Terjadi kesalahan pada sistem.'
     showAlert('error', 'Gagal!', formModal.error)
   } finally {
     formModal.loading = false

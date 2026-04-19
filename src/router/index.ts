@@ -14,9 +14,9 @@ import TeacherCreateView from '../views/admin/teacher/CreateView.vue'
 import TeacherEditView from '../views/admin/teacher/EditView.vue'
 import StudentManagementView from '@/views/students/StudentManagementView.vue'
 import VerifyEmailView from '@/views/users/VerifyEmailView.vue'
-import FormPengajuanSuratView from '@/views/surat_keluar/FormPengajuanSuratView.vue';
-import RiwayatPengajuanSuratView from '@/views/surat_keluar/RiwayatPengajuanSuratView.vue';
-import DetailPengajuanSuratView from '@/views/surat_keluar/DetailPengajuanSuratView.vue';
+import FormPengajuanSuratView from '@/views/surat_keluar/FormPengajuanSuratView.vue'
+import RiwayatPengajuanSuratView from '@/views/surat_keluar/RiwayatPengajuanSuratView.vue'
+import DetailPengajuanSuratView from '@/views/surat_keluar/DetailPengajuanSuratView.vue'
 import CreateSuratMasukView from '@/views/department_teachers/CreateSuratMasukView.vue'
 import TemplateManagementView from '@/views/letter_templates/TemplateManagementView.vue'
 import TemplateCreateView from '@/views/letter_templates/TemplateCreateView.vue'
@@ -29,6 +29,9 @@ import SuratAntreanListView from '@/views/surat_antrean/SuratAntreanListView.vue
 import SuratAntreanDetailView from '@/views/surat_antrean/SuratAntreanDetailView.vue'
 
 const departmentRoles = ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK']
+const teacherListRoles = ['ADMIN']
+const teacherMutationRoles = ['ADMIN']
+const templateManagementRoles = ['ADMIN', ...departmentRoles]
 
 function resolveSuratAntreanPathByRole(role: string | null, id?: string | number) {
   const suffix = id !== undefined ? `/${id}` : ''
@@ -103,23 +106,25 @@ const router = createRouter({
       path: '/admin/parents',
       name: 'admin-parents',
       component: ParentListView,
-      meta: { requiresAuth: true, roleAccess: ['ADMIN', 'KEPSEK'] },
+      meta: { requiresAuth: true, roleAccess: ['ADMIN'] },
     },
     {
       path: '/admin/teachers',
       name: 'admin-guru-list',
       component: TeacherListView,
-      meta: { requiresAuth: true, roleAccess: ['ADMIN', 'KEPSEK'] },
+      meta: { requiresAuth: true, roleAccess: teacherListRoles },
     },
     {
       path: '/admin/teachers/create',
       name: 'admin-guru-create',
-      redirect: '/admin/teachers',
+      component: TeacherCreateView,
+      meta: { requiresAuth: true, roleAccess: teacherMutationRoles },
     },
     {
       path: '/admin/teachers/:id/edit',
       name: 'admin-guru-edit',
-      redirect: '/admin/teachers',
+      component: TeacherEditView,
+      meta: { requiresAuth: true, roleAccess: teacherMutationRoles },
     },
     {
       path: '/admin/students',
@@ -127,7 +132,7 @@ const router = createRouter({
       component: StudentManagementView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+        roleAccess: ['ADMIN'],
       },
     },
     {
@@ -163,7 +168,10 @@ const router = createRouter({
     { path: '/admin-management/edit/:id', redirect: '/admin/management/edit/:id' },
     { path: '/admin/guru', redirect: '/admin/teachers' },
     { path: '/admin/guru/tambah', redirect: '/admin/teachers/create' },
-    { path: '/admin/guru/:id/edit', redirect: '/admin/teachers/:id/edit' },
+    {
+      path: '/admin/guru/:id/edit',
+      redirect: (to) => `/admin/teachers/${String(to.params.id)}/edit`,
+    },
     { path: '/students', redirect: '/admin/students' },
     {
       path: '/verify-email',
@@ -176,7 +184,7 @@ const router = createRouter({
       component: FormPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+        roleAccess: ['GURU', 'WALI_MURID'],
       },
     },
     {
@@ -185,7 +193,7 @@ const router = createRouter({
       component: RiwayatPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+        roleAccess: ['GURU', 'WALI_MURID'],
       },
     },
     {
@@ -194,7 +202,7 @@ const router = createRouter({
       component: DetailPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN', 'KEPSEK', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+        roleAccess: ['GURU', 'WALI_MURID'],
       },
     },
     {
@@ -203,6 +211,7 @@ const router = createRouter({
       component: TemplateManagementView,
       meta: {
         requiresAuth: true,
+        roleAccess: templateManagementRoles,
       },
     },
     {
@@ -211,7 +220,7 @@ const router = createRouter({
       component: TemplateCreateView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['ADMIN', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
+        roleAccess: ['ADMIN', ...departmentRoles],
       },
     },
     {
@@ -220,10 +229,22 @@ const router = createRouter({
       component: TemplateEditView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['ADMIN', 'BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK']
+        roleAccess: ['ADMIN', ...departmentRoles],
       },
     },
-    { 
+    {
+      path: '/admin/surat-masuk',
+      name: 'AdminSuratMasukList',
+      component: () => import('@/views/department_teachers/SuratMasukListView.vue'),
+      meta: { requiresAuth: true, roleAccess: ['ADMIN'] },
+    },
+    {
+      path: '/admin/surat-masuk/:id',
+      name: 'AdminSuratMasukDetail',
+      component: () => import('@/views/department_teachers/SuratMasukDetailView.vue'),
+      meta: { requiresAuth: true, roleAccess: ['ADMIN'] },
+    },
+    {
       path: '/admin/surat-antrean',
       name: 'surat-antrean-list',
       component: SuratAntreanListView,
@@ -280,6 +301,18 @@ const router = createRouter({
         requiresAuth: true,
         roleAccess: ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'],
       },
+    },
+    {
+      path: '/kepsek/surat-masuk',
+      name: 'KepsekSuratMasukList',
+      component: () => import('@/views/department_teachers/SuratMasukListView.vue'),
+      meta: { requiresAuth: true, roleAccess: ['KEPSEK'] },
+    },
+    {
+      path: '/kepsek/surat-masuk/:id',
+      name: 'KepsekSuratMasukDetail',
+      component: () => import('@/views/department_teachers/SuratMasukDetailView.vue'),
+      meta: { requiresAuth: true, roleAccess: ['KEPSEK'] },
     },
     {
       path: '/kepsek/surat-antrean',

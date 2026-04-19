@@ -1,9 +1,10 @@
 <template>
   <div
     :class="[
-      'inline-flex items-center justify-center gap-[4px] px-[14px] py-[4px]',
+      'inline-flex items-center justify-center gap-[4px] px-[14px] py-[8px]',
       'rounded-[17px] font-sans text-[16px] font-semibold leading-[120%] text-[#111827]',
       'backdrop-blur-[10px] shadow-[0px_2px_4px_rgba(255,255,255,0.4)_inset,0px_-2px_4px_rgba(0,0,0,0.2)_inset]',
+      'transition-all duration-200 ease-out transform-gpu hover:-translate-y-[1px] hover:brightness-105',
       variantStyles,
     ]"
   >

@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import VToast from '@/components/common/VToast.vue'
 import { useAuthStore } from '@/stores/users/auth'
+import { usePasswordStore } from '@/stores/users/password'
 import VInputField from '@/components/common/VInputField.vue'
 import VButton from '@/components/common/VButton.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const passwordStore = usePasswordStore()
 
 const nama = ref('')
 const email = ref('')
@@ -22,6 +24,7 @@ const emailError = ref('')
 const noHpError = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
+const pwdStrength = computed(() => passwordStore.checkPasswordStrength(password.value))
 
 watch(nama, () => (namaError.value = ''))
 watch(email, () => (emailError.value = ''))
@@ -56,8 +59,8 @@ const validateForm = () => {
   if (!password.value) {
     passwordError.value = 'Kata sandi wajib diisi!'
     hasError = true
-  } else if (password.value.length < 8) {
-    passwordError.value = 'Password minimal 8 karakter!'
+  } else if (!pwdStrength.value.isValid) {
+    passwordError.value = 'Kata sandi belum memenuhi semua persyaratan keamanan!'
     hasError = true
   }
 
@@ -177,6 +180,158 @@ const handleRegister = async () => {
         :state="confirmPasswordError ? 'error' : 'default'"
         :message="confirmPasswordError"
       />
+
+      <div class="w-full bg-[#f8fafc] p-4 rounded-[12px] border border-[#e2e8f0] mb-2">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-[14px] font-bold text-[#111827]">Persyaratan Kata Sandi:</h4>
+          <span class="text-[12px] font-semibold" :class="pwdStrength.color">
+            {{ pwdStrength.text }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
+          <div class="flex items-center gap-2 transition-colors duration-300">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                :fill="pwdStrength.reqMinLength ? 'url(#grad1)' : '#E2E8F0'"
+                :stroke="pwdStrength.reqMinLength ? 'none' : '#CBD5E1'"
+                stroke-width="1.5"
+              />
+              <path
+                v-if="pwdStrength.reqMinLength"
+                d="M8 12.5L10.5 15L16 9"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <defs v-if="pwdStrength.reqMinLength">
+                <linearGradient
+                  id="grad1"
+                  x1="2"
+                  y1="12"
+                  x2="22"
+                  y2="12"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="#D1955F" />
+                  <stop offset="1" stop-color="#3F9760" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <span
+              :class="pwdStrength.reqMinLength ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
+              class="text-[13px]"
+              >Minimal 8 Karakter</span
+            >
+          </div>
+
+          <div class="flex items-center gap-2 transition-colors duration-300">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                :fill="pwdStrength.reqNumber ? 'url(#grad1)' : '#E2E8F0'"
+                :stroke="pwdStrength.reqNumber ? 'none' : '#CBD5E1'"
+                stroke-width="1.5"
+              />
+              <path
+                v-if="pwdStrength.reqNumber"
+                d="M8 12.5L10.5 15L16 9"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span
+              :class="pwdStrength.reqNumber ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
+              class="text-[13px]"
+              >Mengandung Angka (0-9)</span
+            >
+          </div>
+
+          <div class="flex items-center gap-2 transition-colors duration-300">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                :fill="pwdStrength.reqCapital ? 'url(#grad1)' : '#E2E8F0'"
+                :stroke="pwdStrength.reqCapital ? 'none' : '#CBD5E1'"
+                stroke-width="1.5"
+              />
+              <path
+                v-if="pwdStrength.reqCapital"
+                d="M8 12.5L10.5 15L16 9"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span
+              :class="pwdStrength.reqCapital ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
+              class="text-[13px]"
+              >Huruf Kapital (A-Z)</span
+            >
+          </div>
+
+          <div class="flex items-center gap-2 transition-colors duration-300">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                :fill="pwdStrength.reqSymbol ? 'url(#grad1)' : '#E2E8F0'"
+                :stroke="pwdStrength.reqSymbol ? 'none' : '#CBD5E1'"
+                stroke-width="1.5"
+              />
+              <path
+                v-if="pwdStrength.reqSymbol"
+                d="M8 12.5L10.5 15L16 9"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <span
+              :class="pwdStrength.reqSymbol ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
+              class="text-[13px]"
+              >Karakter Unik/Simbol</span
+            >
+          </div>
+        </div>
+      </div>
 
       <VButton type="submit" variant="primary" class="mt-4 w-full h-[52px]" :disabled="isLoading">
         {{ isLoading ? 'Memproses...' : 'Daftar' }}

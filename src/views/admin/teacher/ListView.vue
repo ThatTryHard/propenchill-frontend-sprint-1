@@ -1,10 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar
-        :userName="authStore.user?.nama || 'Admin SIMP'"
-        :userEmail="authStore.user?.email || 'admin@sekolah.com'"
-      />
+      <SIMPSidebar />
     </template>
 
     <div class="p-8 flex flex-col gap-6 h-full">
@@ -13,7 +10,7 @@
           <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Guru</h1>
           <p class="text-[#718096] text-sm mt-1">Daftar guru yang terdaftar dalam sistem.</p>
         </div>
-        <VButton variant="primary" @click="openCreateModal">
+        <VButton v-if="!isKepsek" variant="primary" @click="openCreateModal">
           <template #leftIcon><Plus :size="18" /></template>
           Tambah Guru
         </VButton>
@@ -30,18 +27,14 @@
             @update:modelValue="debouncedSearch"
           />
         </div>
-        <select
-          v-model="selectedJabatan"
-          @change="handleFilter"
-          class="border border-[#e2e8f0] rounded-lg pl-3 pr-10 py-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-[#3f9760]"
-        >
-          <option value="">Semua Jabatan</option>
-          <option value="Kepala Sekolah">Kepala Sekolah</option>
-          <option value="Guru Bidang Akademik">Guru Bidang Akademik</option>
-          <option value="Guru Bidang Kesiswaan">Guru Bidang Kesiswaan</option>
-          <option value="Guru Bidang Agama">Guru Bidang Agama</option>
-          <option value="Guru">Guru</option>
-        </select>
+        <div class="w-[240px]">
+          <VDropdown
+            v-model="selectedJabatan"
+            :options="jabatanOptions"
+            placeholder="Semua Jabatan"
+            @change="handleFilter"
+          />
+        </div>
       </div>
 
       <div
@@ -170,26 +163,36 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
-import { useTeacherStore } from '@/stores/teacher'
 import { useAuthStore } from '@/stores/users/auth'
+import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
+import { useTeacherStore, type Teacher } from '@/stores/teacher'
 
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import CreateTeacherModal from '@/components/admin/teachers/CreateTeacherModal.vue'
 import EditTeacherModal from '@/components/admin/teachers/EditTeacherModal.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
+import VDropdown from '@/components/common/VDropdown.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import VPagination from '@/components/common/VPagination.vue'
 
 const store = useTeacherStore()
-const authStore = useAuthStore()
 const route = useRoute()
+const authStore = useAuthStore()
+const isKepsek = String(authStore.role || '').toUpperCase() === 'KEPSEK'
 
 const searchQuery = ref('')
 const selectedJabatan = ref('')
+const jabatanOptions = [
+  { label: 'Semua Jabatan', value: '' },
+  { label: 'Kepala Sekolah', value: 'Kepala Sekolah' },
+  { label: 'Guru Bidang Akademik', value: 'Guru Bidang Akademik' },
+  { label: 'Guru Bidang Kesiswaan', value: 'Guru Bidang Kesiswaan' },
+  { label: 'Guru Bidang Agama', value: 'Guru Bidang Agama' },
+  { label: 'Guru', value: 'Guru' },
+]
 const currentPage = ref(1)
 const isCreateModalOpen = ref(false)
 const isEditModalOpen = ref(false)
@@ -207,6 +210,16 @@ const deleteModal = reactive({
   loading: false,
   error: '',
 })
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message
+    if (typeof message === 'string' && message.length > 0) {
+      return message
+    }
+  }
+  return fallback
+}
 
 const loadTeachers = async (): Promise<void> => {
   await store.fetchTeachers(currentPage.value, searchQuery.value, selectedJabatan.value)
@@ -241,7 +254,7 @@ watch(currentPage, async (page) => {
   }
 })
 
-const openDeleteModal = (teacher: any): void => {
+const openDeleteModal = (teacher: Teacher): void => {
   deleteModal.teacherId = teacher.id
   deleteModal.teacherName = teacher.nama
   deleteModal.error = ''
@@ -286,11 +299,12 @@ const handleDelete = async (): Promise<void> => {
       currentPage.value -= 1
     }
     await loadTeachers()
-  } catch (e: any) {
-    deleteModal.error = e.message || 'Gagal menghapus data guru.'
+  } catch (e: unknown) {
+    const message = getErrorMessage(e, 'Gagal menghapus data guru.')
+    deleteModal.error = message
     alert.visible = true
     alert.type = 'error'
-    alert.message = e.message || 'Gagal menghapus data guru.'
+    alert.message = message
   } finally {
     deleteModal.loading = false
   }

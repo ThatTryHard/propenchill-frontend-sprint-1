@@ -32,8 +32,11 @@ const form = reactive({
 
 const errors = reactive({
   nama: '',
+  nis: '',
   email: '',
   jenis_kelamin: '',
+  kelas: '',
+  tanggal_lahir: '',
 })
 
 const submitError = ref('')
@@ -52,22 +55,25 @@ const resetForm = () => {
   }
 
   errors.nama = ''
+  errors.nis = ''
   errors.email = ''
   errors.jenis_kelamin = ''
+  errors.kelas = ''
+  errors.tanggal_lahir = ''
 }
 
 watch(
   () => props.isOpen,
   (isOpen) => {
     if (isOpen) resetForm()
-  }
+  },
 )
 
 watch(
   () => props.student,
   () => {
     if (props.isOpen) resetForm()
-  }
+  },
 )
 
 const closeModal = () => {
@@ -76,8 +82,11 @@ const closeModal = () => {
 
 const validateForm = () => {
   errors.nama = ''
+  errors.nis = ''
   errors.email = ''
   errors.jenis_kelamin = ''
+  errors.kelas = ''
+  errors.tanggal_lahir = ''
 
   let isValid = true
 
@@ -122,12 +131,16 @@ const handleSubmit = async () => {
     emit('updated')
     closeModal()
   } catch (error) {
-    const parsed = parseFieldErrors(error, {
-      nama: ['nama', 'name'],
-      nis: ['nis', 'nomor_induk', 'nomor induk'],
-      kelas: ['kelas', 'class'],
-      tanggal_lahir: ['tanggal_lahir', 'tanggal lahir', 'birth_date'],
-    }, 'Gagal memperbarui data siswa.')
+    const parsed = parseFieldErrors(
+      error,
+      {
+        nama: ['nama', 'name'],
+        nis: ['nis', 'nomor_induk', 'nomor induk'],
+        kelas: ['kelas', 'class'],
+        tanggal_lahir: ['tanggal_lahir', 'tanggal lahir', 'birth_date'],
+      },
+      'Gagal memperbarui data siswa.',
+    )
 
     errors.nama = parsed.fieldErrors.nama || ''
     errors.nis = parsed.fieldErrors.nis || ''
@@ -163,10 +176,20 @@ const handleSubmit = async () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="background: linear-gradient(#f8fafc, #f8fafc) padding-box, linear-gradient(243.74deg, rgba(255,255,255,0.05), #ffffff 47.12%, rgba(255,255,255,0.05)) border-box;"
+            class="relative w-full max-w-[720px] max-h-[calc(100vh-2rem)] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)] flex flex-col"
+            style="
+              background:
+                linear-gradient(#f8fafc, #f8fafc) padding-box,
+                linear-gradient(
+                    243.74deg,
+                    rgba(255, 255, 255, 0.05),
+                    #ffffff 47.12%,
+                    rgba(255, 255, 255, 0.05)
+                  )
+                  border-box;
+            "
           >
-            <div class="flex flex-col gap-5">
+            <div class="flex h-full flex-col gap-5 min-h-0">
               <div class="flex justify-end">
                 <button
                   type="button"
@@ -182,101 +205,103 @@ const handleSubmit = async () => {
                 <b class="text-[24px] leading-[120%]">Edit Data</b>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <VInputField
-                  v-model="form.nama"
-                  label="Nama"
-                  type="text"
-                  placeholder="Masukkan nama"
-                  :state="errors.nama ? 'error' : 'default'"
-                  :message="errors.nama"
-                />
+              <div class="flex-1 overflow-y-auto pr-1 -mr-1">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <VInputField
+                    v-model="form.nama"
+                    label="Nama"
+                    type="text"
+                    placeholder="Masukkan nama"
+                    :state="errors.nama ? 'error' : 'default'"
+                    :message="errors.nama"
+                  />
 
-                <VInputField
-                  v-model="form.email"
-                  label="Email"
-                  type="email"
-                  placeholder="Masukkan email"
-                  :state="errors.email ? 'error' : 'default'"
-                  :message="errors.email"
-                />
+                  <VInputField
+                    v-model="form.email"
+                    label="Email"
+                    type="email"
+                    placeholder="Masukkan email"
+                    :state="errors.email ? 'error' : 'default'"
+                    :message="errors.email"
+                  />
 
-                <VInputField
-                  v-model="form.nis"
-                  label="NIS"
-                  type="text"
-                  placeholder="Masukkan NIS"
-                />
+                  <VInputField
+                    v-model="form.nis"
+                    label="NIS"
+                    type="text"
+                    placeholder="Masukkan NIS"
+                  />
 
-                <VInputField
-                  v-model="form.nisn"
-                  label="NISN"
-                  type="text"
-                  placeholder="Masukkan NISN"
-                />
+                  <VInputField
+                    v-model="form.nisn"
+                    label="NISN"
+                    type="text"
+                    placeholder="Masukkan NISN"
+                  />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
-                    Jenis Kelamin
-                  </label>
-                  <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
-                    <select
-                      v-model="form.jenis_kelamin"
-                      class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none"
+                  <div class="flex flex-col gap-2">
+                    <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                      Jenis Kelamin
+                    </label>
+                    <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
+                      <select
+                        v-model="form.jenis_kelamin"
+                        class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none"
+                      >
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                      </select>
+                    </div>
+                    <div
+                      v-if="errors.jenis_kelamin"
+                      class="text-[12px] font-light leading-[150%] bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent"
                     >
-                      <option value="L">Laki-laki</option>
-                      <option value="P">Perempuan</option>
-                    </select>
+                      {{ errors.jenis_kelamin }}
+                    </div>
                   </div>
-                  <div
-                    v-if="errors.jenis_kelamin"
-                    class="text-[12px] font-light leading-[150%] bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent"
+
+                  <VInputField
+                    v-model="form.kelas"
+                    label="Kelas"
+                    type="text"
+                    placeholder="Masukkan kelas"
+                  />
+
+                  <VInputField
+                    v-model="form.tanggal_lahir"
+                    label="Tanggal Lahir"
+                    type="date"
+                    placeholder="Pilih tanggal lahir"
+                  />
+
+                  <VInputField
+                    v-model="form.no_hp"
+                    label="No HP"
+                    type="text"
+                    placeholder="Masukkan no hp"
+                  />
+
+                  <div class="md:col-span-2 flex flex-col gap-2">
+                    <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                      Alamat
+                    </label>
+                    <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
+                      <textarea
+                        v-model="form.alamat"
+                        rows="3"
+                        placeholder="Masukkan alamat"
+                        class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <p
+                    v-if="studentStore.error"
+                    class="md:col-span-2 text-[13px] text-[#A0453B] font-medium"
                   >
-                    {{ errors.jenis_kelamin }}
-                  </div>
+                    {{ submitError }}
+                  </p>
                 </div>
-
-                <VInputField
-                  v-model="form.kelas"
-                  label="Kelas"
-                  type="text"
-                  placeholder="Masukkan kelas"
-                />
-
-                <VInputField
-                  v-model="form.tanggal_lahir"
-                  label="Tanggal Lahir"
-                  type="date"
-                  placeholder="Pilih tanggal lahir"
-                />
-
-                <VInputField
-                  v-model="form.no_hp"
-                  label="No HP"
-                  type="text"
-                  placeholder="Masukkan no hp"
-                />
-
-                <div class="md:col-span-2 flex flex-col gap-2">
-                  <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
-                    Alamat
-                  </label>
-                  <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
-                    <textarea
-                      v-model="form.alamat"
-                      rows="3"
-                      placeholder="Masukkan alamat"
-                      class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none resize-none"
-                    />
-                  </div>
-                </div>
-
-                <p
-                  v-if="studentStore.error"
-                  class="md:col-span-2 text-[13px] text-[#A0453B] font-medium"
-                >
-                  {{ submitError }}
-                </p>
               </div>
 
               <div class="flex items-center justify-end gap-2">

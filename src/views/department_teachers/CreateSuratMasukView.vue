@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
-import { useAuthStore } from '@/stores/users/auth'
 import {
   useSuratMasukStore,
   type Pengirim,
   type SuratMasukPayload,
 } from '@/stores/surat-masuk'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import DepartmentTeacherSidebar from '@/components/department_teachers/DepartmentTeacherSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VTextareaField from '@/components/common/VTextareaField.vue'
+import VInputFile from '@/components/common/VInputFile.vue'
 import { Building2, LoaderCircle } from 'lucide-vue-next'
 
 interface FormState {
@@ -24,9 +25,9 @@ interface FormState {
   kontak: string
 }
 
-const authStore = useAuthStore()
 const suratMasukStore = useSuratMasukStore()
 const { showAlert } = useGlobalAlert()
+const router = useRouter()
 
 const form = reactive<FormState>({
   nomor_surat_pengirim: '',
@@ -44,6 +45,7 @@ const formError = ref('')
 const selectedPengirimId = ref<number | null>(null)
 const autocompleteOpen = ref(false)
 const autocompleteRef = ref<HTMLElement | null>(null)
+const lampiranFile = ref<File | null>(null)
 
 const filteredPengirim = computed(() => {
   const keyword = form.nama_instansi.trim().toLowerCase()
@@ -100,6 +102,7 @@ const clearForm = () => {
   form.kontak = ''
   selectedPengirimId.value = null
   autocompleteOpen.value = false
+  lampiranFile.value = null
   errors.value = {}
   formError.value = ''
 }
@@ -148,6 +151,7 @@ const handleSubmit = async () => {
       alamat: form.alamat.trim(),
       kontak: form.kontak.trim(),
     },
+    file_lampiran: lampiranFile.value,
   }
 
   if (!payload.jenis_surat) {
@@ -178,13 +182,20 @@ const handleSubmit = async () => {
     }
 
     clearForm()
-  } catch (apiErrors: any) {
+    await router.push('/department-teachers/surat-masuk')
+  } catch (apiErrors: unknown) {
+    const payload =
+      typeof apiErrors === 'object' && apiErrors !== null
+        ? (apiErrors as Record<string, unknown>)
+        : {}
+
     errors.value = {
       ...errors.value,
-      ...(apiErrors || {}),
+      ...(payload as Record<string, string>),
     }
 
-    formError.value = apiErrors?.general || 'Gagal menyimpan data Surat Masuk.'
+    formError.value =
+      typeof payload.general === 'string' ? payload.general : 'Gagal menyimpan data Surat Masuk.'
     showAlert('error', formError.value, 'Gagal Menyimpan')
   }
 }
@@ -202,10 +213,7 @@ onUnmounted(() => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <DepartmentTeacherSidebar
-        :userName="authStore.user?.nama"
-        :userEmail="authStore.user?.email"
-      />
+      <SIMPSidebar />
     </template>
 
     <div class="w-full min-h-screen bg-white">
@@ -337,6 +345,18 @@ onUnmounted(() => {
             :message="errors.kontak"
             @update:modelValue="form.kontak = String($event || '')"
           />
+
+          <div class="flex flex-col gap-2">
+            <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+              Lampiran Surat (Opsional)
+            </label>
+            <VInputFile
+              accept=".pdf,.doc,.docx"
+              file-types-text="PDF, DOC, DOCX"
+              :max-size-mb="10"
+              @update:modelValue="lampiranFile = ($event as File) || null"
+            />
+          </div>
 
           <p v-if="formError" class="m-0 text-[14px] font-semibold text-[#A0453B]">
             {{ formError }}

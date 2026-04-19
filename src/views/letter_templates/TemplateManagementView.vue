@@ -1,23 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { Trash2, RotateCcw, Filter } from 'lucide-vue-next'
+import DashboardLayout from '@/components/common/DashboardLayout.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  FileText,
-  PlusCircle,
-  Settings,
-  CircleHelp,
-  LogOut,
-  Trash2,
-  Search,
-  RotateCcw,
-  Filter,
-} from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/users/auth'
 import mailIcon from '@/assets/mail.png'
 import studentIcon from '@/assets/Siswa SVG.svg'
 import VActionButton from '@/components/common/VActionButton.vue'
-import VSidebar from '@/components/common/VSidebar.vue'
+import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
 import VButton from '@/components/common/VButton.vue'
 import VPagination from '@/components/common/VPagination.vue'
@@ -34,27 +26,6 @@ const templateStore = useLetterTemplateStore()
 const authStore = useAuthStore()
 const route = useRoute()
 const router = useRouter()
-
-const navItems = [
-  {
-    name: 'template-management',
-    label: 'Manajemen Template Surat',
-    path: '/letter_templates',
-    icon: FileText,
-  },
-  {
-    name: 'template-create',
-    label: 'Tambah Template Surat',
-    path: '/letter_templates/create',
-    icon: PlusCircle,
-  },
-]
-
-const bottomItems = [
-  { name: 'settings', label: 'Settings', icon: Settings },
-  { name: 'help', label: 'Help', icon: CircleHelp },
-  { name: 'logout', label: 'Log Out', icon: LogOut },
-]
 
 const statusOptions = [
   { label: 'Semua', value: '' },
@@ -119,40 +90,72 @@ function parseJsonSafely<T>(value: string | null): T | null {
   }
 }
 
-const localUser = computed<Record<string, any> | null>(() => {
-  return parseJsonSafely<Record<string, any>>(localStorage.getItem('user'))
+interface CurrentUser {
+  id?: number
+  nama?: string
+  full_name?: string
+  name?: string
+  email?: string
+  role?: string
+}
+
+const localUser = computed<CurrentUser | null>(() => {
+  return parseJsonSafely<CurrentUser>(localStorage.getItem('user'))
 })
 
-const currentUser = computed<Record<string, any> | null>(() => {
+const currentUser = computed<CurrentUser | null>(() => {
   if (localUser.value) return localUser.value
 
-  const authAny = authStore as unknown as Record<string, any>
-  return authAny.user || authAny.currentUser || null
+  return authStore.user || null
 })
 
-const userName = computed(() => {
+const canManageTemplate = computed(() => {
+  const role = currentUser.value?.role || authStore.role || ''
+
+  return MANAGE_TEMPLATE_ROLES.includes(role)
+})
+
+const currentUserId = computed<number | null>(() => {
+  const possibleId =
+    currentUser.value?.id ??
+    parseJsonSafely<{ id?: number }>(localStorage.getItem('user_data'))?.id
+
+  if (typeof possibleId === 'number') {
+    return possibleId
+  }
+
+  return null
+})
+
+const currentUserName = computed(() => {
   return (
     currentUser.value?.nama ||
     currentUser.value?.full_name ||
     currentUser.value?.name ||
-    authStore.user?.nama ||
-    'User'
-  )
-})
-
-const userEmail = computed(() => {
-  return currentUser.value?.email || authStore.user?.email || '-'
-})
-
-const canManageTemplate = computed(() => {
-  const role =
-    currentUser.value?.role ||
-    authStore.user?.role ||
-    (authStore as unknown as Record<string, any>).role ||
     ''
-
-  return MANAGE_TEMPLATE_ROLES.includes(role)
+  )
+    .trim()
+    .toLowerCase()
 })
+
+function canManageTemplateItem(item: LetterTemplateItem) {
+  const role = (currentUser.value?.role || authStore.role || '').toUpperCase()
+
+  if (role === 'ADMIN') {
+    return true
+  }
+
+  if (!MANAGE_TEMPLATE_ROLES.includes(role)) {
+    return false
+  }
+
+  if (currentUserId.value !== null && Number(item.created_by) === currentUserId.value) {
+    return true
+  }
+
+  const ownerName = (item.created_by_name || '').trim().toLowerCase()
+  return Boolean(ownerName && ownerName === currentUserName.value)
+}
 
 const totalTemplates = computed(() => {
   return pagination.value?.total_data || templates.value.length
@@ -241,6 +244,7 @@ function stripHtml(html: string | null | undefined) {
   if (!html) return ''
   return html.replace(/<[^>]*>/g, '').trim()
 }
+
 
 function getTemplateDescription(item: LetterTemplateItem) {
   stripHtml(item.konten_template)
@@ -410,14 +414,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[linear-gradient(180deg,#fff,#eaf7ef)] flex font-sans">
-    <VSidebar
-      class="!h-auto !min-h-full self-stretch"
-      :nav-items="navItems"
-      :bottom-items="bottomItems"
-      :user-name="userName"
-      :user-email="userEmail"
-    />
+  <DashboardLayout>
+      <template #sidebar>
+        <SIMPSidebar />
+      </template>
 
     <main class="flex-1 px-4 py-8 overflow-y-auto md:px-8 lg:px-10">
       <section class="mb-6 flex flex-col gap-2">
@@ -459,19 +459,12 @@ onMounted(() => {
               <label class="text-[13px] font-semibold leading-[120%] text-[#111827]">
                 Pencarian
               </label>
-
-              <div class="relative">
-                <Search
-                  class="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#b2b5ba]"
-                />
-                <input
-                  v-model="search"
-                  type="text"
-                  placeholder="Cari template berdasarkan nama"
-                  class="h-[46px] w-full rounded-[14px] border border-[#d9e2e7] bg-white pl-12 pr-4 text-[16px] text-[#111827] outline-none transition placeholder:text-[#b2b5ba] focus:border-[#3f9760]"
-                  @keyup.enter="handleApplyFilter"
-                />
-              </div>
+              <VInputField
+                v-model="search"
+                state="search"
+                placeholder="Cari template berdasarkan nama"
+                @keydown.enter="handleApplyFilter"
+              />
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -608,7 +601,7 @@ onMounted(() => {
             class="relative min-h-[220px] rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] px-5 py-4 shadow-[0px_2px_10px_rgba(17,24,39,0.06)] transition hover:-translate-y-[2px] hover:shadow-[0px_6px_18px_rgba(17,24,39,0.08)]"
           >
             <button
-              v-if="canManageTemplate"
+              v-if="canManageTemplateItem(item)"
               type="button"
               class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[#7b8087] transition hover:bg-[#fef3f2] hover:text-[#b42318]"
               @click="handleDelete(item.id_template)"
@@ -648,14 +641,14 @@ onMounted(() => {
               </VActionButton>
 
               <VActionButton
-                v-if="canManageTemplate"
+                v-if="canManageTemplateItem(item)"
                 variant="primary"
                 @click="goToEdit(item.id_template)"
               >
                 Edit
               </VActionButton>
 
-              <div v-if="canManageTemplate" class="flex items-center gap-2">
+              <div v-if="canManageTemplateItem(item)" class="flex items-center gap-2">
                 <button
                   type="button"
                   :title="item.is_active ? 'Nonaktifkan template' : 'Aktifkan template'"
@@ -756,5 +749,5 @@ onMounted(() => {
         },
       ]"
     />
-  </div>
+  </DashboardLayout>
 </template>

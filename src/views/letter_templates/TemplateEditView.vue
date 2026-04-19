@@ -1,23 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  FileText,
-  PlusCircle,
-  Settings,
-  CircleHelp,
-  LogOut,
-  InfoIcon,
-} from 'lucide-vue-next'
+import { InfoIcon } from 'lucide-vue-next'
 import { QuillEditor } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css'
 
-import { useAuthStore } from '@/stores/users/auth'
 import { useLetterTemplateStore, type TemplateMode } from '@/stores/letter_templates'
 import { useTemplateForm } from '@/forms/useTemplateForm'
 
+import DashboardLayout from '@/components/common/DashboardLayout.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VInputFile from '@/components/common/VInputFile.vue'
-import VSidebar from '@/components/common/VSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
 import VChip from '@/components/common/VChip.vue'
@@ -29,7 +22,6 @@ import VTooltip from '@/components/common/VTooltip.vue'
 const route = useRoute()
 const router = useRouter()
 const templateStore = useLetterTemplateStore()
-const authStore = useAuthStore()
 
 const {
   form,
@@ -49,72 +41,12 @@ const {
   validateNamaTemplate,
 } = useTemplateForm()
 
-function parseJsonSafely<T>(value: string | null): T | null {
-  if (!value) return null
-
-  try {
-    return JSON.parse(value) as T
-  } catch {
-    return null
-  }
-}
-
-const localUser = computed<Record<string, any> | null>(() => {
-  return parseJsonSafely<Record<string, any>>(localStorage.getItem('user'))
-})
-
-const currentUser = computed<Record<string, any> | null>(() => {
-  if (localUser.value) return localUser.value
-
-  const authAny = authStore as unknown as Record<string, any>
-  return authAny.user || authAny.currentUser || null
-})
-
-const userName = computed(() => {
-  return (
-    currentUser.value?.nama ||
-    currentUser.value?.full_name ||
-    currentUser.value?.name ||
-    authStore.user?.nama ||
-    'User'
-  )
-})
-
-const userEmail = computed(() => {
-  return currentUser.value?.email || authStore.user?.email || '-'
-})
-
-const placeholderNama = '{nama}'
-const placeholderNis = '{nis}'
-const placeholderKelas = '{kelas}'
-
 const headerHtml = computed(() => templateStore.config?.header_html || '')
 const isLoadingConfig = computed(() => templateStore.isFetchingConfig)
 const isLoadingDetail = ref(false)
 
 const quillRef = ref()
 const fileInputRef = ref<InstanceType<typeof VInputFile> | null>(null)
-
-const navItems = [
-  {
-    name: 'template-management',
-    label: 'Manajemen Template Surat',
-    path: '/letter_templates',
-    icon: FileText,
-  },
-  {
-    name: 'template-create',
-    label: 'Tambah Template Surat',
-    path: '/letter_templates/create',
-    icon: PlusCircle,
-  },
-]
-
-const bottomItems = [
-  { name: 'settings', label: 'Settings', icon: Settings },
-  { name: 'help', label: 'Help', icon: CircleHelp },
-  { name: 'logout', label: 'Log Out', icon: LogOut },
-]
 
 const jenisOptions = [
   { label: 'Keagamaan', value: 'KEAGAMAAN' },
@@ -152,7 +84,7 @@ const editorToolbar = [
 
 watch(
   () => form.template_mode,
-  (newMode) => handleTemplateModeChange(newMode as TemplateMode)
+  (newMode) => handleTemplateModeChange(newMode as TemplateMode),
 )
 
 onMounted(() => {
@@ -232,16 +164,12 @@ function goBack() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[linear-gradient(180deg,#fff,#eaf7ef)] flex font-sans">
-    <VSidebar
-      class="!h-auto !min-h-full self-stretch"
-      :nav-items="navItems"
-      :bottom-items="bottomItems"
-      :user-name="userName"
-      :user-email="userEmail"
-    />
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-    <main class="flex-1 px-4 md:px-8 lg:px-10 py-8 overflow-y-auto">
+    <main class="flex-1 px-4 py-8 overflow-y-auto md:px-8 lg:px-10">
       <div class="w-full">
         <section class="mb-6 flex flex-col gap-1">
           <h1 class="text-[28px] md:text-[32px] font-bold leading-[120%] text-[#111827]">
@@ -324,7 +252,10 @@ function goBack() {
                       :options="modeOptions"
                       placeholder="Pilih metode template"
                     />
-                    <span v-if="fieldErrors.template_mode" class="text-[12px] font-light text-[#A0453B]">
+                    <span
+                      v-if="fieldErrors.template_mode"
+                      class="text-[12px] font-light text-[#A0453B]"
+                    >
                       {{ fieldErrors.template_mode }}
                     </span>
                   </div>
@@ -396,7 +327,8 @@ function goBack() {
                   Ganti File Template DOCX
                 </h2>
                 <p class="text-[14px] leading-[150%] text-[#858a91]">
-                  Kosongkan jika tidak ingin mengganti file. Jika ingin mengganti, unggah file .docx baru.
+                  Kosongkan jika tidak ingin mengganti file. Jika ingin mengganti, unggah file .docx
+                  baru.
                 </p>
               </div>
 
@@ -432,9 +364,7 @@ function goBack() {
                     class="prose max-w-none text-[#111827]"
                     v-html="headerHtml"
                   />
-                  <div v-else class="text-sm text-[#858a91]">
-                    Memuat header surat...
-                  </div>
+                  <div v-else class="text-sm text-[#858a91]">Memuat header surat...</div>
                 </div>
 
                 <div class="px-6 py-5">
@@ -495,7 +425,10 @@ function goBack() {
                     />
                   </div>
 
-                  <p v-if="fieldErrors.konten_template" class="mt-2 text-[12px] font-light text-[#A0453B]">
+                  <p
+                    v-if="fieldErrors.konten_template"
+                    class="mt-2 text-[12px] font-light text-[#A0453B]"
+                  >
                     {{ fieldErrors.konten_template }}
                   </p>
                 </div>
@@ -504,9 +437,7 @@ function goBack() {
           </VCard>
 
           <div class="relative z-10 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <VButton variant="secondary" class="!w-full" @click="goBack">
-              Batal
-            </VButton>
+            <VButton variant="secondary" class="!w-full" @click="goBack"> Batal </VButton>
 
             <VButton
               variant="primary"
@@ -520,7 +451,7 @@ function goBack() {
         </div>
       </div>
     </main>
-  </div>
+  </DashboardLayout>
 </template>
 
 <style scoped>
@@ -539,5 +470,22 @@ function goBack() {
 :deep(.ql-editor) {
   min-height: 220px;
   line-height: 1.6;
+}
+
+:deep(.template-preview-header-html) {
+  font-family: 'Times New Roman', serif;
+  font-size: 12pt;
+  line-height: 1.3;
+}
+
+:deep(.template-preview-header-html table) {
+  width: 100% !important;
+}
+
+:deep(.template-preview-header-html img) {
+  width: auto !important;
+  max-width: 100%;
+  max-height: 86px;
+  object-fit: contain;
 }
 </style>

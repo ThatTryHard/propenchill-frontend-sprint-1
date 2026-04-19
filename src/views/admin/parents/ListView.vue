@@ -1,7 +1,7 @@
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <AdminSidebar />
+      <SIMPSidebar />
     </template>
     <div class="p-8 flex flex-col gap-6 h-full">
       <!-- Header -->
@@ -147,7 +147,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
 import { useParentStore, type Parent } from '@/stores/parents'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import AdminSidebar from '@/components/admin/AdminSidebar.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import CreateParentModal from '@/components/admin/parents/CreateParentModal.vue'
 import EditParentModal from '@/components/admin/parents/EditParentModal.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'

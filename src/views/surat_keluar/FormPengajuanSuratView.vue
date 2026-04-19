@@ -1,13 +1,10 @@
 <template>
-  <div class="flex h-screen layout-bg">
-    <VSidebar
-      :navItems="navItems"
-      :bottomItems="bottomItems"
-      :userName="authStore.user?.nama"
-      :userEmail="authStore.user?.email"
-    />
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-    <main class="flex-1 overflow-y-auto">
+    <main class="flex-1 overflow-y-auto layout-bg">
       <div class="main-content-wrapper">
         <div class="header-section mb-10">
           <div class="title-group">
@@ -95,7 +92,7 @@
         </form>
       </div>
     </main>
-  </div>
+  </DashboardLayout>
 </template>
 
 <script setup lang="ts">
@@ -103,8 +100,9 @@ import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/plugins/axios';
 import { useAuthStore } from '@/stores/users/auth';
-import VSidebar from '@/components/common/VSidebar.vue';
-import { LayoutGrid, Mail, Settings, HelpCircle, LogOut, ChevronDown, Lock, PlusCircle } from 'lucide-vue-next';
+import DashboardLayout from '@/components/common/DashboardLayout.vue';
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue';
+import { ChevronDown, Lock } from 'lucide-vue-next';
 import { useSuratKeluarStore } from '@/stores/surat_keluar/index';
 
 const authStore = useAuthStore();
@@ -134,24 +132,6 @@ const formData = reactive({
   id_template: '' as string | number,
   klasifikasi: '',
 });
-
-const navItems = [
-  {
-    name: 'surat-keluar',
-    label: 'Daftar Pengajuan Surat Keluar',
-    path: '/surat-keluar/riwayat',
-    matchPaths: ['/surat-keluar/detail'],
-    icon: LayoutGrid,
-  },
-  { name: 'buat-pengajuan', label: 'Buat Pengajuan Surat', path: '/surat-keluar/pengajuan', icon: PlusCircle },
-];
-
-const handleLogout = () => { authStore.logout(); router.push('/login'); };
-const bottomItems = [
-  { name: 'settings', label: 'Settings', icon: Settings },
-  { name: 'help', label: 'Help', icon: HelpCircle },
-  { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout }
-];
 
 const suratKeluarStore = useSuratKeluarStore()
 
