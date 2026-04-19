@@ -74,12 +74,23 @@
           </div>
 
           <div v-else-if="uploadedFile" class="flex flex-col items-center gap-5">
-            <div
-              class="px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100 flex items-center gap-2 max-w-[200px]"
-            >
-              <span class="text-[12px] truncate text-gray-700 font-bold">{{
-                uploadedFile.name
-              }}</span>
+            <div class="flex w-full max-w-[360px] items-center justify-center gap-2">
+              <div
+                class="min-w-0 flex-1 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100"
+              >
+                <span class="block truncate text-[12px] text-gray-700 font-bold">
+                  {{ uploadedFile.name }}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                class="shrink-0 h-8 w-8 rounded-full border border-[#f3d2ce] bg-white shadow-sm text-[#A0453B] transition-colors hover:bg-[#fff1ef] hover:text-[#8b3e37]"
+                aria-label="Hapus file"
+                @click.stop="clearUploadedFile"
+              >
+                x
+              </button>
             </div>
 
             <img src="@/assets/check-gradient.svg" alt="Success" class="w-[60px] h-[60px]" />
@@ -167,6 +178,62 @@ const triggerInput = () => {
   if (fileInputRef.value) fileInputRef.value.click()
 }
 
+const clearUploadedFile = () => {
+  uploadedFile.value = null
+  errorMessage.value = ''
+
+  if (fileInputRef.value) {
+    fileInputRef.value.value = ''
+  }
+
+  emit('update:modelValue', null)
+}
+
+const getFileExtension = (fileName: string): string => {
+  const normalized = String(fileName || '').trim().toLowerCase()
+  const lastDotIndex = normalized.lastIndexOf('.')
+  if (lastDotIndex < 0) {
+    return ''
+  }
+  return normalized.slice(lastDotIndex)
+}
+
+const isFileTypeAllowed = (file: File): boolean => {
+  const accept = String(props.accept || '*').trim().toLowerCase()
+  if (!accept || accept === '*' || accept === '*/*') {
+    return true
+  }
+
+  const acceptedTypes = accept
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+  if (acceptedTypes.length === 0) {
+    return true
+  }
+
+  const extension = getFileExtension(file.name)
+  const mimeType = String(file.type || '').toLowerCase()
+
+  return acceptedTypes.some((typeRule) => {
+    if (typeRule === '*' || typeRule === '*/*') {
+      return true
+    }
+
+    if (typeRule.startsWith('.')) {
+      return extension === typeRule
+    }
+
+    if (typeRule.endsWith('/*')) {
+      const mimePrefix = typeRule.slice(0, -1)
+      return mimeType.startsWith(mimePrefix)
+    }
+
+    return mimeType === typeRule
+  })
+}
+
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
@@ -186,9 +253,19 @@ const handleDrop = (event: DragEvent) => {
 const processFile = (file: File) => {
   errorMessage.value = ''
 
+  if (!isFileTypeAllowed(file)) {
+    uploadedFile.value = null
+    errorMessage.value = `Tipe file tidak didukung. Gunakan ${props.fileTypesText}.`
+    emit('update:modelValue', null)
+    emit('error', errorMessage.value)
+    return
+  }
+
   const fileSizeMb = file.size / (1024 * 1024)
   if (fileSizeMb > props.maxSizeMb) {
+    uploadedFile.value = null
     errorMessage.value = `Ukuran file terlalu besar. Maksimal ${props.maxSizeMb}MB.`
+    emit('update:modelValue', null)
     emit('error', errorMessage.value)
     return
   }
