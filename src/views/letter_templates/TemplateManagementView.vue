@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   FileText,
   PlusCircle,
@@ -32,6 +32,7 @@ import {
 
 const templateStore = useLetterTemplateStore()
 const authStore = useAuthStore()
+const route = useRoute()
 const router = useRouter()
 
 const navItems = [
@@ -82,6 +83,8 @@ const MANAGE_TEMPLATE_ROLES = [
   'BIDANG_AKADEMIK',
 ]
 
+const SUCCESS_ALERT_DURATION = 3000
+
 const search = ref('')
 const statusFilter = ref('')
 const jenisFilter = ref('')
@@ -98,6 +101,8 @@ const selectedTemplateIdToDelete = ref<number | null>(null)
 
 const isToggleModalOpen = ref(false)
 const selectedTemplateToToggle = ref<LetterTemplateItem | null>(null)
+
+let successTimer: ReturnType<typeof setTimeout> | null = null
 
 const templates = computed(() => templateStore.templates)
 const pagination = computed(() => templateStore.pagination)
@@ -157,6 +162,45 @@ const totalTemplatesByRole = computed(() => {
   return totalTemplates.value
 })
 
+function clearSuccessTimer() {
+  if (successTimer) {
+    clearTimeout(successTimer)
+    successTimer = null
+  }
+}
+
+function showSuccessMessage(message: string) {
+  successMessage.value = message
+
+  clearSuccessTimer()
+
+  successTimer = setTimeout(() => {
+    successMessage.value = ''
+    successTimer = null
+  }, SUCCESS_ALERT_DURATION)
+}
+
+function clearSuccessMessage() {
+  successMessage.value = ''
+  clearSuccessTimer()
+}
+
+function handleRouteSuccessMessage() {
+  const success = route.query.success
+
+  if (typeof success !== 'string' || !success.trim()) return
+
+  showSuccessMessage(success)
+
+  const nextQuery = { ...route.query }
+  delete nextQuery.success
+
+  router.replace({
+    path: route.path,
+    query: nextQuery,
+  })
+}
+
 function buildParams(): FetchTemplatesParams {
   const [sort_by, order] = sortValue.value.split('-') as [
     'created_at' | 'nama_template',
@@ -199,7 +243,8 @@ function stripHtml(html: string | null | undefined) {
 }
 
 function getTemplateDescription(item: LetterTemplateItem) {
-  const text = stripHtml(item.konten_template)
+  stripHtml(item.konten_template)
+
   if (item.template_mode === 'MANUAL') {
     return `Template ${formatJenis(item.jenis).toLowerCase()} dengan variabel dinamis.`
   }
@@ -225,7 +270,6 @@ function getCreatedByLabel(item: LetterTemplateItem) {
 
 async function fetchData() {
   generalError.value = ''
-  successMessage.value = ''
 
   const result = await templateStore.fetchTemplates(buildParams())
 
@@ -279,7 +323,7 @@ async function confirmDeleteTemplate() {
   if (!selectedTemplateIdToDelete.value) return
 
   generalError.value = ''
-  successMessage.value = ''
+  clearSuccessMessage()
 
   const result = await templateStore.deleteTemplate(selectedTemplateIdToDelete.value)
 
@@ -289,7 +333,7 @@ async function confirmDeleteTemplate() {
     return
   }
 
-  successMessage.value = result.message || 'Template surat berhasil dihapus.'
+  showSuccessMessage(result.message || 'Template surat berhasil dihapus.')
   closeDeleteModal()
 
   if (templates.value.length === 0 && currentPage.value > 1) {
@@ -313,7 +357,7 @@ async function confirmToggleTemplate() {
   if (!selectedTemplateToToggle.value) return
 
   generalError.value = ''
-  successMessage.value = ''
+  clearSuccessMessage()
 
   const nextStatus = !selectedTemplateToToggle.value.is_active
   const result = await templateStore.toggleTemplateStatus(
@@ -327,9 +371,11 @@ async function confirmToggleTemplate() {
     return
   }
 
-  successMessage.value = nextStatus
-    ? 'Template berhasil diaktifkan.'
-    : 'Template berhasil dinonaktifkan.'
+  showSuccessMessage(
+    nextStatus
+      ? 'Template berhasil diaktifkan.'
+      : 'Template berhasil dinonaktifkan.'
+  )
 
   closeToggleModal()
   await fetchData()
@@ -358,6 +404,7 @@ const toggleModalDescription = computed(() => {
 })
 
 onMounted(() => {
+  handleRouteSuccessMessage()
   fetchData()
 })
 </script>
@@ -394,7 +441,7 @@ onMounted(() => {
           type="success"
           title="Berhasil"
           :message="successMessage"
-          @close="successMessage = ''"
+          @close="clearSuccessMessage"
         />
       </section>
 

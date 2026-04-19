@@ -40,8 +40,11 @@ const {
   toggleRole,
   handleFileChange,
   insertPlaceholder,
+  normalizeNamaTemplate,
   handleTemplateModeChange,
   validateForm,
+  validateManualContent,
+  validateNamaTemplate,
 } = useTemplateForm()
 
 function parseJsonSafely<T>(value: string | null): T | null {
@@ -178,8 +181,14 @@ async function submitTemplate() {
     return
   }
 
-  successMessage.value = templateStore.successMessage || 'Template surat berhasil dibuat.'
   resetForm()
+
+  router.push({
+    path: '/letter_templates',
+    query: {
+      success: templateStore.successMessage || 'Template surat berhasil dibuat.',
+    },
+  })
 }
 
 function goBack() {
@@ -238,8 +247,10 @@ function goBack() {
 
                 <VInputField
                   v-model="form.nama_template"
+                  @blur="normalizeNamaTemplate"
+                  @update:modelValue="validateNamaTemplate()"
                   label="Nama Template"
-                  placeholder="Contoh: Surat Izin Tidak Mengikuti Kegiatan Keagamaan"
+                  placeholder="Masukkan nama template"
                   :state="fieldErrors.nama_template ? 'error' : 'default'"
                   :message="fieldErrors.nama_template"
                 />
@@ -347,7 +358,7 @@ function goBack() {
                 accept=".docx"
                 file-types-text=".docx file"
                 :max-size-mb="10"
-                @update:modelValue="handleFileChange"
+                @update:modelValue="(file) => handleFileChange(file)"
               />
 
               <p v-if="fieldErrors.file_template" class="text-xs text-[#A0453B]">
@@ -433,6 +444,7 @@ function goBack() {
                       theme="snow"
                       :toolbar="editorToolbar"
                       class="min-h-[260px]"
+                      @update:content="validateManualContent()"
                     />
                   </div>
 
