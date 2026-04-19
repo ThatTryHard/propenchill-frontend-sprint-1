@@ -13,6 +13,7 @@ import VDropdown from '@/components/common/VDropdown.vue'
 import VTable from '@/components/common/VTable.vue'
 import VChip from '@/components/common/VChip.vue'
 import VPagination from '@/components/common/VPagination.vue'
+import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
 import { SearchIcon } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -77,6 +78,11 @@ const filters = reactive({
   start_date: '',
   end_date: '',
   status: '',
+})
+
+const deleteModal = reactive({
+  isOpen: false,
+  targetId: null as number | null,
 })
 
 const statusOptions = [
@@ -144,26 +150,37 @@ const goToDetail = (id: number) => {
   }
 }
 
-const confirmDelete = async (id: number) => {
+const confirmDelete = (id: number) => {
   const row = suratMasukStore.suratList.find((item) => item.id_surat_masuk === id)
 
   if (!row || !canDeleteRow(row)) {
     return
   }
 
-  if (confirm('Apakah Anda yakin ingin menghapus surat ini?')) {
-    try {
-      await suratMasukStore.deleteSuratMasuk(id)
-      showAlert('success', 'Data surat berhasil dihapus.', 'Berhasil')
-      fetchSurat(suratMasukStore.pagination.halaman_saat_ini)
-    } catch (error: unknown) {
-      const payload =
-        typeof error === 'object' && error !== null
-          ? (error as { response?: { data?: { error?: string } } })
-          : undefined
-      const msg = payload?.response?.data?.error || 'Gagal menghapus surat.'
-      showAlert('error', msg, 'Gagal')
-    }
+  deleteModal.targetId = id
+  deleteModal.isOpen = true
+}
+
+const handleDeleteConfirmed = async () => {
+  if (deleteModal.targetId === null) {
+    return
+  }
+
+  const targetId = deleteModal.targetId
+
+  try {
+    await suratMasukStore.deleteSuratMasuk(targetId)
+    showAlert('success', 'Data surat berhasil dihapus.', 'Berhasil')
+    deleteModal.isOpen = false
+    deleteModal.targetId = null
+    fetchSurat(suratMasukStore.pagination.halaman_saat_ini)
+  } catch (error: unknown) {
+    const payload =
+      typeof error === 'object' && error !== null
+        ? (error as { response?: { data?: { error?: string } } })
+        : undefined
+    const msg = payload?.response?.data?.error || 'Gagal menghapus surat.'
+    showAlert('error', msg, 'Gagal')
   }
 }
 
@@ -300,6 +317,16 @@ onMounted(() => {
           @page-change="handlePageChange"
         />
       </div>
+
+      <ConfirmationModal
+        v-model:isOpen="deleteModal.isOpen"
+        title="Hapus Surat Masuk"
+        description="Apakah Anda yakin ingin menghapus surat ini? Tindakan ini tidak dapat dikembalikan."
+        confirmText="Hapus"
+        cancelText="Batal"
+        :loading="suratMasukStore.deleting"
+        @confirm="handleDeleteConfirmed"
+      />
     </div>
   </DashboardLayout>
 </template>

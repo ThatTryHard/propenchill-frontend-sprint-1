@@ -117,34 +117,49 @@ Berikut adalah penjelasan struktur direktori utama pada _repository_ Frontend in
 
 ```py
 propenchill-frontend/
-├── public/                     # Aset publik (favicon, dll) yang tidak diproses Vite
-├── src/                        # Source code utama aplikasi Vue
-│   ├── __tests__/              # Unit testing (Vitest)
-│   ├── assets/                 # Aset statis (gambar, logo, stylesheet)
-│   ├── components/             # Reusable UI components
-│   │   ├── admin/              # Komponen khusus admin (management, parents, students, teachers)
-│   │   ├── common/             # Komponen umum (button, modal, table, alert, dll)
-│   │   ├── icons/              # Komponen icon SVG Vue
-│   │   └── layout/             # Komponen layout (mis. auth layout)
-│   ├── composables/            # Vue composables (custom hooks)
-│   ├── lib/                    # Utility/helper dan konfigurasi library (Supabase, field errors)
-│   ├── plugins/                # Konfigurasi plugin (axios)
-│   ├── router/                 # Konfigurasi routing (Vue Router)
-│   ├── stores/                 # State management (Pinia)
-│   │   ├── parents/            # Store domain parents
-│   │   ├── teacher/            # Store domain teacher
-│   │   └── users/              # Store domain auth/password user
-│   ├── views/                  # Halaman aplikasi (pages)
-│   │   ├── admin/              # Views admin (parents & teacher)
-│   │   ├── management/         # Views management akun admin
-│   │   ├── students/           # View manajemen siswa
-│   │   └── users/              # Views autentikasi user
-│   ├── App.vue                 # Root component Vue
-│   └── main.ts                 # Entry point aplikasi TypeScript
-├── env.d.ts                    # Type declarations untuk Vite env variables
-├── eslint.config.ts            # Konfigurasi ESLint
-├── package.json                # Daftar dependencies & npm scripts
-├── tsconfig*.json              # Konfigurasi TypeScript (app/node/vitest)
-├── vite.config.ts              # Konfigurasi build tool Vite
-└── vitest.config.ts            # Konfigurasi unit test (Vitest)
+├── public/                         # Aset publik (favicon, static files)
+├── src/                            # Source code utama aplikasi Vue + TypeScript
+│   ├── __tests__/                  # Unit test setup/spec (Vitest)
+│   ├── assets/                     # Aset statis (CSS, gambar, ikon)
+│   ├── components/                 # Komponen UI berbasis domain
+│   │   ├── admin/                  # Komponen khusus domain admin
+│   │   ├── common/                 # Komponen reusable (button, modal, table, dropdown, dll)
+│   │   ├── department_teachers/    # Komponen domain guru bidang
+│   │   ├── kepsek/                 # Komponen domain kepala sekolah
+│   │   ├── parents/                # Komponen domain wali murid
+│   │   ├── surat_antrean/          # Komponen domain surat antrean
+│   │   ├── teachers/               # Komponen domain guru
+│   │   ├── icons/                  # Komponen icon SVG Vue
+│   │   └── layout/                 # Komponen layout aplikasi/auth/sidebar
+│   ├── composables/                # Vue composables (custom hooks)
+│   ├── forms/                      # Helper/composable khusus form
+│   ├── lib/                        # Utility/helper + konfigurasi library
+│   ├── plugins/                    # Konfigurasi plugin (axios, dsb)
+│   ├── router/                     # Konfigurasi routing (Vue Router)
+│   ├── stores/                     # Pinia stores berbasis domain
+│   │   ├── letter_templates/       # Store template surat
+│   │   ├── parents/                # Store domain parents
+│   │   ├── surat-masuk/            # Store domain surat masuk
+│   │   ├── surat_antrean/          # Store domain surat antrean
+│   │   ├── surat_keluar/           # Store domain surat keluar
+│   │   ├── teacher/                # Store domain teacher
+│   │   └── users/                  # Store auth/password user
+│   ├── views/                      # Halaman aplikasi (pages)
+│   │   ├── admin/                  # Views domain admin
+│   │   ├── department_teachers/    # Views domain guru bidang
+│   │   ├── letter_templates/       # Views manajemen template surat
+│   │   ├── management/             # Views manajemen akun admin
+│   │   ├── students/               # Views manajemen siswa
+│   │   ├── surat_antrean/          # Views domain surat antrean
+│   │   ├── surat_keluar/           # Views domain surat keluar
+│   │   └── users/                  # Views autentikasi user
+│   ├── App.vue                     # Root component
+│   └── main.ts                     # Entry point aplikasi
+├── env.d.ts                        # Type declaration env variables Vite
+├── index.html                      # Entry HTML aplikasi
+├── eslint.config.ts                # Konfigurasi ESLint
+├── package.json                    # Dependencies dan npm scripts
+├── tsconfig*.json                  # Konfigurasi TypeScript (app/node/vitest)
+├── vite.config.ts                  # Konfigurasi Vite
+└── vitest.config.ts                # Konfigurasi unit testing (Vitest)
 ```
