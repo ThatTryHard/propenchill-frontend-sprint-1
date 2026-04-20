@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import type { PropType } from 'vue'
 
 const props = defineProps({
   variant: {
@@ -11,7 +12,7 @@ const props = defineProps({
     default: false,
   },
   type: {
-    type: String,
+    type: String as PropType<'button' | 'submit' | 'reset'>,
     default: 'button',
   },
 })
