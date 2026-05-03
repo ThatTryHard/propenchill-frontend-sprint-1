@@ -35,7 +35,12 @@
           v-for="item in bottomItems"
           :key="item.name"
           @click="handleBottomItemClick(item)"
-          class="flex items-center gap-3 px-4 py-1.5 rounded-xl text-[10.5px] font-medium text-[#4a5568] hover:bg-[#d4e8da]/60 transition-all duration-200 w-full text-left"
+          :class="[
+            'flex items-center gap-3 px-4 py-1.5 rounded-xl text-[10.5px] font-medium transition-all duration-200 w-full text-left',
+            isBottomItemActive(item)
+              ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
+              : 'text-[#4a5568] hover:bg-[#d4e8da]/60',
+          ]"
         >
           <component :is="item.icon" :size="20" :stroke-width="2" />
           <span>{{ item.label }}</span>
@@ -65,7 +70,7 @@
 
 <script setup lang="ts">
 import type { Component } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { UserRound } from 'lucide-vue-next'
 
 export interface NavItem {
@@ -81,6 +86,8 @@ export interface BottomNavItem {
   name: string
   label: string
   icon: Component
+  path?: string
+  matchPaths?: string[]
   action?: () => void
 }
 
@@ -92,6 +99,7 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+const router = useRouter()
 
 function normalizePath(path: string) {
   if (!path) return '/'
@@ -175,9 +183,32 @@ function isNavItemActive(item: NavItem) {
   return true
 }
 
+function isBottomItemActive(item: BottomNavItem) {
+  if (!item.path) return false
+
+  const currentPath = normalizePath(route.path)
+  const itemPath = normalizePath(item.path)
+
+  if (currentPath === itemPath) return true
+
+  if (item.matchPaths?.length) {
+    return item.matchPaths.some((path) => {
+      const normalizedMatchPath = normalizePath(path)
+      return isPathWithinModule(currentPath, normalizedMatchPath)
+    })
+  }
+
+  return false
+}
+
 const handleBottomItemClick = (item: BottomNavItem) => {
   if (item.action) {
     item.action()
+    return
+  }
+
+  if (item.path) {
+    router.push(item.path)
   }
 }
 </script>
