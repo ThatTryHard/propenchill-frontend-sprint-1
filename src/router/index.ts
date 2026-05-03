@@ -27,6 +27,7 @@ import { useAuthStore } from '@/stores/users/auth'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
 import SuratAntreanListView from '@/views/surat_antrean/SuratAntreanListView.vue'
 import SuratAntreanDetailView from '@/views/surat_antrean/SuratAntreanDetailView.vue'
+import HelpFAQView from '@/views/users/HelpFAQView.vue'
 
 const departmentRoles = ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK']
 const teacherListRoles = ['ADMIN']
@@ -330,6 +331,15 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
         roleAccess: ['KEPSEK'],
+      },
+    },
+    {
+      path: '/help',
+      name: 'help-faq',
+      component: () => import('@/views/users/HelpFAQView.vue'),
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['WALI_MURID'],
       },
     },
     {
