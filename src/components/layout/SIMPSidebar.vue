@@ -34,6 +34,7 @@ import {
   HelpCircle,
   LogOut,
   Mail,
+  LayoutDashboard,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -152,6 +153,20 @@ const currentNavItems = computed(() => {
   // 3. ROLE KEPSEK
   if (role === 'KEPSEK') {
     const kepsekItems: NavItem[] = [
+      {
+        name: 'dashboard-kepsek',
+        label: 'Dashboard',
+        path: '/kepsek/dashboard',
+        icon: LayoutDashboard,
+        matchPaths: ['/kepsek/dashboard'],
+      },
+      {
+        name: 'surat-pending-kepsek',
+        label: 'Surat Pending',
+        path: '/kepsek/surat-pending',
+        icon: FileText,
+        matchPaths: ['/kepsek/surat-pending'],
+      },
       {
         name: 'surat-antrean-kepsek',
         label: 'Verifikasi & Persetujuan',

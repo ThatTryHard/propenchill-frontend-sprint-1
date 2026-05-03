@@ -332,6 +332,24 @@ const router = createRouter({
         roleAccess: ['KEPSEK'],
       },
     },
+    {
+      path: '/kepsek/dashboard',
+      name: 'kepsek-dashboard',
+      component: () => import('@/views/principal_dashboard/KepsekDashboardView.vue'),
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['KEPSEK'],
+      },
+    },
+    {
+      path: '/kepsek/surat-pending',
+      name: 'kepsek-surat-pending',
+      component: () => import('@/views/principal_dashboard/KepsekSuratPendingView.vue'),
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['KEPSEK'],
+      },
+    },
     // TODO: Add routes for other roles here
   ],
 })
