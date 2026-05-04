@@ -360,6 +360,23 @@ const router = createRouter({
         roleAccess: ['KEPSEK'],
       },
     },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/views/users/ProfileView.vue'),
+      meta: {
+        requiresAuth: true,
+        roleAccess: [
+          'ADMIN',
+          'KEPSEK',
+          'GURU',
+          'WALI_MURID',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
+      },
+    },
     // TODO: Add routes for other roles here
   ],
 })
