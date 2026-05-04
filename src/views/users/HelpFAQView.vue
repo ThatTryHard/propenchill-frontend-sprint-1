@@ -5,6 +5,8 @@ import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VCard from '@/components/common/VCard.vue'
 import VAccordion from '@/components/common/VAccordion.vue'
+import VButton from '@/components/common/VButton.vue'
+import VInputField from '@/components/common/VInputField.vue'
 import { useHelpStore } from '@/stores/help'
 import {
   BookOpen,
@@ -14,7 +16,6 @@ import {
   Copy,
   FileText,
   Mail,
-  Search,
   Send,
   ShieldCheck,
 } from 'lucide-vue-next'
@@ -48,9 +49,9 @@ const filteredQuestions = computed(() => {
   if (!helpData.value) return []
 
   const query = searchQuery.value.trim().toLowerCase()
-  if (!query) return helpData.value.popular_questions
+  if (!query) return helpData.value.faq
 
-  return helpData.value.popular_questions.filter((item) => {
+  return helpData.value.faq.filter((item) => {
     return `${item.question} ${item.answer}`.toLowerCase().includes(query)
   })
 })
@@ -72,6 +73,10 @@ const getCategoryIcon = (iconName: string): Component => {
 
 const toggleCategory = (categoryId: string) => {
   selectedCategoryId.value = selectedCategoryId.value === categoryId ? null : categoryId
+}
+
+const closeCategoryDetail = () => {
+  selectedCategoryId.value = null
 }
 
 const sendEmail = () => {
@@ -115,15 +120,13 @@ onMounted(() => {
 
         <!-- Search Bar -->
         <div class="mb-5">
-          <div class="relative">
-            <Search class="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Cari kata kunci bantuan di sini"
-              class="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-[13px] text-slate-700 shadow-sm outline-none transition focus:border-[#4A8B50] focus:ring-2 focus:ring-[#4A8B50]/20"
-            />
-          </div>
+          <VInputField
+            v-model="searchQuery"
+            state="search"
+            type="search"
+            placeholder="Cari kata kunci bantuan di sini"
+            class="[&_*]:!text-[13px]"
+          />
         </div>
 
         <!-- Loading -->
@@ -173,17 +176,20 @@ onMounted(() => {
                 {{ category.description }}
               </p>
 
-              <button
-                type="button"
-                class="mt-4 flex w-full items-center justify-between rounded-full border border-slate-200 bg-[#F8FAFC] px-4 py-2 text-[13px] font-medium text-slate-700 transition hover:border-[#4A8B50] hover:text-[#4A8B50]"
+              <VButton
+                variant="tertiary"
+                class="mt-4 !w-full !justify-between !rounded-full !px-4 !py-2 !text-[13px]"
                 @click="toggleCategory(category.id)"
               >
-                <span>{{ category.button_label }}</span>
-                <ChevronRight
-                  class="h-4 w-4 transition"
-                  :class="{ 'rotate-90': selectedCategoryId === category.id }"
-                />
-              </button>
+                {{ category.button_label }}
+
+                <template #rightIcon>
+                  <ChevronRight
+                    class="h-4 w-4 transition"
+                    :class="{ 'rotate-90': selectedCategoryId === category.id }"
+                  />
+                </template>
+              </VButton>
             </VCard>
           </div>
 
@@ -214,13 +220,13 @@ onMounted(() => {
                 </p>
               </div>
 
-              <button
-                type="button"
-                class="rounded-full bg-[#F8FAFC] px-3 py-1 text-xs font-medium text-slate-600 transition hover:bg-slate-200"
-                @click="selectedCategoryId = null"
+              <VButton
+                variant="tertiary"
+                class="!rounded-full !px-3 !py-1 !text-xs"
+                @click="closeCategoryDetail"
               >
                 Tutup
-              </button>
+              </VButton>
             </div>
 
             <div
@@ -250,7 +256,7 @@ onMounted(() => {
 
           <!-- Popular Questions -->
           <div class="mt-7">
-            <h2 class="mb-3 text-lg font-bold text-slate-900">Pertanyaan Populer</h2>
+            <h2 class="mb-3 text-lg font-bold text-slate-900">FAQ</h2>
 
             <div
               v-if="filteredQuestions.length"
@@ -307,23 +313,29 @@ onMounted(() => {
                 </div>
 
                 <div class="mt-4 flex flex-wrap gap-2.5">
-                  <button
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-xl bg-[#4A8B50] px-3.5 py-2 text-[12px] font-semibold text-white shadow-sm transition hover:bg-[#3E7744]"
+                  <VButton
+                    variant="primary"
+                    class="!rounded-xl !px-3.5 !py-2 !text-[12px]"
                     @click="sendEmail"
                   >
-                    <Send class="h-3.5 w-3.5" />
-                    Kirim Email
-                  </button>
+                    <template #leftIcon>
+                      <Send class="h-3.5 w-3.5" />
+                    </template>
 
-                  <button
-                    type="button"
-                    class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-[12px] font-semibold text-slate-700 shadow-sm transition hover:border-[#4A8B50] hover:text-[#4A8B50]"
+                    Kirim Email
+                  </VButton>
+
+                  <VButton
+                    variant="tertiary"
+                    class="!rounded-xl !px-3.5 !py-2 !text-[12px]"
                     @click="copyEmail"
                   >
-                    <Copy class="h-3.5 w-3.5" />
+                    <template #leftIcon>
+                      <Copy class="h-3.5 w-3.5" />
+                    </template>
+
                     {{ copied ? 'Email Tersalin' : 'Salin Email' }}
-                  </button>
+                  </VButton>
                 </div>
               </div>
 

@@ -48,7 +48,16 @@
       </div>
 
       <!-- User Profile -->
-      <div class="flex items-center gap-3 px-3 py-3 bg-[#4d8b47] rounded-2xl">
+      <button
+        type="button"
+        @click="goToProfile"
+        :class="[
+          'flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-all duration-200',
+          isProfileActive
+            ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
+            : 'bg-[#4d8b47] hover:brightness-105 hover:shadow-md',
+        ]"
+      >
         <div class="profile-ring flex items-center justify-center w-9 h-9 rounded-full">
           <div class="flex items-center justify-center w-7 h-7 rounded-full bg-[#f0f7f2]">
             <UserRound :size="18" class="text-[#3F9760]" />
@@ -63,13 +72,13 @@
             {{ userEmail || '-' }}
           </span>
         </div>
-      </div>
+      </button>
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import type { Component } from 'vue'
+import { computed, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { UserRound } from 'lucide-vue-next'
 
@@ -100,6 +109,12 @@ const props = defineProps<{
 
 const route = useRoute()
 const router = useRouter()
+
+const isProfileActive = computed(() => normalizePath(route.path) === '/profile')
+
+const goToProfile = () => {
+  router.push('/profile')
+}
 
 function normalizePath(path: string) {
   if (!path) return '/'

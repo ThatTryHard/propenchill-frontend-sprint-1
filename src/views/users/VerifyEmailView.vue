@@ -88,6 +88,13 @@ const handleVerifyOtp = async () => {
       },
     })
     setTimeout(() => {
+      const redirectPath = String(route.query.redirect || '')
+
+      if (redirectPath) {
+        router.push(redirectPath)
+        return
+      }
+
       router.push({ name: 'login' })
     }, 1500)
   } catch (error: unknown) {
@@ -101,6 +108,13 @@ const handleVerifyOtp = async () => {
 }
 
 const handleSkip = () => {
+  const redirectPath = String(route.query.redirect || '')
+
+  if (redirectPath) {
+    router.push(redirectPath)
+    return
+  }
+
   router.push({ name: 'login' })
 }
 </script>
