@@ -71,7 +71,7 @@ const handleVerifyNow = () => {
 }
 
 const handleEditProfile = () => {
-  //placeholder for future edit profile page
+  // Placeholder untuk fitur edit profile jika endpoint update profile sudah tersedia.
 }
 
 onMounted(() => {
@@ -85,27 +85,44 @@ onMounted(() => {
       <SIMPSidebar />
     </template>
 
-    <section class="min-h-full bg-[#F8FAFC] px-7 py-7">
-      <div class="mx-auto max-w-5xl">
+    <section class="min-h-full bg-[#F8FAFC] px-5 py-5">
+      <div class="mx-auto max-w-4xl">
         <!-- Header -->
-        <div class="mb-6 overflow-hidden rounded-[28px] bg-gradient-to-br from-white via-[#F8FAFC] to-[#E8F3EB] p-7 shadow-sm">
-          <h1 class="text-3xl font-bold text-slate-900">Profil Pengguna</h1>
-          <p class="mt-2 text-sm text-slate-500">Kelola dan pantau informasi akun Anda.</p>
+        <div
+          class="mb-5 overflow-hidden rounded-[24px] bg-gradient-to-br from-white via-[#F8FAFC] to-[#E8F3EB] p-5 shadow-sm"
+        >
+          <h1 class="text-2xl font-bold text-slate-900">Profil Pengguna</h1>
+          <p class="mt-1 text-[12px] text-slate-500">Kelola dan pantau informasi akun Anda.</p>
 
-          <div v-if="profile" class="mt-6 flex flex-wrap gap-3">
-            <VChip :label="profile.status_akun" :variant="accountChipVariant">
+          <div
+            v-if="profile"
+            class="mt-4 flex flex-wrap gap-2.5"
+          >
+            <VChip
+              :label="profile.status_akun"
+              :variant="accountChipVariant"
+              class="!px-3 !py-2 !text-[13px]"
+            >
               <template #icon>
                 <CheckCircle2 class="h-4 w-4 text-[#3F9760]" />
               </template>
             </VChip>
 
-            <VChip :label="`Role: ${roleLabel}`" variant="tertiary">
+            <VChip
+              :label="`Role: ${roleLabel}`"
+              variant="tertiary"
+              class="!px-3 !py-2 !text-[13px]"
+            >
               <template #icon>
                 <UsersRound class="h-4 w-4 text-[#3F9760]" />
               </template>
             </VChip>
 
-            <VChip :label="profile.status_verifikasi" :variant="verificationChipVariant">
+            <VChip
+              :label="profile.status_verifikasi"
+              :variant="verificationChipVariant"
+              class="!px-3 !py-2 !text-[13px]"
+            >
               <template #icon>
                 <ShieldCheck class="h-4 w-4 text-[#3F9760]" />
               </template>
@@ -114,55 +131,68 @@ onMounted(() => {
         </div>
 
         <!-- Loading -->
-        <VCard v-if="profileStore.loading" paddingClass="p-5">
-          <p class="text-sm text-slate-600">Memuat data profil...</p>
+        <VCard
+          v-if="profileStore.loading"
+          paddingClass="p-4"
+        >
+          <p class="text-[12px] text-slate-600">Memuat data profil...</p>
         </VCard>
 
         <!-- Error -->
         <div
           v-else-if="profileStore.error"
-          class="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 shadow-sm"
+          class="rounded-2xl border border-red-200 bg-red-50 p-4 text-[12px] text-red-700 shadow-sm"
         >
           {{ profileStore.error }}
         </div>
 
         <template v-else-if="profile">
           <!-- Main Profile Content -->
-          <div class="grid gap-5 lg:grid-cols-[0.9fr_1.5fr]">
+          <div class="grid gap-4 lg:grid-cols-[0.85fr_1.45fr]">
             <!-- Left Profile Card -->
-            <VCard paddingClass="p-5">
+            <VCard paddingClass="p-4">
               <div class="flex flex-col items-center text-center">
-                <div class="relative mb-5 flex h-36 w-36 items-center justify-center rounded-full bg-white shadow-inner ring-8 ring-white">
-                  <div class="flex h-28 w-28 items-center justify-center rounded-full bg-[#E8F3EB]">
-                    <UserRound class="h-16 w-16 text-[#3F9760]" />
+                <div
+                  class="relative mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-inner ring-8 ring-white"
+                >
+                  <div class="flex h-20 w-20 items-center justify-center rounded-full bg-[#E8F3EB]">
+                    <UserRound class="h-12 w-12 text-[#3F9760]" />
                   </div>
                 </div>
 
-                <h2 class="text-2xl font-bold text-[#0C4923]">
+                <h2 class="text-xl font-bold text-[#0C4923]">
                   {{ displayValue(profile.nama) }}
                 </h2>
 
-                <div class="mt-3">
-                  <VChip :label="roleLabel" variant="primary" />
+                <div class="mt-2">
+                  <VChip
+                    :label="roleLabel"
+                    variant="primary"
+                    class="!px-3 !py-1.5 !text-[12px]"
+                  />
                 </div>
 
-                <div class="my-5 h-px w-full bg-white/70"></div>
+                <div class="my-4 h-px w-full bg-white/70"></div>
 
-                <div class="flex w-full flex-col gap-4 text-left">
+                <div class="flex w-full flex-col gap-3 text-left">
                   <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]">
-                      <Mail class="h-5 w-5" />
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]"
+                    >
+                      <Mail class="h-4.5 w-4.5" />
                     </div>
-                    <p class="truncate text-sm text-slate-600">
+                    <p class="truncate text-[12px] text-slate-600">
                       {{ displayValue(profile.email) }}
                     </p>
                   </div>
 
                   <div class="flex items-center gap-3">
-                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]">
-                      <Phone class="h-5 w-5" />
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]"
+                    >
+                      <Phone class="h-4.5 w-4.5" />
                     </div>
-                    <p class="text-sm text-slate-600">
+                    <p class="text-[12px] text-slate-600">
                       {{ displayValue(profile.nomor_hp) }}
                     </p>
                   </div>
@@ -171,7 +201,7 @@ onMounted(() => {
                 <VButton
                   v-if="profile.show_verification_button"
                   variant="primary"
-                  class="mt-6 !w-full !rounded-xl !px-4 !py-2.5 !text-[13px]"
+                  class="mt-5 !w-full !rounded-xl !px-4 !py-2 !text-[12px]"
                   @click="handleVerifyNow"
                 >
                   <template #leftIcon>
@@ -183,12 +213,14 @@ onMounted(() => {
             </VCard>
 
             <!-- Right Information Card -->
-            <VCard paddingClass="p-5">
-              <div class="mb-5 flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]">
-                  <ClipboardCheck class="h-5 w-5" />
+            <VCard paddingClass="p-4">
+              <div class="mb-4 flex items-center gap-2.5">
+                <div
+                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]"
+                >
+                  <ClipboardCheck class="h-4.5 w-4.5" />
                 </div>
-                <h2 class="text-xl font-bold text-[#0C4923]">Informasi Pribadi</h2>
+                <h2 class="text-lg font-bold text-[#0C4923]">Informasi Pribadi</h2>
               </div>
 
               <div class="overflow-hidden rounded-2xl border border-white/70 bg-white/50">
@@ -249,15 +281,15 @@ onMounted(() => {
                 </div>
               </div>
 
-              <div class="mt-5 flex justify-end">
+              <div class="mt-4 flex justify-end">
                 <VButton
                   variant="primary"
-                  class="!rounded-xl !px-5 !py-2.5 !text-[13px]"
+                  class="!rounded-xl !px-4 !py-2 !text-[12px]"
                   disabled
                   @click="handleEditProfile"
                 >
                   <template #rightIcon>
-                    <Pencil class="h-4 w-4" />
+                    <Pencil class="h-3.5 w-3.5" />
                   </template>
                   Ubah Profil
                 </VButton>
@@ -266,18 +298,23 @@ onMounted(() => {
           </div>
 
           <!-- Account Summary -->
-          <VCard paddingClass="p-5" class="mt-5">
-            <div class="mb-5 flex items-center gap-3">
-              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]">
-                <BriefcaseBusiness class="h-5 w-5" />
+          <VCard
+            paddingClass="p-4"
+            class="mt-4"
+          >
+            <div class="mb-4 flex items-center gap-2.5">
+              <div
+                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]"
+              >
+                <BriefcaseBusiness class="h-4.5 w-4.5" />
               </div>
-              <h2 class="text-xl font-bold text-[#0C4923]">Ringkasan Akun</h2>
+              <h2 class="text-lg font-bold text-[#0C4923]">Ringkasan Akun</h2>
             </div>
 
-            <div class="grid gap-4 md:grid-cols-3">
+            <div class="grid gap-3 md:grid-cols-3">
               <div class="summary-card">
                 <div class="summary-icon">
-                  <GraduationCap class="h-7 w-7" />
+                  <GraduationCap class="h-5 w-5" />
                 </div>
                 <div>
                   <p class="summary-title">Role Pengguna</p>
@@ -287,7 +324,7 @@ onMounted(() => {
 
               <div class="summary-card">
                 <div class="summary-icon">
-                  <ShieldCheck class="h-7 w-7" />
+                  <ShieldCheck class="h-5 w-5" />
                 </div>
                 <div>
                   <p class="summary-title">Status Akun</p>
@@ -296,8 +333,11 @@ onMounted(() => {
               </div>
 
               <div class="summary-card">
-                <div class="summary-icon" :class="completenessVariant === 'secondary' ? '!bg-[#F2E0D0] !text-[#9A5B2F]' : ''">
-                  <ClipboardCheck class="h-7 w-7" />
+                <div
+                  class="summary-icon"
+                  :class="completenessVariant === 'secondary' ? '!bg-[#F2E0D0] !text-[#9A5B2F]' : ''"
+                >
+                  <ClipboardCheck class="h-5 w-5" />
                 </div>
                 <div>
                   <p class="summary-title">Kelengkapan Data</p>
@@ -320,10 +360,10 @@ onMounted(() => {
 <style scoped>
 .profile-row {
   display: grid;
-  grid-template-columns: minmax(180px, 0.8fr) 1.2fr;
-  gap: 16px;
+  grid-template-columns: minmax(150px, 0.75fr) 1.25fr;
+  gap: 12px;
   align-items: center;
-  padding: 14px 16px;
+  padding: 11px 14px;
   border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
 
@@ -334,32 +374,32 @@ onMounted(() => {
 .profile-label {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: #64748b;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .profile-icon {
-  height: 18px;
-  width: 18px;
+  height: 16px;
+  width: 16px;
   color: #3f9760;
 }
 
 .profile-value {
   color: #111827;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
 }
 
 .summary-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  border-radius: 20px;
+  gap: 12px;
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.75);
   background: rgba(249, 253, 251, 0.65);
-  padding: 18px;
+  padding: 14px;
   box-shadow:
     inset 0 1px 2px rgba(255, 255, 255, 0.5),
     0 1px 4px rgba(15, 23, 42, 0.06);
@@ -367,8 +407,8 @@ onMounted(() => {
 
 .summary-icon {
   display: flex;
-  height: 56px;
-  width: 56px;
+  height: 46px;
+  width: 46px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
@@ -378,13 +418,13 @@ onMounted(() => {
 }
 
 .summary-title {
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
 }
 
 .summary-value {
-  margin-top: 4px;
-  font-size: 18px;
+  margin-top: 2px;
+  font-size: 15px;
   font-weight: 700;
   color: #111827;
 }
