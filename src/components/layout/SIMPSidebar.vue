@@ -17,7 +17,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
-import type { NavItem } from '@/components/common/VSidebar.vue'
+import type { NavItem, BottomNavItem } from '@/components/common/VSidebar.vue'
 import VSidebar from '@/components/common/VSidebar.vue'
 import LogoutConfirmationModal from '@/components/common/LogoutConfirmationModal.vue'
 import {
@@ -34,6 +34,7 @@ import {
   HelpCircle,
   LogOut,
   Mail,
+  LayoutDashboard,
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -153,6 +154,20 @@ const currentNavItems = computed(() => {
   if (role === 'KEPSEK') {
     const kepsekItems: NavItem[] = [
       {
+        name: 'dashboard-kepsek',
+        label: 'Dashboard',
+        path: '/kepsek/dashboard',
+        icon: LayoutDashboard,
+        matchPaths: ['/kepsek/dashboard'],
+      },
+      {
+        name: 'surat-pending-kepsek',
+        label: 'Surat Pending',
+        path: '/kepsek/surat-pending',
+        icon: FileText,
+        matchPaths: ['/kepsek/surat-pending'],
+      },
+      {
         name: 'surat-antrean-kepsek',
         label: 'Verifikasi & Persetujuan',
         path: '/kepsek/surat-antrean',
@@ -189,9 +204,34 @@ const currentNavItems = computed(() => {
   return []
 })
 
-const bottomItems = [
-  { name: 'settings', label: 'Settings', icon: Settings },
-  { name: 'help', label: 'Help', icon: HelpCircle },
-  { name: 'logout', label: 'Log Out', icon: LogOut, action: openLogoutModal },
-]
+const bottomItems = computed<BottomNavItem[]>(() => {
+  const role = String(authStore.role || '').toUpperCase()
+
+  const items: BottomNavItem[] = [
+    {
+      name: 'settings',
+      label: 'Settings',
+      icon: Settings,
+    },
+  ]
+
+  if (role === 'WALI_MURID') {
+    items.push({
+      name: 'help',
+      label: 'Help',
+      path: '/help',
+      icon: HelpCircle,
+      matchPaths: ['/help'],
+    })
+  }
+
+  items.push({
+    name: 'logout',
+    label: 'Log Out',
+    icon: LogOut,
+    action: openLogoutModal,
+  })
+
+  return items
+})
 </script>
