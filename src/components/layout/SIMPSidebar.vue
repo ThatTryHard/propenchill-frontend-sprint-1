@@ -4,6 +4,7 @@
     :bottomItems="bottomItems"
     :userName="authStore.user?.nama"
     :userEmail="authStore.user?.email"
+    :userAvatar="userAvatar"
   />
 
   <LogoutConfirmationModal
@@ -17,6 +18,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
+import { useProfileStore } from '@/stores/profile'
 import type { NavItem, BottomNavItem } from '@/components/common/VSidebar.vue'
 import VSidebar from '@/components/common/VSidebar.vue'
 import LogoutConfirmationModal from '@/components/common/LogoutConfirmationModal.vue'
@@ -39,6 +41,7 @@ import {
 
 const router = useRouter()
 const authStore = useAuthStore()
+const profileStore = useProfileStore()
 const isLogoutModalOpen = ref(false)
 
 const handleLogout = () => {
@@ -49,6 +52,9 @@ const handleLogout = () => {
 const openLogoutModal = () => {
   isLogoutModalOpen.value = true
 }
+
+// Get avatar from profile store
+const userAvatar = computed(() => profileStore.profile?.avatar_url || null)
 
 // DEFINISI MENU BERDASARKAN ROLE
 const currentNavItems = computed(() => {

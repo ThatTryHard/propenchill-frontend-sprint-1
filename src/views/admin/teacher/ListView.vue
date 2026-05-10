@@ -188,9 +188,9 @@ const selectedJabatan = ref('')
 const jabatanOptions = [
   { label: 'Semua Jabatan', value: '' },
   { label: 'Kepala Sekolah', value: 'Kepala Sekolah' },
-  { label: 'Guru Bidang Akademik', value: 'Guru Bidang Akademik' },
-  { label: 'Guru Bidang Kesiswaan', value: 'Guru Bidang Kesiswaan' },
-  { label: 'Guru Bidang Agama', value: 'Guru Bidang Agama' },
+  { label: 'Wakil Bidang Akademik', value: 'Wakil Bidang Akademik' },
+  { label: 'Wakil Bidang Kesiswaan', value: 'Wakil Bidang Kesiswaan' },
+  { label: 'Wakil Bidang Agama', value: 'Wakil Bidang Agama' },
   { label: 'Guru', value: 'Guru' },
 ]
 const currentPage = ref(1)

@@ -18,6 +18,7 @@ export interface UserProfile {
   show_verification_button: boolean
   is_profile_complete: boolean
   kelengkapan_data: string
+  avatar_url: string | null
 }
 
 export const useProfileStore = defineStore('profile', {
