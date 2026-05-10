@@ -184,9 +184,9 @@ const handleSubmit = async () => {
                   <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
                     <select v-model="form.jabatan" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827]">
                       <option value="Kepala Sekolah">Kepala Sekolah</option>
-                      <option value="Guru Bidang Akademik">Guru Bidang Akademik</option>
-                      <option value="Guru Bidang Kesiswaan">Guru Bidang Kesiswaan</option>
-                      <option value="Guru Bidang Agama">Guru Bidang Agama</option>
+                      <option value="Wakil Bidang Akademik">Wakil Bidang Akademik</option>
+                      <option value="Wakil Bidang Kesiswaan">Wakil Bidang Kesiswaan</option>
+                      <option value="Wakil Bidang Agama">Wakil Bidang Agama</option>
                       <option value="Guru">Guru</option>
                     </select>
                   </div>

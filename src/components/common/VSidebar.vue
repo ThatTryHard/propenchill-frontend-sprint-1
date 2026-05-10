@@ -59,7 +59,10 @@
         ]"
       >
         <div class="profile-ring flex items-center justify-center w-9 h-9 rounded-full">
-          <div class="flex items-center justify-center w-7 h-7 rounded-full bg-[#f0f7f2]">
+          <div v-if="userAvatar" class="w-7 h-7 rounded-full overflow-hidden">
+            <img :src="userAvatar" alt="Avatar" class="w-full h-full object-cover" />
+          </div>
+          <div v-else class="flex items-center justify-center w-7 h-7 rounded-full bg-[#f0f7f2]">
             <UserRound :size="18" class="text-[#3F9760]" />
           </div>
         </div>
@@ -105,6 +108,7 @@ const props = defineProps<{
   bottomItems: BottomNavItem[]
   userName?: string
   userEmail?: string
+  userAvatar?: string | null
 }>()
 
 const route = useRoute()
