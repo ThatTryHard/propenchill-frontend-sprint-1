@@ -22,6 +22,14 @@ import {
   type FetchTemplatesParams,
 } from '@/stores/letter_templates'
 
+interface UserProfile {
+  nama?: string;
+  full_name?: string;
+  name?: string;
+  email?: string;
+  role?: string; 
+}
+
 const templateStore = useLetterTemplateStore()
 const authStore = useAuthStore()
 const route = useRoute()

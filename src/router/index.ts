@@ -28,6 +28,7 @@ import { useGlobalAlert } from '@/composables/useGlobalAlert'
 import SuratAntreanListView from '@/views/surat_antrean/SuratAntreanListView.vue'
 import SuratAntreanDetailView from '@/views/surat_antrean/SuratAntreanDetailView.vue'
 import HelpFAQView from '@/views/users/HelpFAQView.vue'
+import DashboardSummary from '@/views/field_summary/DashboardSummary.vue';
 
 const departmentRoles = ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK']
 const teacherListRoles = ['ADMIN']
@@ -377,7 +378,30 @@ const router = createRouter({
         ],
       },
     },
-    // TODO: Add routes for other roles here
+    {
+      path: '/akademik/dashboard',
+      name: 'DashboardAkademik',
+      component: DashboardSummary,
+      props: { kategori: 'akademik' } 
+    },
+    {
+      path: '/keagamaan/dashboard',
+      name: 'DashboardKeagamaan',
+      component: DashboardSummary,
+      props: { kategori: 'keagamaan' }
+    },
+    {
+      path: '/kesiswaan/dashboard',
+      name: 'DashboardKesiswaan',
+      component: DashboardSummary,
+      props: { kategori: 'kesiswaan' }
+    },
+    {
+      path: '/akademik/detail/:kategori/:id',
+      name: 'LetterDetail',
+      component: () => import('@/views/field_summary/LetterDetailView.vue'),
+      meta: { requiresAuth: true }
+    },
   ],
 })
 
