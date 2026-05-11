@@ -39,7 +39,7 @@ const canDisposisi = computed(() => {
   const isOwnerByName = Boolean(currentUserName && pencatatName && currentUserName === pencatatName)
   const isOwner = isOwnerById || isOwnerByName
 
-  return isBidang && status === 'diajukan' && isOwner
+  return isBidang && status === 'Diajukan' && isOwner
 })
 
 const fetchDetail = async () => {

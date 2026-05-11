@@ -312,41 +312,11 @@ function goBack() {
                   <label class="mb-3 block font-semibold text-[#111827]"> Konten Template </label>
 
                   <div class="mb-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{nama}')"
-                    >
-                      Masukkan {nama}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{nis}')"
-                    >
-                      Masukkan {nis}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{kelas}')"
-                    >
-                      Masukkan {kelas}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{tanggal}')"
-                    >
-                      Masukkan {tanggal}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{keperluan}')"
-                    >
-                      Masukkan {keperluan}
-                    </button>
+                    <button type="button" @click="insertPlaceholder('{nama}')">Masukkan {nama}</button>
+                    <button type="button" @click="insertPlaceholder('{nis}')">Masukkan {nis}</button>
+                    <button type="button" @click="insertPlaceholder('{kelas}')">Masukkan {kelas}</button>
+                    <button type="button" @click="insertPlaceholder('{tanggal}')">Masukkan {tanggal}</button>
+                    <button type="button" @click="insertPlaceholder('{keperluan}')">Masukkan {keperluan}</button>
                   </div>
 
                   <div
