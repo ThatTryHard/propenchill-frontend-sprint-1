@@ -35,6 +35,7 @@ import {
   LogOut,
   Mail,
   LayoutDashboard,
+  ClipboardList,
 } from 'lucide-vue-next'
 import { computed, ref, h } from 'vue'
 import { useRouter, useRoute } from 'vue-router' 
@@ -127,6 +128,13 @@ const currentNavItems = computed(() => {
         path: '/surat-keluar/riwayat',
         icon: FileText,
         matchPaths: ['/surat-keluar/detail'],
+      },
+      {
+        name: 'activity-logs-admin',
+        label: 'Log dan Riwayat Aktivitas',
+        path: '/admin/activity-logs',
+        icon: ClipboardList,
+        matchPaths: ['/admin/activity-logs'],
       },
     ]
 
@@ -226,6 +234,13 @@ const currentNavItems = computed(() => {
         matchPaths: ['/kepsek/surat-antrean'],
       },
       { name: 'inbox', label: 'Arsip Surat Masuk', path: '/kepsek/surat-masuk', icon: Inbox },
+      {
+        name: 'activity-logs-kepsek',
+        label: 'Log dan Riwayat Aktivitas',
+        path: '/kepsek/activity-logs',
+        icon: ClipboardList,
+        matchPaths: ['/kepsek/activity-logs'],
+      },
     ]
 
     return kepsekItems
