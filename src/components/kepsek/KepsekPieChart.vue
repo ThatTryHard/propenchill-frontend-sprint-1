@@ -1,15 +1,15 @@
 <template>
   <div class="flex flex-col gap-4">
     <div>
-      <h3 class="text-[14px] font-semibold text-[#111827]">
+      <h3 class="text-[14px] font-semibold text-[var(--app-heading)]">
         {{ title }}
       </h3>
-      <p v-if="subtitle" class="text-[11px] text-[#94a3b8]">
+      <p v-if="subtitle" class="text-[11px] text-[var(--app-muted)]">
         {{ subtitle }}
       </p>
     </div>
 
-    <div v-if="total === 0" class="text-[13px] text-[#94a3b8]">
+    <div v-if="total === 0" class="text-[13px] text-[var(--app-muted)]">
       Tidak ada data untuk ditampilkan.
     </div>
 
@@ -18,11 +18,11 @@
         <Pie :data="chartData" :options="chartOptions" />
       </div>
 
-      <div class="flex flex-col gap-2 text-[12px] text-[#475569]">
+      <div class="flex flex-col gap-2 text-[12px] text-[var(--app-muted)]">
         <div v-for="item in data" :key="item.label" class="flex items-center gap-2">
           <span class="h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: item.color }"></span>
-          <span class="font-semibold text-[#1f2937]">{{ item.label }}</span>
-          <span class="text-[#94a3b8]">{{ item.value }}</span>
+          <span class="font-semibold text-[var(--app-text)]">{{ item.label }}</span>
+          <span class="text-[var(--app-muted)]">{{ item.value }}</span>
         </div>
       </div>
     </div>

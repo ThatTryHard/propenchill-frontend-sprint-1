@@ -25,12 +25,10 @@
       </section>
 
       <section class="grid grid-cols-1 xl:grid-cols-2 gap-[20px]">
-        <KepsekPanel paddingClass="px-[27.363px] py-[19.9px] h-[330px]">
-          <KepsekPieChart
-            title="Distribusi Jenis Surat"
-            subtitle="Berdasarkan Pengirim"
-            :data="distribusiChart"
-            :chartSize="241"
+        <KepsekPanel paddingClass="px-[24px] py-[16px] h-[330px]">
+          <KepsekPendingDurasiFilter
+            v-model="filterDurasi"
+            :data="store.pendingDurasi"
           />
         </KepsekPanel>
         <KepsekPanel paddingClass="px-[27.363px] py-[19.9px] h-[330px]">
@@ -81,9 +79,9 @@
 
           <template #cell-aksi="{ row }">
             <button
-              v-if="resolveDetailPath(row)"
+              v-if="row.id_pengajuan"
               class="text-[var(--app-accent)] font-semibold text-[16px] hover:underline"
-              @click="goToDetail(row)"
+              @click="goToVerification(row)"
             >
               Lihat Detail
             </button>
@@ -110,57 +108,51 @@ import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import VPagination from '@/components/common/VPagination.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
-import KepsekPieChart from '@/components/kepsek/KepsekPieChart.vue'
+import KepsekPendingDurasiFilter from '@/components/kepsek/KepsekPendingDurasiFilter.vue'
 import KepsekBarChart from '@/components/kepsek/KepsekBarChart.vue'
 import KepsekPanel from '@/components/kepsek/KepsekPanel.vue'
 import KepsekFilterField from '@/components/kepsek/KepsekFilterField.vue'
 import KepsekPendingTable from '@/components/kepsek/KepsekPendingTable.vue'
 import { usePrincipalDashboardStore } from '@/stores/principal_dashboard'
 import { Calendar, User, FileText } from 'lucide-vue-next'
+import { useThemeColors } from '@/stores/principal_dashboard/themeColors'
 
 const router = useRouter()
 const store = usePrincipalDashboardStore()
+const colors = useThemeColors()
 
 const filterDate = ref('')
 const filterSender = ref('')
 const filterSubject = ref('')
+const filterDurasi = ref('')
 const currentPage = ref(1)
 
 const columns = [
-  { key: 'nomor_surat', label: 'Nomor Surat' },
-  { key: 'verifikator', label: 'Verifikator' },
-  { key: 'tanggal_diterima', label: 'Tanggal Diterima' },
-  { key: 'pengirim', label: 'Pengirim' },
-  { key: 'jenis_surat', label: 'Jenis Surat' },
-  { key: 'status', label: 'Status' },
-  { key: 'aksi', label: 'Aksi' },
+  { key: 'nomor_surat', label: 'Nomor Surat', tdClass: 'px-6 py-4 text-[14px] font-semibold text-[var(--app-heading)]' },
+  { key: 'verifikator', label: 'Verifikator', tdClass: 'px-6 py-4 text-[14px] text-[var(--app-text)]' },
+  { key: 'tanggal_diterima', label: 'Tanggal Terima', tdClass: 'px-6 py-4 whitespace-nowrap text-[var(--app-muted)]' },
+  { key: 'pengirim', label: 'Pengirim', tdClass: 'px-6 py-4 text-[14px] text-[var(--app-text)]' },
+  { key: 'jenis_surat', label: 'Jenis Surat', tdClass: 'px-6 py-4 text-[14px] text-[var(--app-text)]' },
+  { key: 'aksi', label: 'Aksi', tdClass: 'px-6 py-4 font-semibold' },
 ]
 
 const errorMessage = computed(() => store.error)
 
-const distribusiChart = computed(() => [
-  { label: 'Surat Izin', value: store.distribusiJenisSurat.izin, color: 'var(--app-success)' },
-  { label: 'Surat Tugas', value: store.distribusiJenisSurat.tugas, color: 'var(--app-accent)' },
-  { label: 'Surat Keterangan', value: store.distribusiJenisSurat.keterangan, color: 'var(--app-accent-2)' },
-  { label: 'Surat Undangan', value: store.distribusiJenisSurat.undangan, color: 'var(--app-warning)' },
-  { label: 'Surat Pengajuan', value: store.distribusiJenisSurat.pengajuan, color: 'var(--app-danger)' },
-])
-
 const flowBidangChart = computed(() => [
   {
     label: 'Kesiswaan',
-    value: store.flowPerBidang.kesiswaan.surat_masuk + store.flowPerBidang.kesiswaan.surat_keluar,
-    color: 'var(--app-success)',
+    value: store.distribusiSuratPending.kesiswaan,
+    color: colors.value.success,
   },
   {
     label: 'Keagamaan',
-    value: store.flowPerBidang.keagamaan.surat_masuk + store.flowPerBidang.keagamaan.surat_keluar,
-    color: 'var(--app-accent)',
+    value: store.distribusiSuratPending.keagamaan,
+    color: colors.value.accent,
   },
   {
     label: 'Akademik',
-    value: store.flowPerBidang.akademik.surat_masuk + store.flowPerBidang.akademik.surat_keluar,
-    color: 'var(--app-accent-2)',
+    value: store.distribusiSuratPending.akademik,
+    color: colors.value.accent2,
   },
 ])
 
@@ -181,6 +173,26 @@ const filteredRows = computed(() => {
     result = result.filter((row) => row.jenis_surat.toLowerCase().includes(query))
   }
 
+  if (filterDurasi.value) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    result = result.filter((row) => {
+      if (!row.tanggal_diterima) return false
+      
+      const rowDate = new Date(row.tanggal_diterima)
+      rowDate.setHours(0, 0, 0, 0)
+      
+      const diffTime = today.getTime() - rowDate.getTime()
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      
+      if (filterDurasi.value === '< 3 Hari') return diffDays < 3
+      if (filterDurasi.value === '3 - 7 Hari') return diffDays >= 3 && diffDays <= 7
+      if (filterDurasi.value === '> 7 Hari') return diffDays > 7
+      return true
+    })
+  }
+
   return result
 })
 
@@ -195,16 +207,10 @@ const formatDate = (value: string) => {
   })
 }
 
-const resolveDetailPath = (row: { id?: number; id_surat?: number }) => {
-  const id = row.id_surat || row.id
-  if (!id) return ''
-  return `/kepsek/surat-antrean/${id}`
-}
-
-const goToDetail = (row: { id?: number; id_surat?: number }) => {
-  const path = resolveDetailPath(row)
-  if (!path) return
-  router.push(path)
+const goToVerification = (row: { id_pengajuan?: number }) => {
+  const id = row.id_pengajuan
+  if (!id) return
+  router.push(`/kepsek/surat-antrean/${id}`)
 }
 
 const handlePageChange = (page: number) => {
