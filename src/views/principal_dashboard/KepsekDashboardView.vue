@@ -6,29 +6,11 @@
 
     <div class="p-6 flex flex-col gap-[16px] h-full font-['Plus_Jakarta_Sans']">
       <section class="flex flex-col gap-4">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 class="text-[32px] font-bold text-[#111827]">
-              Dashboard Kinerja Persuratan
-            </h1>
-            <p class="text-[24px] text-[#858a91]">Kelola Kinerja Persuratan</p>
-          </div>
-          <div class="flex flex-wrap gap-3 w-full max-w-[420px]">
-            <div class="w-[200px]">
-              <KepsekSelect
-                v-model="selectedMonth"
-                :options="monthOptions"
-                placeholder="Bulan Ini"
-              />
-            </div>
-            <div class="w-[200px]">
-              <KepsekSelect
-                v-model="selectedRole"
-                :options="roleOptions"
-                placeholder="Role Anda"
-              />
-            </div>
-          </div>
+        <div>
+          <h1 class="text-[32px] font-bold text-[var(--app-heading)]">
+            Dashboard Kinerja Persuratan
+          </h1>
+          <p class="text-[24px] text-[var(--app-muted)]">Kelola Kinerja Persuratan</p>
         </div>
 
         <VAlert
@@ -72,19 +54,16 @@
         </KepsekPanel>
 
         <KepsekPanel paddingClass="px-[24px] py-[16px] h-[280px]">
-          <KepsekGroupedBarChart
-            title="Perbandingan Wali Murid vs Guru"
-            subtitle="Insight aktivitas persuratan berdasarkan peran"
-            :data="perbandinganChart"
-            :chartHeight="180"
+          <KepsekPendingDurasi
+            :data="store.pendingDurasi"
           />
         </KepsekPanel>
 
         <KepsekPanel paddingClass="px-[24px] py-[16px] h-[280px]">
           <KepsekPieChart
-            title="Status Persuratan"
-            subtitle="Distribusi status surat saat ini"
-            :data="statusChart"
+            title="Status Surat Keluar"
+            subtitle="Distribusi status surat keluar saat ini"
+            :data="statusSuratKeluarChart"
             :chartSize="170"
           />
         </KepsekPanel>
@@ -94,11 +73,11 @@
         <KepsekPanel paddingClass="px-[24px] py-[16px] h-[320px] overflow-y-auto">
           <div class="flex flex-col gap-4">
             <div>
-              <h3 class="text-[16px] font-semibold text-[#111827]">Approval Rate per User</h3>
-              <p class="text-[12px] text-[#71757b]">Perbandingan tingkat persetujuan antar pengguna</p>
+              <h3 class="text-[16px] font-semibold text-[var(--app-heading)]">Approval Rate per User</h3>
+              <p class="text-[12px] text-[var(--app-subtext)]">Perbandingan tingkat persetujuan antar pengguna</p>
             </div>
 
-            <div v-if="approvalRate.length === 0" class="text-[13px] text-[#94a3b8]">
+            <div v-if="approvalRate.length === 0" class="text-[13px] text-[var(--app-muted)]">
               Belum ada data approval rate.
             </div>
 
@@ -110,23 +89,23 @@
               >
                 <!-- Top Row: Name and Percentage -->
                 <div class="flex items-center justify-between">
-                  <p class="text-[14px] font-semibold text-[#111827]">
+                  <p class="text-[14px] font-semibold text-[var(--app-heading)]">
                     {{ item.nama }} ({{ formatRole(item.role) }})
                   </p>
-                  <span class="text-[14px] font-bold text-[#111827]">
+                  <span class="text-[14px] font-bold text-[var(--app-heading)]">
                     {{ formatPercent(item.approval_rate) }}%
                   </span>
                 </div>
                 
                 <!-- Bottom Row: Progress bar and acc/tolak text -->
                 <div class="flex items-center gap-4">
-                  <div class="flex-1 h-[8px] rounded-full bg-[#e2e8f0]">
+                  <div class="flex-1 h-[8px] rounded-full bg-[var(--app-card-border)]">
                     <div
-                      class="h-full rounded-full bg-[#5ca373]"
+                      class="h-full rounded-full bg-[var(--app-success)]"
                       :style="{ width: `${Math.min(100, item.approval_rate)}%` }"
                     ></div>
                   </div>
-                  <p class="text-[12px] text-[#94a3b8] min-w-[90px] text-right">
+                  <p class="text-[12px] text-[var(--app-muted)] min-w-[90px] text-right">
                     {{ item.jumlah_approve }} acc / {{ item.jumlah_tolak }} tolak
                   </p>
                 </div>
@@ -139,26 +118,26 @@
           <div class="flex flex-col h-full gap-4">
             <div class="flex items-start gap-4">
               <div
-                class="rounded-[10px] bg-[linear-gradient(90.7368deg,#3f9760_0%,#d1955f_100%)] p-[8px] text-white"
+                class="rounded-[10px] bg-[linear-gradient(90.7368deg,var(--app-accent)_0%,var(--app-accent-2)_100%)] p-[8px] text-white"
               >
                 <Mail class="h-5 w-5" />
               </div>
               <div>
-                <h3 class="text-[18px] font-bold text-[#111827]">Flow Surat per Bidang</h3>
-                <p class="text-[13px] text-[#71757b]">Surat masuk/keluar dari 3 bidang</p>
+                <h3 class="text-[18px] font-bold text-[var(--app-heading)]">Flow Surat per Bidang</h3>
+                <p class="text-[13px] text-[var(--app-subtext)]">Surat masuk/keluar dari 3 bidang</p>
               </div>
             </div>
 
             <div class="flex flex-col justify-around flex-1 text-[15px] font-semibold gap-2">
               <div v-for="item in flowBidangList" :key="item.label" class="flex flex-col gap-[2px]">
-                <div class="font-normal text-[#111827] text-[14px]">{{ item.label }}</div>
+                <div class="font-normal text-[var(--app-heading)] text-[14px]">{{ item.label }}</div>
                 <div class="flex w-full justify-between pr-4 items-center">
-                  <span class="text-[#c77e3c]">↓ Surat Masuk</span>
-                  <span class="text-[#c77e3c] font-bold">{{ item.surat_masuk }}</span>
+                  <span class="text-[var(--app-warning)]">↓ Surat Masuk</span>
+                  <span class="text-[var(--app-warning)] font-bold">{{ item.surat_masuk }}</span>
                 </div>
                 <div class="flex w-full justify-between pr-4 items-center">
-                  <span class="text-[#2f8f58]">↑ Surat Keluar</span>
-                  <span class="text-[#2f8f58] font-bold">{{ item.surat_keluar }}</span>
+                  <span class="text-[var(--app-success)]">↑ Surat Keluar</span>
+                  <span class="text-[var(--app-success)] font-bold">{{ item.surat_keluar }}</span>
                 </div>
               </div>
             </div>
@@ -170,38 +149,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { Mail } from 'lucide-vue-next'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import KepsekSummaryCard from '@/components/kepsek/KepsekSummaryCard.vue'
 import KepsekLineChart from '@/components/kepsek/KepsekLineChart.vue'
-import KepsekGroupedBarChart from '@/components/kepsek/KepsekGroupedBarChart.vue'
 import KepsekPieChart from '@/components/kepsek/KepsekPieChart.vue'
 import KepsekPanel from '@/components/kepsek/KepsekPanel.vue'
-import KepsekSelect from '@/components/kepsek/KepsekSelect.vue'
+import KepsekPendingDurasi from '@/components/kepsek/KepsekPendingDurasi.vue'
 import { usePrincipalDashboardStore } from '@/stores/principal_dashboard'
+import { useThemeColors } from '@/stores/principal_dashboard/themeColors'
 
 const store = usePrincipalDashboardStore()
-
-const selectedMonth = ref('')
-const selectedRole = ref('')
-
-const monthOptions = [
-  { label: 'Bulan Ini', value: 'current' },
-  { label: 'Bulan Lalu', value: 'previous' },
-]
-
-const roleOptions = [
-  { label: 'Semua Role', value: 'all' },
-  { label: 'Wali Murid', value: 'WALI_MURID' },
-  { label: 'Guru', value: 'GURU' },
-]
+const colors = useThemeColors()
 
 const summary = computed(() => store.summary)
 const approvalRate = computed(() => store.approvalRate)
-const flowWaliMurid = computed(() => store.flowWaliMurid)
 const errorMessage = computed(() => store.error)
 
 const trendWaktuChart = computed(() =>
@@ -212,19 +177,12 @@ const trendWaktuChart = computed(() =>
   }))
 )
 
-const perbandinganChart = computed(() =>
-  store.perbandinganPeran.map((item) => ({
-    label: formatRole(item.role),
-    masuk: item.surat_masuk,
-    keluar: item.surat_keluar,
-  })),
-)
 
-const statusChart = computed(() => [
-  { label: 'Disetujui', value: store.statusSurat.disetujui, color: '#5ca373' },
-  { label: 'Menunggu (Semua)', value: store.statusSurat.menunggu, color: '#d29a64' },
-  { label: 'Ditolak', value: store.statusSurat.ditolak, color: '#c36c5f' },
-  { label: 'Diproses', value: store.statusSurat.diproses, color: '#4c8aa8' },
+const statusSuratKeluarChart = computed(() => [
+  { label: 'Menunggu (Wakil Bidang)', value: store.statusSuratKeluar.menunggu_wakil_bidang, color: colors.value.warning },
+  { label: 'Menunggu (Kepsek)', value: store.statusSuratKeluar.menunggu_kepsek, color: colors.value.info },
+  { label: 'Disetujui', value: store.statusSuratKeluar.disetujui, color: colors.value.success },
+  { label: 'Ditolak', value: store.statusSuratKeluar.ditolak, color: colors.value.danger },
 ])
 
 const flowBidangList = computed(() => [

@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col gap-4">
     <div>
-      <h3 class="text-[14px] font-semibold text-[#111827]">
+      <h3 class="text-[14px] font-semibold text-[var(--app-heading)]">
         {{ title }}
       </h3>
-      <p v-if="subtitle" class="text-[11px] text-[#94a3b8]">
+      <p v-if="subtitle" class="text-[11px] text-[var(--app-subtext)]">
         {{ subtitle }}
       </p>
     </div>
@@ -27,6 +27,7 @@ import {
   Legend,
   type ChartOptions,
 } from 'chart.js'
+import { useThemeColors } from '@/stores/principal_dashboard/themeColors'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
@@ -43,6 +44,8 @@ const props = defineProps<{
   chartHeight?: number
 }>()
 
+const colors = useThemeColors()
+
 const resolvedHeight = computed(() => props.chartHeight ?? 190)
 
 const chartData = computed(() => ({
@@ -50,7 +53,7 @@ const chartData = computed(() => ({
   datasets: [
     {
       data: props.data.map((item) => item.value),
-      backgroundColor: props.data.map((item) => item.color || '#5b7de1'),
+      backgroundColor: props.data.map((item) => item.color || colors.value.accent),
       borderRadius: 4,
       borderSkipped: false,
       barThickness: 24,
@@ -70,16 +73,16 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
       type: 'category',
       grid: { display: false },
       ticks: {
-        color: '#858a91',
+        color: colors.value.muted,
         font: { size: 12, weight: 600 },
       },
     },
     y: {
       type: 'linear',
       beginAtZero: true,
-      grid: { color: '#e2e8f0', borderDash: [4, 4] },
+      grid: { color: colors.value.border, borderDash: [4, 4] },
       ticks: {
-        color: '#858a91',
+        color: colors.value.muted,
         font: { size: 12 },
         stepSize: 10,
       },

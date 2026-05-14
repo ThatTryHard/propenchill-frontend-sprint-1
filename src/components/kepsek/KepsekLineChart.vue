@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col gap-4">
     <div>
-      <h3 class="text-[14px] font-semibold text-[#111827]">
+      <h3 class="text-[14px] font-semibold text-[var(--app-heading)]">
         {{ title }}
       </h3>
-      <p v-if="subtitle" class="text-[11px] text-[#94a3b8]">
+      <p v-if="subtitle" class="text-[11px] text-[var(--app-subtext)]">
         {{ subtitle }}
       </p>
     </div>
@@ -28,6 +28,7 @@ import {
   Legend,
   type ChartOptions,
 } from 'chart.js'
+import { useThemeColors } from '@/stores/principal_dashboard/themeColors'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend)
 
@@ -44,6 +45,8 @@ const props = defineProps<{
   chartHeight?: number
 }>()
 
+const colors = useThemeColors()
+
 const resolvedHeight = computed(() => props.chartHeight ?? 190)
 
 const chartData = computed(() => ({
@@ -52,15 +55,15 @@ const chartData = computed(() => ({
     {
       label: 'Surat Masuk',
       data: props.data.map((item) => item.masuk),
-      borderColor: '#c77e3c',
-      backgroundColor: '#c77e3c',
+      borderColor: colors.value.warning,
+      backgroundColor: colors.value.warning,
       tension: 0.4,
     },
     {
       label: 'Surat Keluar',
       data: props.data.map((item) => item.keluar),
-      borderColor: '#2f8f58',
-      backgroundColor: '#2f8f58',
+      borderColor: colors.value.success,
+      backgroundColor: colors.value.success,
       tension: 0.4,
     },
   ],
@@ -76,7 +79,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
       labels: {
         usePointStyle: true,
         boxWidth: 8,
-        color: '#858a91',
+        color: colors.value.muted,
         font: { size: 12 },
       },
     },
@@ -87,16 +90,16 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
       type: 'category',
       grid: { display: false },
       ticks: {
-        color: '#858a91',
+        color: colors.value.muted,
         font: { size: 12, weight: 600 },
       },
     },
     y: {
       type: 'linear',
       beginAtZero: true,
-      grid: { color: '#e2e8f0', borderDash: [4, 4] },
+      grid: { color: colors.value.border, borderDash: [4, 4] },
       ticks: {
-        color: '#858a91',
+        color: colors.value.muted,
         font: { size: 12 },
         stepSize: 10,
       },
