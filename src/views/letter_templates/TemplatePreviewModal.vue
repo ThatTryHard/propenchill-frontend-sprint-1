@@ -127,124 +127,124 @@ async function handleDownloadTemplate() {
     class="fixed inset-0 z-[999] flex items-center justify-center bg-black/35 px-4 py-6"
   >
     <div
-      class="max-h-[90vh] w-full max-w-[720px] overflow-hidden rounded-[28px] bg-white shadow-2xl"
+      class="max-h-[90vh] w-full max-w-[720px] overflow-hidden rounded-[28px] bg-[var(--app-card)] shadow-2xl"
     >
-      <div class="flex items-center justify-between border-b border-[#e5e7eb] px-6 py-5">
+      <div class="flex items-center justify-between border-b border-[var(--app-card-border)] px-6 py-5">
         <div>
-          <h2 class="text-[24px] font-bold text-[#111827]">Detail Template</h2>
-          <p class="mt-1 text-[14px] text-[#858a91]">
+          <h2 class="text-[24px] font-bold text-[var(--app-heading)]">Detail Template</h2>
+          <p class="mt-1 text-[14px] text-[var(--app-muted)]">
             Informasi template surat
           </p>
         </div>
 
         <button
           type="button"
-          class="rounded-full p-2 text-[#6b7280] transition hover:bg-[#f3f4f6] hover:text-[#111827]"
+          class="rounded-full p-2 text-[var(--app-muted)] transition hover:bg-[var(--app-soft-card)] hover:text-[var(--app-text)]"
           @click="closeModal"
         >
           <X class="h-5 w-5" />
         </button>
       </div>
 
-      <div v-if="isLoading" class="px-6 py-10 text-center text-[#858a91]">
+      <div v-if="isLoading" class="px-6 py-10 text-center text-[var(--app-muted)]">
         Memuat detail template...
       </div>
 
       <div
         v-else-if="template"
-        class="max-h-[calc(90vh-96px)] overflow-y-auto bg-[#eef5f0] p-7"
+        class="max-h-[calc(90vh-96px)] overflow-y-auto bg-[var(--app-soft-card)] p-7"
       >
         <div class="flex flex-col gap-5">
           <span
-            class="inline-flex w-fit rounded-full bg-[#3f7f47] px-4 py-1 text-[13px] font-medium text-white"
+            class="inline-flex w-fit rounded-full bg-[var(--app-accent)] px-4 py-1 text-[13px] font-medium text-[var(--app-text-inverse)]"
           >
             {{ formatJenis(template.jenis) }}
           </span>
 
           <div>
-            <h3 class="text-[26px] font-bold leading-[120%] text-[#111827]">
+            <h3 class="text-[26px] font-bold leading-[120%] text-[var(--app-heading)]">
               {{ template.nama_template }}
             </h3>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <div class="rounded-[18px] bg-white/70 px-4 py-3">
-              <p class="text-[12px] text-[#858a91]">Status</p>
-              <p class="mt-1 font-semibold text-[#111827]">
+            <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-3">
+              <p class="text-[12px] text-[var(--app-muted)]">Status</p>
+              <p class="mt-1 font-semibold text-[var(--app-text)]">
                 {{ template.is_active ? 'Aktif' : 'Nonaktif' }}
               </p>
             </div>
 
-            <div class="rounded-[18px] bg-white/70 px-4 py-3">
-              <p class="text-[12px] text-[#858a91]">Mode</p>
-              <p class="mt-1 font-semibold text-[#111827]">
+            <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-3">
+              <p class="text-[12px] text-[var(--app-muted)]">Mode</p>
+              <p class="mt-1 font-semibold text-[var(--app-text)]">
                 {{ template.template_mode }}
               </p>
             </div>
           </div>
 
-          <div class="rounded-[18px] bg-white/70 px-4 py-4">
-            <p class="text-[12px] text-[#858a91]">Tanggal dibuat</p>
-            <p class="mt-1 text-[#111827]">{{ formatDateTime(template.created_at) }}</p>
+          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
+            <p class="text-[12px] text-[var(--app-muted)]">Tanggal dibuat</p>
+            <p class="mt-1 text-[var(--app-text)]">{{ formatDateTime(template.created_at) }}</p>
           </div>
 
-          <div class="rounded-[18px] bg-white/70 px-4 py-4">
-            <p class="text-[12px] text-[#858a91]">Terakhir diperbarui</p>
-            <p class="mt-1 text-[#111827]">{{ formatDateTime(template.updated_at || template.created_at) }}</p>
+          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
+            <p class="text-[12px] text-[var(--app-muted)]">Terakhir diperbarui</p>
+            <p class="mt-1 text-[var(--app-text)]">{{ formatDateTime(template.updated_at || template.created_at) }}</p>
           </div>
 
-          <div class="rounded-[18px] bg-white/70 px-4 py-4">
-            <p class="text-[12px] text-[#858a91]">Dibuat oleh</p>
-            <p class="mt-1 text-[#111827]">{{ template.created_by_name || '-' }}</p>
+          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
+            <p class="text-[12px] text-[var(--app-muted)]">Dibuat oleh</p>
+            <p class="mt-1 text-[var(--app-text)]">{{ template.created_by_name || '-' }}</p>
           </div>
 
-          <div class="rounded-[18px] bg-white/70 px-4 py-4">
-            <p class="text-[12px] text-[#858a91]">Role Akses</p>
+          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
+            <p class="text-[12px] text-[var(--app-muted)]">Role Akses</p>
             <div class="mt-2 flex flex-wrap gap-2">
               <span
                 v-for="role in template.allowed_roles || []"
                 :key="role"
-                class="rounded-full bg-[#dcefe1] px-3 py-1 text-[12px] font-medium text-[#2f6d3d]"
+                class="rounded-full bg-[var(--app-chip-primary)] px-3 py-1 text-[12px] font-medium text-[var(--app-accent)]"
               >
                 {{ formatRoleLabel(role) }}
               </span>
-              <span v-if="!template.allowed_roles || template.allowed_roles.length === 0" class="text-[#111827]">
+              <span v-if="!template.allowed_roles || template.allowed_roles.length === 0" class="text-[var(--app-text)]">
                 -
               </span>
             </div>
           </div>
 
-          <div class="rounded-[18px] bg-white/70 px-4 py-4">
-            <p class="text-[12px] text-[#858a91]">Variabel Terdeteksi</p>
+          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
+            <p class="text-[12px] text-[var(--app-muted)]">Variabel Terdeteksi</p>
             <div class="mt-2 flex flex-wrap gap-2">
               <span
                 v-for="variable in template.parsed_variables || []"
                 :key="variable"
-                class="rounded-full bg-[#f4f7fb] px-3 py-1 text-[12px] font-medium text-[#111827]"
+                class="rounded-full bg-[var(--app-soft-card)] px-3 py-1 text-[12px] font-medium text-[var(--app-text)]"
               >
                 {{ formatPlaceholder(variable) }}
               </span>
-              <span v-if="!template.parsed_variables || template.parsed_variables.length === 0" class="text-[#111827]">
+              <span v-if="!template.parsed_variables || template.parsed_variables.length === 0" class="text-[var(--app-text)]">
                 Tidak ada variabel terdeteksi.
               </span>
             </div>
           </div>
 
-          <div v-if="template.preview_text" class="rounded-[18px] bg-white/70 px-4 py-4">
-            <p class="text-[12px] text-[#858a91]">Preview Template</p>
-            <div class="mt-2 whitespace-pre-line text-[14px] leading-[160%] text-[#111827]">
+          <div v-if="template.preview_text" class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
+            <p class="text-[12px] text-[var(--app-muted)]">Preview Template</p>
+            <div class="mt-2 whitespace-pre-line text-[14px] leading-[160%] text-[var(--app-text)]">
               {{ template.preview_text }}
             </div>
           </div>
 
-          <div v-if="downloadError" class="rounded-[18px] bg-[#fef2f2] px-4 py-3 text-[13px] text-[#b42318]">
+          <div v-if="downloadError" class="rounded-[18px] bg-[var(--app-danger-bg)] px-4 py-3 text-[13px] text-[var(--app-danger)]">
             {{ downloadError }}
           </div>
 
           <div class="flex justify-end">
             <button
               type="button"
-              class="inline-flex items-center gap-2 rounded-full bg-[#0c4923] px-4 py-2 text-[14px] font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+              class="inline-flex items-center gap-2 rounded-full bg-[var(--app-accent-2)] px-4 py-2 text-[14px] font-semibold text-[var(--app-text-inverse)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
               :disabled="!canDownload || isDownloading"
               @click="handleDownloadTemplate"
             >
@@ -255,7 +255,7 @@ async function handleDownloadTemplate() {
         </div>
       </div>
 
-      <div v-else class="px-6 py-10 text-center text-[#858a91]">
+      <div v-else class="px-6 py-10 text-center text-[var(--app-muted)]">
         Data template tidak tersedia.
       </div>
     </div>

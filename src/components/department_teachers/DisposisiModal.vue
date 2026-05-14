@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
+import { LockIcon } from 'lucide-vue-next'
 import VModal from '@/components/common/VModal.vue'
 import VTextareaField from '@/components/common/VTextareaField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
+import VButton from '@/components/common/VButton.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -31,6 +33,7 @@ watch(
   () => props.isOpen,
   (newVal) => {
     if (newVal) {
+      form.target_role = 'KEPSEK'
       form.sifat = 'Biasa'
       form.instruksi = ''
       errorMsg.value = ''
@@ -47,6 +50,7 @@ function handleSubmit() {
     errorMsg.value = 'Instruksi / catatan telaah wajib diisi!'
     return
   }
+
   errorMsg.value = ''
   emit('submit', { ...form })
 }
@@ -61,23 +65,35 @@ function handleSubmit() {
     maxWidthClass="max-w-[560px]"
     @update:isOpen="handleClose"
   >
-    <div class="mt-4 w-full flex flex-col gap-5 text-left">
+    <div class="mt-4 flex w-full flex-col gap-5 text-left">
       <div class="flex flex-col gap-2 font-sans">
-        <label class="text-[16px] font-semibold text-[#111827]">Teruskan Kepada</label>
+        <label class="text-[1rem] font-semibold text-[var(--app-heading)]">
+          Teruskan Kepada
+        </label>
+
         <div
-          class="w-full p-[14px] rounded-[12px] border border-[#d9e2e7] bg-[#f3f4f6] text-[16px] text-[#6b7280] font-semibold flex items-center justify-between"
+          class="flex w-full items-center justify-between rounded-[12px] border px-[19px] py-[14px] text-[1rem] font-semibold"
+          style="
+            background: var(--app-input-disabled-bg);
+            border-color: var(--app-input-border);
+            color: var(--app-muted);
+          "
         >
           <span>Kepala Sekolah</span>
-          <LockIcon class="w-5 h-5 opacity-50" />
+          <LockIcon class="h-5 w-5 opacity-50" />
         </div>
       </div>
 
-      <div class="flex flex-col gap-2 font-sans relative z-20">
-        <label class="text-[16px] font-semibold text-[#111827]">Sifat Disposisi</label>
+      <div class="relative z-20 flex flex-col gap-2 font-sans">
+        <label class="text-[1rem] font-semibold text-[var(--app-heading)]">
+          Sifat Disposisi
+        </label>
+
         <VDropdown
           v-model="form.sifat"
           :options="sifatOptions"
           placeholder="Pilih Sifat Disposisi"
+          :disabled="loading"
         />
       </div>
 
@@ -89,29 +105,29 @@ function handleSubmit() {
           :rows="4"
           :state="errorMsg ? 'error' : 'default'"
           :message="errorMsg"
-          @update:modelValue="form.instruksi = String($event || '')"
           :disabled="loading"
+          @update:modelValue="form.instruksi = String($event || '')"
         />
       </div>
 
-      <div class="mt-2 flex items-center justify-end gap-3 relative z-10">
-        <button
-          type="button"
-          class="rounded-[14px] border border-[#d1d5db] px-5 py-2.5 text-sm font-semibold text-[#374151] hover:bg-[#f3f4f6] transition-colors"
+      <div class="relative z-10 mt-2 flex items-center justify-end gap-3">
+        <VButton
+          variant="secondary"
+          class="!w-[132px]"
           :disabled="loading"
           @click="handleClose"
         >
           Batal
-        </button>
+        </VButton>
 
-        <button
-          type="button"
-          class="rounded-[14px] bg-[#3f9760] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#2f8a50] disabled:cursor-not-allowed disabled:opacity-60 transition-colors"
+        <VButton
+          variant="primary"
+          class="!w-[190px]"
           :disabled="loading"
           @click="handleSubmit"
         >
           {{ loading ? 'Memproses...' : 'Kirim ke Kepala Sekolah' }}
-        </button>
+        </VButton>
       </div>
     </div>
   </VModal>

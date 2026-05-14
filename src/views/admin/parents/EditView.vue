@@ -3,24 +3,24 @@
     <template #sidebar>
       <SIMPSidebar />
     </template>
-    <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[#f8fafc]">
+    <div class="p-8 flex flex-col gap-8 h-full font-sans bg-[var(--app-bg)]">
       <!-- Header -->
       <div class="flex flex-col gap-4">
         <button
           @click="$router.push('/admin/parents')"
-          class="flex items-center gap-2 text-[#718096] hover:text-[#1a202c] transition-colors"
+          class="flex items-center gap-2 text-[var(--app-muted)] hover:text-[var(--app-text)] transition-colors"
         >
           <ArrowLeft :size="18" />
           <span class="text-sm">Kembali</span>
         </button>
         <div>
-          <h1 class="text-2xl font-bold text-[#1a202c]">Edit Wali Murid</h1>
-          <p class="text-[#718096] text-sm mt-1">Perbarui data akun wali murid</p>
+          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Edit Wali Murid</h1>
+          <p class="text-[var(--app-muted)] text-sm mt-1">Perbarui data akun wali murid</p>
         </div>
       </div>
 
       <!-- Loading -->
-      <div v-if="isFetching" class="text-[#718096] py-12 text-center">Memuat data...</div>
+      <div v-if="isFetching" class="text-[var(--app-muted)] py-12 text-center">Memuat data...</div>
 
       <template v-else>
         <!-- Alert -->
@@ -34,7 +34,7 @@
         />
 
         <!-- Form Card -->
-        <div class="bg-white p-8 rounded-2xl border border-[#e2e8f0] shadow-sm max-w-4xl">
+        <div class="bg-[var(--app-card)] p-8 rounded-2xl border border-[var(--app-card-border)] shadow-sm max-w-4xl">
           <div class="flex flex-col gap-6">
             <VInputField
               v-model="form.nama"
@@ -107,7 +107,7 @@
         :buttons="updateButtons"
       >
         <template #icon>
-          <UserCheck class="w-10 h-10 text-[#3f9760]" />
+          <UserCheck class="w-10 h-10 text-[var(--app-accent)]" />
         </template>
       </VModal>
 
@@ -118,7 +118,7 @@
         :buttons="deleteButtons"
       >
         <template #icon>
-          <Trash2 class="w-10 h-10 text-red-500" />
+          <Trash2 class="w-10 h-10 text-[var(--app-danger)]" />
         </template>
       </VModal>
     </div>

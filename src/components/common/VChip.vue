@@ -2,7 +2,7 @@
   <div
     :class="[
       'inline-flex items-center justify-center gap-[4px] px-[14px] py-[8px]',
-      'rounded-[17px] font-sans text-[16px] font-semibold leading-[120%] text-[#111827]',
+      'rounded-[17px] font-sans text-[16px] font-semibold leading-[120%] text-[var(--app-text)]',
       'backdrop-blur-[10px] shadow-[0px_2px_4px_rgba(255,255,255,0.4)_inset,0px_-2px_4px_rgba(0,0,0,0.2)_inset]',
       'transition-all duration-200 ease-out transform-gpu hover:-translate-y-[1px] hover:brightness-105',
       variantStyles,
@@ -33,15 +33,15 @@ const props = defineProps({
 const variantStyles = computed(() => {
   switch (props.variant) {
     case 'primary':
-      return 'bg-[#c7e1d0]'
+      return 'bg-[var(--app-chip-primary)]'
     case 'secondary':
-      return 'bg-[#f2e0d0]'
+      return 'bg-[var(--app-chip-secondary)]'
     case 'tertiary':
-      return 'bg-[#f9fdfb]'
+      return 'bg-[var(--app-chip-tertiary)]'
     case 'deep':
-      return 'bg-[#4A8B50] text-[#F8FAFC]'
+      return 'bg-[var(--app-chip-deep)] text-[var(--app-text-inverse)]'
     default:
-      return 'bg-[#c7e1d0]'
+      return 'bg-[var(--app-chip-primary)]'
   }
 })
 </script>

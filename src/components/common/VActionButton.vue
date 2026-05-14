@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { PropType } from 'vue'
+import { computed, type PropType } from 'vue'
 
 const props = defineProps({
   variant: {
@@ -24,11 +23,11 @@ const emit = defineEmits<{
 const buttonClasses = computed(() => {
   switch (props.variant) {
     case 'secondary':
-      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[#c9e9da] text-[#111827] hover:scale-101 brightness-95 active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[rgba(201,233,218,0.8)] disabled:text-[#71757b] disabled:cursor-not-allowed'
+      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[var(--app-chip-primary)] text-[var(--app-text)] hover:scale-101 brightness-95 active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[var(--app-input-disabled-bg)] disabled:text-[var(--app-muted)] disabled:cursor-not-allowed'
 
     case 'primary':
     default:
-      return 'bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] text-[#f8fafc] shadow-[0px_-2px_0px_rgba(0,0,0,0.35)_inset,0px_1px_0px_rgba(248,250,252,0.25)_inset] hover:brightness-105 active:translate-y-[1px]'
+      return 'bg-[radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))] text-[var(--app-text-inverse)] shadow-[0px_-2px_0px_rgba(0,0,0,0.35)_inset,0px_1px_0px_rgba(248,250,252,0.25)_inset] hover:brightness-105 active:translate-y-[1px]'
   }
 })
 

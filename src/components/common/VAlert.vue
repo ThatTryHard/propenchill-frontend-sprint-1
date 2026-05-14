@@ -10,12 +10,11 @@
     <div
       v-if="isVisible"
       :class="[
-        // MAGIC TRICK: 'fixed', 'top-8', 'right-8', 'z-50' buat bikin melayang di kanan atas
         // 'w-auto max-w-[400px]' biar lebarnya menyesuaikan isi teks tapi ngga kepanjangan
         'fixed top-8 right-8 z-[100] w-auto max-w-[400px]',
         'flex items-start justify-between px-[20px] py-[14px]',
         'rounded-[9px] border-[1.1px] shadow-[0px_8px_8px_rgba(0,0,0,0.25)]',
-        'font-sans text-[12px] text-[#111827]',
+        'font-sans text-[12px] text-[var(--app-text)]',
         alertStyles.bgBorder,
       ]"
     >
@@ -34,7 +33,7 @@
       <button
         v-if="dismissible"
         @click="closeAlert"
-        class="ml-[16px] mt-[2px] flex-shrink-0 text-gray-500 hover:text-gray-900 transition-colors focus:outline-none"
+        class="ml-[16px] mt-[2px] flex-shrink-0 text-[var(--app-muted)] hover:text-[var(--app-text)] transition-colors focus:outline-none"
       >
         <XIcon class="w-[18px] h-[18px]" />
       </button>
@@ -84,28 +83,28 @@ const alertStyles = computed(() => {
   switch (props.type) {
     case 'error':
       return {
-        bgBorder: 'bg-[#f9eaea] border-[#d97d7d]',
+        bgBorder: 'bg-[var(--app-danger-bg)] border-[var(--app-danger-border)]',
         icon: AlertCircleIcon,
-        iconColor: 'text-[#d97d7d]',
+        iconColor: 'text-[var(--app-danger)]',
       }
     case 'success':
       return {
-        bgBorder: 'bg-[#e8f2ec] border-[#6caf85]',
+        bgBorder: 'bg-[var(--app-success-bg)] border-[var(--app-success-border)]',
         icon: CheckCircle2Icon,
-        iconColor: 'text-[#6caf85]',
+        iconColor: 'text-[var(--app-success)]',
       }
     case 'warning':
       return {
-        bgBorder: 'bg-[#faf6eb] border-[#c8a23a]',
+        bgBorder: 'bg-[var(--app-warning-bg)] border-[var(--app-warning-border)]',
         icon: AlertTriangleIcon,
-        iconColor: 'text-[#c8a23a]',
+        iconColor: 'text-[var(--app-warning)]',
       }
     case 'information':
     default:
       return {
-        bgBorder: 'bg-[#f0f4f7] border-[#86a1ba]',
+        bgBorder: 'bg-[var(--app-info-bg)] border-[var(--app-info-border)]',
         icon: InfoIcon,
-        iconColor: 'text-[#86a1ba]',
+        iconColor: 'text-[var(--app-info)]',
       }
   }
 })

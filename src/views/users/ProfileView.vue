@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VCard from '@/components/common/VCard.vue'
 import VChip from '@/components/common/VChip.vue'
 import VButton from '@/components/common/VButton.vue'
+import VModal from '@/components/common/VModal.vue'
+import VInputField from '@/components/common/VInputField.vue'
 import { useProfileStore } from '@/stores/profile'
+import api from '@/plugins/axios'
 import {
   BadgeCheck,
   BriefcaseBusiness,
@@ -19,14 +22,31 @@ import {
   Pencil,
   Phone,
   ShieldCheck,
+  Upload,
   UserRound,
   UsersRound,
+  Camera,
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const profileStore = useProfileStore()
 
 const profile = computed(() => profileStore.profile)
+
+const showEditModal = ref(false)
+const isSaving = ref(false)
+const editForm = ref({
+  nama: '',
+  tanggal_lahir: '',
+  email: '',
+  nomor_hp: '',
+  alamat: '',
+})
+const editError = ref('')
+const avatarPreview = ref<string | null>(null)
+const selectedAvatarFile = ref<File | null>(null)
+const isUploadingAvatar = ref(false)
+const avatarInputRef = ref<HTMLInputElement | null>(null)
 
 const displayValue = (value?: string | number | null) => {
   if (value === null || value === undefined || value === '') return '-'
@@ -70,8 +90,189 @@ const handleVerifyNow = () => {
   })
 }
 
+const openEditModal = () => {
+  editForm.value = {
+    nama: profile.value?.nama || '',
+    tanggal_lahir: profile.value?.tanggal_lahir || '',
+    email: profile.value?.email || '',
+    nomor_hp: profile.value?.nomor_hp || '',
+    alamat: profile.value?.alamat || '',
+  }
+  editError.value = ''
+  showEditModal.value = true
+}
+
+const closeEditModal = () => {
+  showEditModal.value = false
+  avatarPreview.value = null
+  selectedAvatarFile.value = null
+  editError.value = ''
+}
+
+// Validasi email format
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+// Validasi nomor HP Indonesia (hanya angka, mulai dengan 0 atau +62)
+const isValidPhoneNumber = (phone: string): boolean => {
+  const phoneRegex = /^(\+62|62|0)[1-9][0-9]{7,11}$/
+  return phoneRegex.test(phone.replace(/\s/g, ''))
+}
+
+const validateForm = (): boolean => {
+  // Validasi Nama
+  if (!editForm.value.nama.trim()) {
+    editError.value = 'Nama lengkap tidak boleh kosong.'
+    return false
+  }
+  if (editForm.value.nama.trim().length < 3) {
+    editError.value = 'Nama lengkap minimal 3 karakter.'
+    return false
+  }
+
+  // Validasi Email
+  if (!editForm.value.email.trim()) {
+    editError.value = 'Email tidak boleh kosong.'
+    return false
+  }
+  if (!isValidEmail(editForm.value.email)) {
+    editError.value = 'Format email tidak valid. Contoh: nama@email.com'
+    return false
+  }
+
+  // Validasi Nomor Telepon (jika diisi)
+  if (editForm.value.nomor_hp && editForm.value.nomor_hp.trim()) {
+    if (!isValidPhoneNumber(editForm.value.nomor_hp)) {
+      editError.value = 'Nomor telepon tidak valid. Gunakan format Indonesia (contoh: 08123456789 atau +628123456789)'
+      return false
+    }
+  }
+
+  // Validasi Tanggal Lahir
+  if (editForm.value.tanggal_lahir && editForm.value.tanggal_lahir.trim()) {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (!dateRegex.test(editForm.value.tanggal_lahir)) {
+      editError.value = 'Format tanggal lahir tidak valid. Gunakan format YYYY-MM-DD'
+      return false
+    }
+    const dateObj = new Date(editForm.value.tanggal_lahir)
+    if (isNaN(dateObj.getTime())) {
+      editError.value = 'Tanggal lahir tidak valid.'
+      return false
+    }
+    // Tidak boleh lebih dari tanggal sekarang
+    if (dateObj > new Date()) {
+      editError.value = 'Tanggal lahir tidak boleh di masa depan.'
+      return false
+    }
+  }
+
+  return true
+}
+
+const handleSaveProfile = async () => {
+  editError.value = ''
+
+  // Jalankan validasi
+  if (!validateForm()) {
+    return
+  }
+
+  isSaving.value = true
+
+  try {
+    const dataToSend: Record<string, string> = {}
+    if (editForm.value.nama) dataToSend.nama = editForm.value.nama.trim()
+    if (editForm.value.email) dataToSend.email = editForm.value.email.trim()
+    if (editForm.value.alamat) dataToSend.alamat = editForm.value.alamat.trim()
+    if (editForm.value.nomor_hp) dataToSend.nomor_hp = editForm.value.nomor_hp.trim()
+    if (editForm.value.tanggal_lahir) dataToSend.tanggal_lahir = editForm.value.tanggal_lahir
+
+    const response = await api.put('/api/profile/', dataToSend)
+
+    if (response.data?.message || response.status === 200) {
+      await profileStore.fetchProfile()
+      closeEditModal()
+    }
+  } catch (error: any) {
+    editError.value = error.response?.data?.error || error.response?.data?.message || 'Gagal menyimpan perubahan.'
+  } finally {
+    isSaving.value = false
+  }
+}
+
 const handleEditProfile = () => {
-  // Placeholder untuk fitur edit profile jika endpoint update profile sudah tersedia.
+  openEditModal()
+}
+
+const triggerAvatarUpload = () => {
+  avatarInputRef.value?.click()
+}
+
+const handleAvatarFileChange = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+
+  if (!file) return
+
+  // Validate file type
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  if (!allowedTypes.includes(file.type)) {
+    alert('Hanya file gambar (JPG, PNG, GIF, WEBP) yang diizinkan.')
+    return
+  }
+
+  // Validate file size (max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Ukuran file maksimal 2MB.')
+    return
+  }
+
+  selectedAvatarFile.value = file
+
+  // Create preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    avatarPreview.value = e.target?.result as string
+  }
+  reader.readAsDataURL(file)
+}
+
+const handleUploadAvatar = async () => {
+  if (!selectedAvatarFile.value) return
+
+  isUploadingAvatar.value = true
+
+  try {
+    const formData = new FormData()
+    formData.append('avatar', selectedAvatarFile.value)
+
+    const response = await api.post('/api/profile/avatar/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    if (response.data?.message || response.status === 200) {
+      await profileStore.fetchProfile()
+      avatarPreview.value = null
+      selectedAvatarFile.value = null
+    }
+  } catch (error: any) {
+    alert(error.response?.data?.error || error.response?.data?.message || 'Gagal mengunggah avatar.')
+  } finally {
+    isUploadingAvatar.value = false
+  }
+}
+
+const cancelAvatarUpload = () => {
+  avatarPreview.value = null
+  selectedAvatarFile.value = null
+  if (avatarInputRef.value) {
+    avatarInputRef.value.value = ''
+  }
 }
 
 onMounted(() => {
@@ -82,39 +283,30 @@ onMounted(() => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <SIMPSidebar />
+      <SIMPSidebar :userAvatar="profile?.avatar_url" />
     </template>
 
-    <section class="min-h-full bg-[#F8FAFC] px-5 py-5">
+    <section class="min-h-full bg-[var(--app-bg)] px-5 py-5 text-[var(--app-text)]">
       <div class="mx-auto max-w-4xl">
         <!-- Header -->
         <div
-          class="mb-5 overflow-hidden rounded-[24px] bg-gradient-to-br from-white via-[#F8FAFC] to-[#E8F3EB] p-5 shadow-sm"
+          class="mb-5 overflow-hidden rounded-[24px] bg-[var(--app-card)] p-5 shadow-sm border border-[var(--app-card-border)]"
         >
-          <h1 class="text-2xl font-bold text-slate-900">Profil Pengguna</h1>
-          <p class="mt-1 text-[12px] text-slate-500">Kelola dan pantau informasi akun Anda.</p>
+          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Profil Pengguna</h1>
+          <p class="mt-1 text-[12px] text-[var(--app-muted)]">
+            Kelola dan pantau informasi akun Anda.
+          </p>
 
-          <div
-            v-if="profile"
-            class="mt-4 flex flex-wrap gap-2.5"
-          >
-            <VChip
-              :label="profile.status_akun"
-              :variant="accountChipVariant"
-              class="!px-3 !py-2 !text-[13px]"
-            >
+          <div v-if="profile" class="mt-4 flex flex-wrap gap-2.5">
+            <VChip :label="profile.status_akun" :variant="accountChipVariant" class="!px-3 !py-2 !text-[13px]">
               <template #icon>
-                <CheckCircle2 class="h-4 w-4 text-[#3F9760]" />
+                <CheckCircle2 class="h-4 w-4 text-[var(--app-accent)]" />
               </template>
             </VChip>
 
-            <VChip
-              :label="`Role: ${roleLabel}`"
-              variant="tertiary"
-              class="!px-3 !py-2 !text-[13px]"
-            >
+            <VChip :label="`Role: ${roleLabel}`" variant="tertiary" class="!px-3 !py-2 !text-[13px]">
               <template #icon>
-                <UsersRound class="h-4 w-4 text-[#3F9760]" />
+                <UsersRound class="h-4 w-4 text-[var(--app-accent)]" />
               </template>
             </VChip>
 
@@ -124,24 +316,21 @@ onMounted(() => {
               class="!px-3 !py-2 !text-[13px]"
             >
               <template #icon>
-                <ShieldCheck class="h-4 w-4 text-[#3F9760]" />
+                <ShieldCheck class="h-4 w-4 text-[var(--app-accent)]" />
               </template>
             </VChip>
           </div>
         </div>
 
         <!-- Loading -->
-        <VCard
-          v-if="profileStore.loading"
-          paddingClass="p-4"
-        >
-          <p class="text-[12px] text-slate-600">Memuat data profil...</p>
+        <VCard v-if="profileStore.loading" paddingClass="p-4">
+          <p class="text-[12px] text-[var(--app-muted)]">Memuat data profil...</p>
         </VCard>
 
         <!-- Error -->
         <div
           v-else-if="profileStore.error"
-          class="rounded-2xl border border-red-200 bg-red-50 p-4 text-[12px] text-red-700 shadow-sm"
+          class="rounded-2xl border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-4 text-[12px] text-[var(--app-danger)] shadow-sm"
         >
           {{ profileStore.error }}
         </div>
@@ -153,46 +342,96 @@ onMounted(() => {
             <VCard paddingClass="p-4">
               <div class="flex flex-col items-center text-center">
                 <div
-                  class="relative mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-inner ring-8 ring-white"
+                  class="relative mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-[var(--app-card)] shadow-inner ring-8 ring-[var(--app-card)]"
                 >
-                  <div class="flex h-20 w-20 items-center justify-center rounded-full bg-[#E8F3EB]">
-                    <UserRound class="h-12 w-12 text-[#3F9760]" />
+                  <div
+                    v-if="avatarPreview || profile?.avatar_url"
+                    class="flex h-20 w-20 items-center justify-center rounded-full overflow-hidden"
+                  >
+                    <img
+                      :src="avatarPreview || profile?.avatar_url || undefined"
+                      alt="Avatar"
+                      class="h-full w-full object-cover"
+                    />
                   </div>
+                  <div
+                    v-else
+                    class="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--app-soft-card)]"
+                  >
+                    <UserRound class="h-12 w-12 text-[var(--app-accent)]" />
+                  </div>
+
+                  <!-- Upload overlay -->
+                  <button
+                    type="button"
+                    class="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                    @click="triggerAvatarUpload"
+                    title="Ubah foto profil"
+                  >
+                    <Camera class="h-6 w-6 text-[var(--app-text-inverse)]" />
+                  </button>
                 </div>
 
-                <h2 class="text-xl font-bold text-[#0C4923]">
+                <input
+                  ref="avatarInputRef"
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  class="hidden"
+                  @change="handleAvatarFileChange"
+                />
+
+                <!-- Avatar upload preview & actions -->
+                <div v-if="avatarPreview" class="mt-3 flex flex-col items-center gap-2">
+                  <p class="text-[11px] text-[var(--app-muted)]">Pratinjau foto baru</p>
+                  <div class="flex items-center gap-2">
+                    <VButton
+                      variant="primary"
+                      class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
+                      :loading="isUploadingAvatar"
+                      @click="handleUploadAvatar"
+                    >
+                      Simpan
+                    </VButton>
+                    <VButton
+                      variant="secondary"
+                      class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
+                      @click="cancelAvatarUpload"
+                    >
+                      Batal
+                    </VButton>
+                  </div>
+                </div>
+                <div v-else></div>
+
+                <h2 class="text-xl font-bold text-[var(--app-accent)]">
                   {{ displayValue(profile.nama) }}
                 </h2>
 
                 <div class="mt-2">
-                  <VChip
-                    :label="roleLabel"
-                    variant="primary"
-                    class="!px-3 !py-1.5 !text-[12px]"
-                  />
+                  <VChip :label="roleLabel" variant="primary" class="!px-3 !py-1.5 !text-[12px]" />
                 </div>
 
-                <div class="my-4 h-px w-full bg-white/70"></div>
+                <div class="my-4 h-px w-full bg-[var(--app-card-border)]"></div>
 
                 <div class="flex w-full flex-col gap-3 text-left">
                   <div class="flex items-center gap-3">
                     <div
-                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]"
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
                     >
                       <Mail class="h-4.5 w-4.5" />
                     </div>
-                    <p class="truncate text-[12px] text-slate-600">
+                    <p class="truncate text-[12px] text-[var(--app-muted)]">
                       {{ displayValue(profile.email) }}
                     </p>
                   </div>
 
                   <div class="flex items-center gap-3">
                     <div
-                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]"
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
                     >
                       <Phone class="h-4.5 w-4.5" />
                     </div>
-                    <p class="text-[12px] text-slate-600">
+                    <p class="text-[12px] text-[var(--app-muted)]">
                       {{ displayValue(profile.nomor_hp) }}
                     </p>
                   </div>
@@ -216,14 +455,14 @@ onMounted(() => {
             <VCard paddingClass="p-4">
               <div class="mb-4 flex items-center gap-2.5">
                 <div
-                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]"
+                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
                 >
                   <ClipboardCheck class="h-4.5 w-4.5" />
                 </div>
-                <h2 class="text-lg font-bold text-[#0C4923]">Informasi Pribadi</h2>
+                <h2 class="text-lg font-bold text-[var(--app-accent)]">Informasi Pribadi</h2>
               </div>
 
-              <div class="overflow-hidden rounded-2xl border border-white/70 bg-white/50">
+              <div class="overflow-hidden rounded-2xl border border-[var(--app-card-border)] bg-[var(--app-card)]">
                 <div class="profile-row">
                   <div class="profile-label">
                     <UserRound class="profile-icon" />
@@ -246,14 +485,6 @@ onMounted(() => {
                     <span>Email</span>
                   </div>
                   <p class="profile-value break-all">{{ displayValue(profile.email) }}</p>
-                </div>
-
-                <div class="profile-row">
-                  <div class="profile-label">
-                    <Phone class="profile-icon" />
-                    <span>Nomor Telepon</span>
-                  </div>
-                  <p class="profile-value">{{ displayValue(profile.nomor_hp) }}</p>
                 </div>
 
                 <div class="profile-row">
@@ -285,30 +516,26 @@ onMounted(() => {
                 <VButton
                   variant="primary"
                   class="!rounded-xl !px-4 !py-2 !text-[12px]"
-                  disabled
                   @click="handleEditProfile"
                 >
                   <template #rightIcon>
                     <Pencil class="h-3.5 w-3.5" />
                   </template>
-                  Ubah Profil
+                  Edit Profil
                 </VButton>
               </div>
             </VCard>
           </div>
 
           <!-- Account Summary -->
-          <VCard
-            paddingClass="p-4"
-            class="mt-4"
-          >
+          <VCard paddingClass="p-4" class="mt-4">
             <div class="mb-4 flex items-center gap-2.5">
               <div
-                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]"
+                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
               >
                 <BriefcaseBusiness class="h-4.5 w-4.5" />
               </div>
-              <h2 class="text-lg font-bold text-[#0C4923]">Ringkasan Akun</h2>
+              <h2 class="text-lg font-bold text-[var(--app-accent)]">Ringkasan Akun</h2>
             </div>
 
             <div class="grid gap-3 md:grid-cols-3">
@@ -328,14 +555,18 @@ onMounted(() => {
                 </div>
                 <div>
                   <p class="summary-title">Status Akun</p>
-                  <p class="summary-value text-[#3F9760]">{{ profile.status_akun }}</p>
+                  <p class="summary-value text-[var(--app-accent)]">{{ profile.status_akun }}</p>
                 </div>
               </div>
 
               <div class="summary-card">
                 <div
                   class="summary-icon"
-                  :class="completenessVariant === 'secondary' ? '!bg-[#F2E0D0] !text-[#9A5B2F]' : ''"
+                  :class="
+                    completenessVariant === 'secondary'
+                      ? '!bg-[var(--app-warning-bg)] !text-[var(--app-warning)]'
+                      : ''
+                  "
                 >
                   <ClipboardCheck class="h-5 w-5" />
                 </div>
@@ -343,7 +574,11 @@ onMounted(() => {
                   <p class="summary-title">Kelengkapan Data</p>
                   <p
                     class="summary-value"
-                    :class="profile.is_profile_complete ? 'text-[#3F9760]' : 'text-[#9A5B2F]'"
+                    :class="
+                      profile.is_profile_complete
+                        ? 'text-[var(--app-accent)]'
+                        : 'text-[var(--app-warning)]'
+                    "
                   >
                     {{ profile.kelengkapan_data }}
                   </p>
@@ -354,6 +589,42 @@ onMounted(() => {
         </template>
       </div>
     </section>
+
+    <!-- Edit Profile Modal -->
+    <VModal
+      :isOpen="showEditModal"
+      title="Edit Profil"
+      @update:isOpen="showEditModal = $event"
+      maxWidthClass="max-w-[440px]"
+      :buttons="[
+        { label: 'Batal', variant: 'secondary', action: closeEditModal },
+        { label: 'Simpan', variant: 'primary', action: handleSaveProfile },
+      ]"
+    >
+      <div class="w-full flex flex-col gap-4 mt-2 text-left">
+        <div
+          v-if="editError"
+          class="text-[12px] text-[var(--app-danger)] bg-[var(--app-danger-bg)] border border-[var(--app-danger-border)] p-3 rounded-lg"
+        >
+          {{ editError }}
+        </div>
+
+        <VInputField v-model="editForm.nama" label="Nama Lengkap" placeholder="Masukkan nama lengkap" />
+
+        <VInputField v-model="editForm.tanggal_lahir" label="Tanggal Lahir" type="date" />
+
+        <VInputField v-model="editForm.email" label="Email" type="email" placeholder="Masukkan email" />
+
+        <VInputField v-model="editForm.alamat" label="Alamat" placeholder="Masukkan alamat" />
+
+        <VInputField
+          v-model="editForm.nomor_hp"
+          label="Nomor Telepon"
+          type="tel"
+          placeholder="Masukkan nomor telepon"
+        />
+      </div>
+    </VModal>
   </DashboardLayout>
 </template>
 
@@ -364,7 +635,7 @@ onMounted(() => {
   gap: 12px;
   align-items: center;
   padding: 11px 14px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid var(--app-card-border);
 }
 
 .profile-row:last-child {
@@ -375,7 +646,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #64748b;
+  color: var(--app-muted);
   font-size: 12px;
   font-weight: 500;
 }
@@ -383,11 +654,11 @@ onMounted(() => {
 .profile-icon {
   height: 16px;
   width: 16px;
-  color: #3f9760;
+  color: var(--app-accent);
 }
 
 .profile-value {
-  color: #111827;
+  color: var(--app-heading);
   font-size: 12px;
   font-weight: 600;
 }
@@ -397,12 +668,10 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  background: rgba(249, 253, 251, 0.65);
+  border: 1px solid var(--app-card-border);
+  background: var(--app-card);
   padding: 14px;
-  box-shadow:
-    inset 0 1px 2px rgba(255, 255, 255, 0.5),
-    0 1px 4px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
 }
 
 .summary-icon {
@@ -413,20 +682,20 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #c7e1d0;
-  color: #0c4923;
+  background: var(--app-soft-card);
+  color: var(--app-accent);
 }
 
 .summary-title {
   font-size: 12px;
-  color: #64748b;
+  color: var(--app-muted);
 }
 
 .summary-value {
   margin-top: 2px;
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--app-heading);
 }
 
 @media (max-width: 768px) {

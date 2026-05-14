@@ -233,15 +233,15 @@ const formDataEntries = computed(() => {
 function getStatusClass(status: string): string {
   switch (status) {
     case 'Disetujui':
-      return 'bg-[#3f9760] text-white'
+      return 'bg-[var(--app-success)] text-[var(--app-text-inverse)]'
     case 'Menunggu Verifikasi Kepsek':
-      return 'bg-[#b7791f] text-white'
+      return 'bg-[var(--app-warning)] text-[var(--app-text-inverse)]'
     case 'Diproses':
-      return 'bg-[#2f6f93] text-white'
+      return 'bg-[var(--app-info)] text-[var(--app-text-inverse)]'
     case 'Ditolak':
-      return 'bg-[#A0453B] text-white'
+      return 'bg-[var(--app-danger)] text-[var(--app-text-inverse)]'
     default:
-      return 'bg-[#6b7280] text-white'
+      return 'bg-[var(--app-muted)] text-[var(--app-text-inverse)]'
   }
 }
 
@@ -358,99 +358,150 @@ onMounted(async () => {
       <SIMPSidebar />
     </template>
 
-    <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans']">
+    <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans'] bg-[var(--app-bg)] text-[var(--app-text)]">
       <section class="mb-4">
-        <button type="button" class="flex items-center gap-2 text-[#71757b] hover:text-[#111827] transition-colors"
-          @click="goBack">
+        <button
+          type="button"
+          class="flex items-center gap-2 text-[var(--app-muted)] hover:text-[var(--app-heading)] transition-colors"
+          @click="goBack"
+        >
           <ArrowLeft class="h-5 w-5" />
           <span class="text-[14px] font-medium">Kembali</span>
         </button>
       </section>
 
       <section>
-        <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
-        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
-          @close="successMessage = ''" />
+        <VAlert
+          v-if="generalError"
+          type="error"
+          title="Gagal"
+          :message="generalError"
+          @close="generalError = ''"
+        />
+        <VAlert
+          v-if="successMessage"
+          type="success"
+          title="Berhasil"
+          :message="successMessage"
+          @close="successMessage = ''"
+        />
       </section>
 
-      <section v-if="loading"
-        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section
+        v-if="loading"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
+      >
         Memuat detail surat...
       </section>
 
       <section v-else-if="surat" class="flex flex-col gap-6">
-        <article class="rounded-[20px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+        <article
+          class="rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-6 shadow-sm"
+        >
           <div class="flex items-start justify-between gap-4 mb-3">
-            <h3 class="text-[18px] font-bold leading-[1.4] text-[#111827] flex-1">
+            <h3 class="text-[18px] font-bold leading-[1.4] text-[var(--app-heading)] flex-1">
               {{ getLetterTitle() }}
             </h3>
             <span
-              :class="['px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap', getStatusClass(surat.status)]">
+              :class="[
+                'px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap',
+                getStatusClass(surat.status),
+              ]"
+            >
               {{ surat.status }}
             </span>
           </div>
 
           <div class="flex flex-wrap items-center gap-5 mb-2">
-            <div class="flex items-center gap-1.5 text-[14px] text-[#6b7280]">
-              <Folder class="w-4 h-4 text-[#9ca3af]" />
+            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
+              <Folder class="w-4 h-4 text-[var(--app-muted)]" />
               <span>{{ surat.kategori || '-' }}</span>
             </div>
 
-            <div class="flex items-center gap-1.5 text-[14px] text-[#6b7280]">
-              <User class="w-4 h-4 text-[#9ca3af]" />
+            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
+              <User class="w-4 h-4 text-[var(--app-muted)]" />
               <span>{{ surat.nama_pengaju }}</span>
             </div>
 
-            <div class="flex items-center gap-1.5 text-[14px] text-[#6b7280]">
-              <Calendar class="w-4 h-4 text-[#9ca3af]" />
+            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
+              <Calendar class="w-4 h-4 text-[var(--app-muted)]" />
               <span>{{ formatDate(surat.tanggal_pengajuan) }}</span>
             </div>
           </div>
-
         </article>
 
-        <section class="rounded-[20px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-          <h2 class="text-[18px] font-bold text-[#111827] mb-4">Data Form</h2>
+        <section
+          class="rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-6 shadow-sm"
+        >
+          <h2 class="text-[18px] font-bold text-[var(--app-heading)] mb-4">Data Form</h2>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
             <template v-if="formDataEntries.length > 0">
               <div v-for="entry in formDataEntries" :key="entry.key" class="min-w-0">
-                <p class="text-[13px] leading-[145%] text-[#6b7280]">{{ entry.label }}</p>
-                <p class="mt-1 text-[18px] leading-[150%] font-semibold text-[#111827] break-words">{{ entry.value }}
+                <p class="text-[13px] leading-[145%] text-[var(--app-muted)]">
+                  {{ entry.label }}
+                </p>
+                <p class="mt-1 text-[18px] leading-[150%] font-semibold text-[var(--app-heading)] break-words">
+                  {{ entry.value }}
                 </p>
               </div>
             </template>
 
             <template v-else>
-              <div class="md:col-span-3 text-[14px] text-[#6b7280] italic">Tidak ada data form yang tersedia.</div>
+              <div class="md:col-span-3 text-[14px] text-[var(--app-muted)] italic">
+                Tidak ada data form yang tersedia.
+              </div>
             </template>
           </div>
         </section>
 
-        <section v-if="isRejectedStatus && rejectionReason"
-          class="rounded-[20px] border border-[#f3d2ce] bg-[#fff6f5] px-6 py-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-          <h2 class="text-[18px] font-bold text-[#7a2e26] mb-2">Alasan Penolakan</h2>
-          <p class="text-[15px] leading-[155%] text-[#92392f] break-words">{{ rejectionReason }}</p>
+        <section
+          v-if="isRejectedStatus && rejectionReason"
+          class="rounded-[20px] border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] px-6 py-5 shadow-sm"
+        >
+          <h2 class="text-[18px] font-bold text-[var(--app-danger)] mb-2">
+            Alasan Penolakan
+          </h2>
+          <p class="text-[15px] leading-[155%] text-[var(--app-danger)] break-words">
+            {{ rejectionReason }}
+          </p>
         </section>
 
         <div v-if="canVerify" class="flex items-center justify-center gap-4">
-          <VButton variant="secondary" class="!rounded-full !px-6 w-150" :disabled="actionLoading"
-            @click="openRejectModal">
+          <VButton
+            variant="secondary"
+            class="!rounded-full !px-6 w-150"
+            :disabled="actionLoading"
+            @click="openRejectModal"
+          >
             Tolak
           </VButton>
 
-          <VButton variant="primary" class="!rounded-full !px-6 w-150" :disabled="actionLoading" @click="handleApprove">
+          <VButton
+            variant="primary"
+            class="!rounded-full !px-6 w-150"
+            :disabled="actionLoading"
+            @click="handleApprove"
+          >
             Setujui
           </VButton>
         </div>
       </section>
 
-      <section v-else class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]">
+      <section
+        v-else
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
+      >
         Surat tidak ditemukan.
       </section>
     </div>
 
-    <VerificationRejectModal :isOpen="isRejectModalOpen" :loading="actionLoading" :errorMessage="rejectNotesError"
-      @update:isOpen="closeRejectModal" @submit="handleReject" />
+    <VerificationRejectModal
+      :isOpen="isRejectModalOpen"
+      :loading="actionLoading"
+      :errorMessage="rejectNotesError"
+      @update:isOpen="closeRejectModal"
+      @submit="handleReject"
+    />
   </DashboardLayout>
 </template>

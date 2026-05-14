@@ -5,6 +5,8 @@ import { useStudentStore, type Student } from '@/stores/students'
 import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
+import VDropdown from '@/components/common/VDropdown.vue'
+import VTextareaField from '@/components/common/VTextareaField.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -41,6 +43,11 @@ const errors = reactive<Record<string, string>>({
 
 const submitError = ref('')
 
+const genderOptions = [
+  { label: 'Laki-laki', value: 'L' },
+  { label: 'Perempuan', value: 'P' },
+]
+
 const resetForm = () => {
   if (props.student) {
     form.nama = props.student.nama || ''
@@ -60,6 +67,7 @@ const resetForm = () => {
   errors.jenis_kelamin = ''
   errors.kelas = ''
   errors.tanggal_lahir = ''
+  submitError.value = ''
 }
 
 watch(
@@ -176,33 +184,21 @@ const handleSubmit = async () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[720px] max-h-[calc(100vh-2rem)] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)] flex flex-col"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
+            class="student-modal-panel relative w-full max-w-[720px] max-h-[calc(100vh-2rem)] flex flex-col"
           >
             <div class="flex h-full flex-col gap-5 min-h-0">
               <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="text-[#111827] hover:opacity-70 transition"
-                >
+                <button type="button" @click="closeModal" class="student-modal-close">
                   <X class="w-5 h-5" />
                 </button>
               </div>
 
               <div class="flex flex-col items-center gap-2">
-                <Edit class="w-12 h-12 text-[#3f9760]" />
-                <b class="text-[24px] leading-[120%]">Edit Data</b>
+                <Edit class="w-12 h-12 text-[var(--app-accent)]" />
+
+                <b class="student-modal-title text-[1.7rem] leading-[120%]">
+                  Edit Data
+                </b>
               </div>
 
               <div class="flex-1 overflow-y-auto pr-1 -mr-1">
@@ -240,21 +236,19 @@ const handleSubmit = async () => {
                   />
 
                   <div class="flex flex-col gap-2">
-                    <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+                    <label class="text-[1rem] font-semibold leading-[120%] text-[var(--app-modal-text)]">
                       Jenis Kelamin
                     </label>
-                    <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
-                      <select
-                        v-model="form.jenis_kelamin"
-                        class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none"
-                      >
-                        <option value="L">Laki-laki</option>
-                        <option value="P">Perempuan</option>
-                      </select>
-                    </div>
+
+                    <VDropdown
+                      v-model="form.jenis_kelamin"
+                      :options="genderOptions"
+                      placeholder="Pilih jenis kelamin"
+                    />
+
                     <div
                       v-if="errors.jenis_kelamin"
-                      class="text-[12px] font-light leading-[150%] bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent"
+                      class="text-[0.85rem] font-light leading-[150%] text-[var(--app-danger)]"
                     >
                       {{ errors.jenis_kelamin }}
                     </div>
@@ -281,25 +275,19 @@ const handleSubmit = async () => {
                     placeholder="Masukkan no hp"
                   />
 
-                  <div class="md:col-span-2 flex flex-col gap-2">
-                    <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
-                      Alamat
-                    </label>
-                    <div class="rounded-[12px] p-[2px] bg-[#b2b5ba]">
-                      <textarea
-                        v-model="form.alamat"
-                        rows="3"
-                        placeholder="Masukkan alamat"
-                        class="w-full rounded-[10px] bg-white px-[19px] py-[14px] text-[16px] leading-[150%] text-[#111827] outline-none resize-none"
-                      />
-                    </div>
-                  </div>
+                  <VTextareaField
+                    v-model="form.alamat"
+                    label="Alamat"
+                    placeholder="Masukkan alamat"
+                    :rows="3"
+                    class="md:col-span-2"
+                  />
 
                   <p
-                    v-if="studentStore.error"
-                    class="md:col-span-2 text-[13px] text-[#A0453B] font-medium"
+                    v-if="submitError || studentStore.error"
+                    class="md:col-span-2 text-[0.93rem] text-[var(--app-danger)] font-medium"
                   >
-                    {{ submitError }}
+                    {{ submitError || studentStore.error }}
                   </p>
                 </div>
               </div>
@@ -330,3 +318,31 @@ const handleSubmit = async () => {
     </transition>
   </Teleport>
 </template>
+
+<style scoped>
+.student-modal-panel {
+  overflow: visible;
+  border: 0.5px solid var(--app-modal-border);
+  border-radius: 24px;
+  background: var(--app-modal-bg);
+  color: var(--app-modal-text);
+  padding: 28px 32px;
+  box-shadow:
+    0px -2px 4px rgba(0, 0, 0, 0.2),
+    0px 2px 4px rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.student-modal-close,
+.student-modal-title {
+  color: var(--app-modal-text);
+}
+
+.student-modal-close {
+  transition: opacity 0.2s ease;
+}
+
+.student-modal-close:hover {
+  opacity: 0.7;
+}
+</style>

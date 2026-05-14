@@ -104,9 +104,9 @@ async function fetchTemplateDetail() {
     isLoadingDetail.value = true
     generalError.value = ''
 
-    const result = await templateStore.fetchTemplateDetail(idTemplate)
+    const result = (await templateStore.fetchTemplateDetail(idTemplate)) as any
 
-    if (!result.ok || !result.data) {
+    if (!result.ok || !('data' in result) || !result.data) {
       generalError.value = result.error || 'Gagal mengambil detail template.'
       return
     }
@@ -124,7 +124,7 @@ async function submitUpdate() {
 
   const idTemplate = Number(route.params.id)
 
-  const result = await templateStore.updateTemplate(idTemplate, {
+  const result = (await templateStore.updateTemplate(idTemplate, {
     nama_template: form.nama_template,
     jenis: form.jenis,
     is_active: form.is_active,
@@ -132,7 +132,7 @@ async function submitUpdate() {
     konten_template: form.konten_template,
     allowed_roles: form.allowed_roles,
     file_template: form.file_template,
-  })
+  })) as any
 
   if (!result.ok) {
     if (result.details && typeof result.details === 'object' && !Array.isArray(result.details)) {

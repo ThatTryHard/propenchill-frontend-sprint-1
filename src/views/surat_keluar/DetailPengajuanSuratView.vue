@@ -8,10 +8,10 @@
       <div class="main-content-wrapper">
         <div class="header-section mb-10">
           <div class="title-group">
-            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[#111827]">
+            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[var(--app-heading)]">
               Detail Surat Keluar
             </h1>
-            <p class="text-[13px] md:text-[14px] leading-[145%] text-[#858a91] mt-1">
+            <p class="text-[13px] md:text-[14px] leading-[145%] text-[var(--app-muted)] mt-1">
               Berikut detail surat keluar
             </p>
           </div>
@@ -81,12 +81,7 @@
                 </div>
               </div>
 
-              <VButton
-                v-if="showEditButton"
-                variant="tertiary"
-                class="btn-edit"
-                @click="navigateToRevision"
-              >
+              <VButton v-if="showEditButton" variant="tertiary" class="btn-edit" @click="navigateToRevision">
                 {{ editButtonLabel }}
               </VButton>
             </div>
@@ -101,7 +96,7 @@
 
               <template v-else>
                 <div class="info-block" style="grid-column: span 3">
-                  <div class="info-value" style="color: #64748b; font-style: italic">
+                  <div class="info-value" style="color: var(--app-muted); font-style: italic">
                     Tidak ada data tambahan yang diisi.
                   </div>
                 </div>
@@ -152,21 +147,11 @@
           </section>
 
           <div class="actions-row">
-            <VButton
-              v-if="isApproved"
-              variant="primary"
-              class="btn-primary"
-              @click="handleDownload"
-            >
+            <VButton v-if="isApproved" variant="primary" class="btn-primary" @click="handleDownload">
               Unduh Surat
             </VButton>
 
-            <VButton
-              v-if="isCancelable"
-              variant="primary"
-              class="btn-danger"
-              @click="showCancelDialog = true"
-            >
+            <VButton v-if="isCancelable" variant="primary" class="btn-danger" @click="showCancelDialog = true">
               Batalkan Pengajuan
             </VButton>
           </div>
@@ -174,15 +159,9 @@
       </div>
     </main>
 
-    <ConfirmationModal
-      v-model:isOpen="showCancelDialog"
-      title="Batalkan Pengajuan"
+    <ConfirmationModal v-model:isOpen="showCancelDialog" title="Batalkan Pengajuan"
       description="Apakah Anda yakin ingin membatalkan pengajuan surat ini? Tindakan ini tidak dapat dikembalikan."
-      confirmText="Iya"
-      cancelText="Tidak"
-      :loading="isCancelling"
-      @confirm="cancelRequest"
-    />
+      confirmText="Iya" cancelText="Tidak" :loading="isCancelling" @confirm="cancelRequest" />
   </DashboardLayout>
 </template>
 
@@ -615,10 +594,10 @@ const getStatusClass = (status: unknown) => {
 const formatDate = (d: unknown) =>
   d
     ? new Date(String(d)).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
     : '-'
 const formatDateTime = (d: unknown) => (d ? new Date(String(d)).toLocaleString('id-ID') : '-')
 
@@ -627,14 +606,25 @@ const handleDownload = async () => {
     const response = await api.get(`/api/letters/requests/${detail.value.id_pengajuan}/download`, {
       responseType: 'blob',
     })
-    const url = window.URL.createObjectURL(new Blob([response.data]))
+
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    })
+
+    const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `surat_${detail.value.id_pengajuan}.pdf`)
+
+    const namaSurat = detail.value.template_nama || 'Surat_Pengajuan'
+    const namaFileRapi = namaSurat.replace(/\s+/g, '_')
+
+    link.setAttribute('download', `${namaFileRapi}_${detail.value.id_pengajuan}.docx`)
+
     document.body.appendChild(link)
     link.click()
     link.remove()
     window.URL.revokeObjectURL(url)
+
   } catch (error: unknown) {
     console.error('Download error:', error)
     const apiError = error as AxiosError<{ error?: string }>
@@ -655,21 +645,28 @@ onMounted(fetchDetail)
   width: 100%;
   max-width: 1440px;
 }
+
 .layout-bg {
-  background: var(--Gradient-Primary-Background, linear-gradient(180deg, #fff 0%, #eaf7ef 100%));
+  background: var(--app-bg);
+  color: var(--app-text);
 }
+
 .card {
-  background: #ffffff;
+  background: var(--app-card);
+  border: 1px solid var(--app-card-border);
   border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08);
+  color: var(--app-text);
 }
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 32px;
 }
+
 .header-left {
   display: flex;
   align-items: center;
@@ -680,20 +677,19 @@ onMounted(fetchDetail)
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: var(--gradient-gradient-10, linear-gradient(91deg, #3f9760 0%, #d1955f 100%));
+  background: var(--app-accent);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
+
 .status-icon-card {
-  background: var(
-    --gradient-gradient-10,
-    linear-gradient(91deg, #3f9760 0%, #d1955f 100%)
-  ) !important;
+  background: var(--app-accent) !important;
 }
+
 .icon-white {
-  color: white;
+  color: var(--app-text-inverse);
   width: 26px;
   height: 26px;
 }
@@ -701,12 +697,13 @@ onMounted(fetchDetail)
 .card-title {
   font-size: 20px;
   font-weight: 700;
-  color: #111827;
+  color: var(--app-heading);
   margin: 0 0 4px 0;
 }
+
 .card-id {
   font-size: 14px;
-  color: #64748b;
+  color: var(--app-muted);
   margin: 0;
 }
 
@@ -722,47 +719,43 @@ onMounted(fetchDetail)
   text-align: center;
   white-space: nowrap;
 }
+
 .status-chip.status-pending {
-  background: var(--Primary-Primary-600, #f59e0b);
-  box-shadow:
-    0 2.526px 5.053px 0 rgba(255, 255, 255, 0.4) inset,
-    0 -2.526px 5.053px 0 rgba(0, 0, 0, 0.2) inset;
-  backdrop-filter: blur(6.315px);
-  color: #ffffff;
+  background: var(--app-warning);
+  color: var(--app-text-inverse);
 }
+
 .status-success {
-  background: radial-gradient(77.91% 77.91% at 50% 100%, #4ade80 4.91%, #15803d 100%);
-  box-shadow:
-    0 2.526px 5.053px 0 rgba(255, 255, 255, 0.4) inset,
-    0 -2.526px 5.053px 0 rgba(0, 0, 0, 0.2) inset;
-  backdrop-filter: blur(6.315px);
-  color: #ffffff;
+  background: var(--app-success);
+  color: var(--app-text-inverse);
 }
+
 .status-danger {
-  background: radial-gradient(77.91% 77.91% at 50% 100%, #f87171 4.91%, #b91c1c 100%);
-  box-shadow:
-    0 2.526px 5.053px 0 rgba(255, 255, 255, 0.4) inset,
-    0 -2.526px 5.053px 0 rgba(0, 0, 0, 0.2) inset;
-  backdrop-filter: blur(6.315px);
-  color: #ffffff;
+  background: var(--app-danger);
+  color: var(--app-text-inverse);
 }
+
 .status-default {
-  background-color: #e2e8f0;
-  color: #475569;
+  background: var(--app-soft-card);
+  color: var(--app-text);
+  border: 1px solid var(--app-card-border);
 }
 
 .info-grid {
   display: grid;
   gap: 24px;
 }
+
 .info-grid.three-cols {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
+
 .info-block {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
+
 .card-header-with-action {
   display: flex;
   align-items: center;
@@ -773,36 +766,39 @@ onMounted(fetchDetail)
 .section-title {
   font-size: 18px;
   font-weight: 700;
-  color: #111827;
+  color: var(--app-heading);
   margin: 0;
 }
+
 .section-subtitle {
   margin: 6px 0 0;
-  color: #64748b;
+  color: var(--app-muted);
   font-size: 14px;
   line-height: 1.6;
 }
+
 .btn-edit {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 12px 18px;
   border-radius: 99px;
-  border: 1px solid #d1d5db;
-  background: #f8fafc;
-  color: #0f172a;
+  border: 1px solid var(--app-card-border);
+  background: var(--app-card);
+  color: var(--app-heading);
   font-weight: 700;
   cursor: pointer;
 }
 
 .info-label {
   font-size: 13px;
-  color: #64748b;
+  color: var(--app-muted);
   font-weight: 500;
 }
+
 .info-value {
   font-size: 16px;
-  color: #0f172a;
+  color: var(--app-heading);
   font-weight: 600;
   line-height: 1.5;
 }
@@ -810,26 +806,30 @@ onMounted(fetchDetail)
 .mt-6 {
   margin-top: 24px;
 }
+
 .status-summary-card {
   display: flex;
   justify-content: center;
   width: 100%;
   margin-top: 24px;
 }
+
 .compact-status-card {
   display: flex;
   width: 100%;
   max-width: 520px;
-  background: #ffffff;
+  background: var(--app-card);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--app-card-border);
 }
+
 .compact-status-border {
   width: 8px;
-  background: #15803d;
+  background: var(--app-accent);
 }
+
 .compact-status-content {
   flex: 1;
   padding: 18px 18px 18px 16px;
@@ -837,58 +837,68 @@ onMounted(fetchDetail)
   flex-direction: column;
   gap: 10px;
 }
+
 .compact-status-header {
   display: flex;
   gap: 12px;
   align-items: center;
 }
+
 .compact-status-avatar {
   width: 40px;
   height: 40px;
   min-width: 40px;
   border-radius: 50%;
-  background: #185f3b;
+  background: var(--app-accent);
   display: grid;
   place-items: center;
 }
+
 .compact-status-avatar-icon {
   width: 18px;
   height: 18px;
-  color: #ffffff;
+  color: var(--app-text-inverse);
 }
+
 .compact-status-meta {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
+
 .compact-status-author {
   margin: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--app-heading);
 }
+
 .compact-status-role {
   margin: 0;
   font-size: 13px;
-  color: #64748b;
+  color: var(--app-muted);
 }
+
 .compact-status-text {
   margin: 0;
-  color: #475569;
+  color: var(--app-text);
   font-size: 14px;
   line-height: 1.6;
 }
+
 .compact-status-footer {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #64748b;
+  color: var(--app-muted);
   font-size: 13px;
 }
+
 .compact-status-clock {
   width: 16px;
   height: 16px;
 }
+
 .status-steps-container {
   width: 100%;
   padding-bottom: 16px;
@@ -900,6 +910,7 @@ onMounted(fetchDetail)
   gap: 16px;
   margin-top: 16px;
 }
+
 .btn-secondary,
 .btn-danger,
 .btn-primary {
@@ -913,22 +924,24 @@ onMounted(fetchDetail)
     transform 0.2s,
     opacity 0.2s;
 }
+
 .btn-secondary {
-  background-color: #e2e8f0;
-  color: #334155;
+  background: var(--app-soft-card);
+  color: var(--app-heading);
+  border: 1px solid var(--app-card-border);
 }
+
 .btn-danger {
   border-radius: 20px;
-  background: radial-gradient(77.91% 77.91% at 50% 100%, #f87171 4.91%, #b91c1c 100%);
-  box-shadow:
-    0 -2px 0 0 rgba(0, 0, 0, 0.4) inset,
-    0 1px 0 0 rgba(248, 250, 252, 0.4) inset;
-  color: #ffffff;
+  background: var(--app-danger);
+  color: var(--app-text-inverse);
 }
+
 .btn-primary {
-  background: linear-gradient(91deg, #3f9760 0%, #0c4923 100%);
-  color: #ffffff;
+  background: var(--app-accent);
+  color: var(--app-text-inverse);
 }
+
 .btn-secondary:hover,
 .btn-danger:hover,
 .btn-primary:hover {
@@ -944,25 +957,31 @@ onMounted(fetchDetail)
   place-items: center;
   z-index: 100;
 }
+
 .modal-card {
   width: min(400px, calc(100% - 32px));
-  background: #ffffff;
+  background: var(--app-modal-bg);
+  color: var(--app-modal-text);
+  border: 1px solid var(--app-modal-border);
   border-radius: 20px;
   padding: 32px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.14);
 }
+
 .modal-title {
   font-size: 20px;
   font-weight: 700;
-  color: #111827;
+  color: var(--app-modal-text);
   margin: 0 0 12px;
 }
+
 .modal-text {
-  color: #475569;
+  color: var(--app-muted);
   font-size: 15px;
   line-height: 1.6;
   margin: 0 0 24px;
 }
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -973,15 +992,18 @@ onMounted(fetchDetail)
   .main-content-wrapper {
     padding: 24px 20px;
   }
+
   .info-grid.three-cols {
     grid-template-columns: 1fr;
   }
+
   .card-header,
   .card-header-with-action {
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
   }
+
   .actions-row {
     flex-direction: column;
     align-items: stretch;

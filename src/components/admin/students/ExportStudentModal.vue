@@ -14,36 +14,45 @@
       @close="alert.show = false"
     />
 
-    <div class="w-full mt-4 flex flex-col gap-4">
+    <div class="mt-4 flex w-full flex-col gap-4">
       <div class="w-full">
         <div
-          class="max-h-[250px] overflow-y-auto border border-[#d4e8da] rounded-xl text-left bg-white shadow-sm"
+          class="max-h-[250px] overflow-y-auto rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card)] text-left shadow-sm"
         >
-          <table class="w-full text-[12px] text-gray-700 whitespace-nowrap">
-            <thead class="bg-[#f0f7f2] text-[#3f9760] sticky top-0 border-b border-[#d4e8da]">
+          <table class="w-full whitespace-nowrap text-[0.85rem] text-[var(--app-text)]">
+            <thead
+              class="sticky top-0 border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)] text-[var(--app-accent)]"
+            >
               <tr>
-                <th class="py-2 px-3 font-semibold">NISN</th>
-                <th class="py-2 px-3 font-semibold">Nomor Induk</th>
-                <th class="py-2 px-3 font-semibold">Nama Lengkap</th>
-                <th class="py-2 px-3 font-semibold">Kelas</th>
+                <th class="px-3 py-2 text-left font-semibold">NISN</th>
+                <th class="px-3 py-2 text-left font-semibold">Nomor Induk</th>
+                <th class="px-3 py-2 text-left font-semibold">Nama Lengkap</th>
+                <th class="px-3 py-2 text-left font-semibold">Kelas</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr v-for="(student, idx) in previewData" :key="idx" class="hover:bg-gray-50">
-                <td class="py-2 px-3">{{ student.nisn || '-' }}</td>
-                <td class="py-2 px-3">{{ student.nis }}</td>
-                <td class="py-2 px-3">{{ student.nama }}</td>
-                <td class="py-2 px-3">{{ student.kelas }}</td>
+
+            <tbody class="divide-y divide-[var(--app-card-border)]">
+              <tr
+                v-for="(student, idx) in previewData"
+                :key="idx"
+                class="transition-colors hover:bg-[var(--app-table-row-hover)]"
+              >
+                <td class="px-3 py-2">{{ student.nisn || '-' }}</td>
+                <td class="px-3 py-2">{{ student.nis }}</td>
+                <td class="px-3 py-2">{{ student.nama }}</td>
+                <td class="px-3 py-2">{{ student.kelas }}</td>
               </tr>
+
               <tr v-if="previewData.length === 0">
-                <td colspan="4" class="py-4 text-center text-gray-500 font-medium">
+                <td colspan="4" class="px-3 py-4 text-center font-medium text-[var(--app-muted)]">
                   Belum ada data siswa.
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p class="text-[11px] text-gray-500 mt-2 italic">
+
+        <p class="mt-2 text-[0.78rem] italic text-[var(--app-muted)]">
           *Menampilkan maksimal 5 baris pertama sebagai preview.
         </p>
       </div>
@@ -66,21 +75,23 @@ const alert = ref({ show: false, type: 'information', message: '' })
 
 const showAlert = (type: string, message: string) => {
   alert.value = { show: true, type, message }
+
   setTimeout(() => {
     alert.value.show = false
   }, 4000)
 }
 
-// Ambil maksimal 5 data pertama dari store untuk di-preview
 const previewData = computed(() => {
   return studentStore.students.slice(0, 5)
 })
 
 const handleExport = async () => {
   isLoading.value = true
+
   try {
     await studentStore.exportStudents()
     showAlert('success', 'File Excel berhasil diunduh!')
+
     setTimeout(() => {
       emit('update:isOpen', false)
     }, 1500)

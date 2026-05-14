@@ -22,6 +22,14 @@ import {
   type FetchTemplatesParams,
 } from '@/stores/letter_templates'
 
+interface UserProfile {
+  nama?: string;
+  full_name?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+}
+
 const templateStore = useLetterTemplateStore()
 const authStore = useAuthStore()
 const route = useRoute()
@@ -105,13 +113,11 @@ const localUser = computed<CurrentUser | null>(() => {
 
 const currentUser = computed<CurrentUser | null>(() => {
   if (localUser.value) return localUser.value
-
   return authStore.user || null
 })
 
 const canManageTemplate = computed(() => {
   const role = currentUser.value?.role || authStore.role || ''
-
   return MANAGE_TEMPLATE_ROLES.includes(role)
 })
 
@@ -205,10 +211,9 @@ function handleRouteSuccessMessage() {
 }
 
 function buildParams(): FetchTemplatesParams {
-  const [sort_by, order] = sortValue.value.split('-') as [
-    'created_at' | 'nama_template',
-    'asc' | 'desc',
-  ]
+  const sortParts = sortValue.value.split('-')
+  const sort_by = sortParts[0] as 'created_at' | 'nama_template'
+  const order = sortParts[1] as 'asc' | 'desc'
 
   return {
     q: search.value.trim() || undefined,
@@ -244,7 +249,6 @@ function stripHtml(html: string | null | undefined) {
   if (!html) return ''
   return html.replace(/<[^>]*>/g, '').trim()
 }
-
 
 function getTemplateDescription(item: LetterTemplateItem) {
   stripHtml(item.konten_template)
@@ -415,16 +419,16 @@ onMounted(() => {
 
 <template>
   <DashboardLayout>
-      <template #sidebar>
-        <SIMPSidebar />
-      </template>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-    <main class="flex-1 px-4 py-8 overflow-y-auto md:px-8 lg:px-10">
+    <main class="flex-1 px-4 py-8 overflow-y-auto md:px-8 lg:px-10 bg-[var(--app-bg)] text-[var(--app-text)]">
       <section class="mb-6 flex flex-col gap-2">
-        <h1 class="text-[24px] font-bold leading-[120%] text-[#111827] md:text-[28px]">
+        <h1 class="text-[24px] font-bold leading-[120%] text-[var(--app-heading)] md:text-[28px]">
           Manajemen Template Surat
         </h1>
-        <p class="text-[13px] leading-[145%] text-[#858a91] md:text-[14px]">
+        <p class="text-[13px] leading-[145%] text-[var(--app-muted)] md:text-[14px]">
           Pilih template surat sesuai kebutuhan Anda
         </p>
 
@@ -446,17 +450,19 @@ onMounted(() => {
       </section>
 
       <section class="mb-8">
-        <div class="rounded-[24px] border border-[#d9e2e7] bg-white/80 px-5 py-5 shadow-sm">
+        <div
+          class="rounded-[24px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-5 py-5 shadow-sm"
+        >
           <div class="flex flex-col gap-4">
             <div class="flex items-center gap-3">
-              <Filter class="h-6 w-6 text-[#111827]" />
-              <h2 class="text-[18px] font-bold leading-[120%] text-[#111827]">
+              <Filter class="h-6 w-6 text-[var(--app-heading)]" />
+              <h2 class="text-[18px] font-bold leading-[120%] text-[var(--app-heading)]">
                 Filter Template
               </h2>
             </div>
 
             <div class="flex flex-col gap-2">
-              <label class="text-[13px] font-semibold leading-[120%] text-[#111827]">
+              <label class="text-[13px] font-semibold leading-[120%] text-[var(--app-heading)]">
                 Pencarian
               </label>
               <VInputField
@@ -469,36 +475,24 @@ onMounted(() => {
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
               <div class="flex flex-col gap-2">
-                <label class="text-[13px] font-semibold leading-[120%] text-[#111827]">
+                <label class="text-[13px] font-semibold leading-[120%] text-[var(--app-heading)]">
                   Jenis
                 </label>
-                <VDropdown
-                  v-model="jenisFilter"
-                  :options="jenisOptions"
-                  placeholder="Pilih jenis"
-                />
+                <VDropdown v-model="jenisFilter" :options="jenisOptions" placeholder="Pilih jenis" />
               </div>
 
               <div class="flex flex-col gap-2">
-                <label class="text-[13px] font-semibold leading-[120%] text-[#111827]">
+                <label class="text-[13px] font-semibold leading-[120%] text-[var(--app-heading)]">
                   Status
                 </label>
-                <VDropdown
-                  v-model="statusFilter"
-                  :options="statusOptions"
-                  placeholder="Pilih status"
-                />
+                <VDropdown v-model="statusFilter" :options="statusOptions" placeholder="Pilih status" />
               </div>
 
               <div class="flex flex-col gap-2">
-                <label class="text-[13px] font-semibold leading-[120%] text-[#111827]">
+                <label class="text-[13px] font-semibold leading-[120%] text-[var(--app-heading)]">
                   Urutkan
                 </label>
-                <VDropdown
-                  v-model="sortValue"
-                  :options="sortOptions"
-                  placeholder="Pilih urutan"
-                />
+                <VDropdown v-model="sortValue" :options="sortOptions" placeholder="Pilih urutan" />
               </div>
             </div>
 
@@ -528,7 +522,7 @@ onMounted(() => {
 
       <section class="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2">
         <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm"
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm"
         >
           <div class="absolute bottom-0 left-0 opacity-90">
             <img
@@ -539,17 +533,17 @@ onMounted(() => {
           </div>
 
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-            <p class="text-[14px] font-semibold text-[#111827]">
+            <p class="text-[14px] font-semibold text-[var(--app-heading)]">
               Total Semua Template
             </p>
-            <h2 class="mt-4 text-[24px] font-bold text-[#111827]">
+            <h2 class="mt-4 text-[24px] font-bold text-[var(--app-heading)]">
               {{ totalTemplates }}
             </h2>
           </div>
         </div>
 
         <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm"
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm"
         >
           <div class="absolute bottom-0 left-0 opacity-70">
             <img
@@ -560,10 +554,10 @@ onMounted(() => {
           </div>
 
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-            <p class="text-[14px] font-semibold text-[#111827]">
+            <p class="text-[14px] font-semibold text-[var(--app-heading)]">
               Total Template Sesuai Role
             </p>
-            <h2 class="mt-4 text-[24px] font-bold text-[#111827]">
+            <h2 class="mt-4 text-[24px] font-bold text-[var(--app-heading)]">
               {{ totalTemplatesByRole }}
             </h2>
           </div>
@@ -571,39 +565,39 @@ onMounted(() => {
       </section>
 
       <section class="mb-4">
-        <h2 class="text-[20px] font-bold leading-[120%] text-[#111827] md:text-[18px]">
+        <h2 class="text-[20px] font-bold leading-[120%] text-[var(--app-heading)] md:text-[18px]">
           Daftar Template Surat
         </h2>
       </section>
 
       <section
         v-if="isLoading"
-        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
       >
         Memuat data template...
       </section>
 
       <section
         v-else-if="templates.length === 0"
-        class="rounded-[28px] border border-[#d9e2e7] bg-white/80 px-6 py-10 text-center text-[#858a91]"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
       >
         Belum ada template surat.
       </section>
 
       <section
         v-else
-        class="rounded-[28px] border border-[#e5ece7] bg-white/60 p-4 md:p-5"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] p-4 md:p-5"
       >
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
           <article
             v-for="item in templates"
             :key="item.id_template"
-            class="relative min-h-[220px] rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] px-5 py-4 shadow-[0px_2px_10px_rgba(17,24,39,0.06)] transition hover:-translate-y-[2px] hover:shadow-[0px_6px_18px_rgba(17,24,39,0.08)]"
+            class="relative min-h-[220px] rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] px-5 py-4 shadow-sm transition hover:-translate-y-[2px] hover:shadow-md"
           >
             <button
               v-if="canManageTemplateItem(item)"
               type="button"
-              class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[#7b8087] transition hover:bg-[#fef3f2] hover:text-[#b42318]"
+              class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-muted)] transition hover:bg-[var(--app-danger-bg)] hover:text-[var(--app-danger)]"
               @click="handleDelete(item.id_template)"
             >
               <Trash2 class="h-4 w-4" />
@@ -611,32 +605,29 @@ onMounted(() => {
 
             <div class="mb-4">
               <span
-                class="inline-flex rounded-full bg-[#4a8b50] px-3 py-[5px] text-[12px] font-semibold leading-none text-white shadow-[0px_1px_2px_rgba(0,0,0,0.08)]"
+                class="inline-flex rounded-full bg-[var(--app-accent)] px-3 py-[5px] text-[12px] font-semibold leading-none text-[var(--app-text-inverse)] shadow-sm"
               >
                 {{ formatJenis(item.jenis) }}
               </span>
             </div>
 
             <div class="pr-10">
-              <h3 class="line-clamp-2 text-[18px] font-bold leading-[125%] text-[#111827]">
+              <h3 class="line-clamp-2 text-[18px] font-bold leading-[125%] text-[var(--app-heading)]">
                 {{ item.nama_template }}
               </h3>
 
-              <p class="mt-4 line-clamp-3 text-[14px] leading-[155%] text-[#2f3743]">
+              <p class="mt-4 line-clamp-3 text-[14px] leading-[155%] text-[var(--app-text)]">
                 {{ getTemplateDescription(item) }}
               </p>
             </div>
 
-            <div class="mt-5 flex flex-col gap-[2px] text-[12px] leading-[155%] text-[#9ba3ad]">
+            <div class="mt-5 flex flex-col gap-[2px] text-[12px] leading-[155%] text-[var(--app-muted)]">
               <p>Dibuat oleh: {{ getCreatedByLabel(item) }}</p>
               <p>Terakhir diubah: {{ formatDate(item.updated_at || item.created_at) }}</p>
             </div>
 
             <div class="mt-6 flex flex-wrap items-center gap-3">
-              <VActionButton
-                variant="secondary"
-                @click="handlePreview(item)"
-              >
+              <VActionButton variant="secondary" @click="handlePreview(item)">
                 Lihat Template
               </VActionButton>
 
@@ -653,8 +644,8 @@ onMounted(() => {
                   type="button"
                   :title="item.is_active ? 'Nonaktifkan template' : 'Aktifkan template'"
                   :class="[
-                    'relative h-[40px] rounded-full border border-[#d9e2e7] shadow-sm transition-all duration-300',
-                    item.is_active ? 'w-[95px] bg-[#4A8B50]' : 'w-[125px] bg-[#F3F4F6]',
+                    'relative h-[40px] rounded-full border border-[var(--app-card-border)] shadow-sm transition-all duration-300',
+                    item.is_active ? 'w-[95px] bg-[var(--app-accent)]' : 'w-[125px] bg-[var(--app-card)]',
                   ]"
                   @click.stop="openToggleModal(item)"
                 >
@@ -662,21 +653,33 @@ onMounted(() => {
                     class="absolute top-1/2 -translate-y-1/2 text-[12px] font-semibold transition-all duration-300"
                     :class="
                       item.is_active
-                        ? 'left-[18px] text-[#F8FAFC]'
-                        : 'right-[16px] text-[#111827]'
+                        ? 'left-[18px] text-[var(--app-text-inverse)]'
+                        : 'right-[16px] text-[var(--app-heading)]'
                     "
                   >
                     {{ item.is_active ? 'Aktif' : 'Non-Aktif' }}
                   </span>
 
                   <span
-                    class="absolute top-[3px] h-[32px] w-[32px] rounded-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.18)] transition-all duration-300"
+                    class="absolute top-[3px] h-[32px] w-[32px] rounded-full bg-[var(--app-bg)] shadow-sm transition-all duration-300"
                     :class="item.is_active ? 'right-[4px]' : 'left-[4px]'"
                   />
                 </button>
               </div>
 
-              <span class="text-[12px] font-medium text-[#9aa1a9]">
+              <span
+                v-else
+                class="inline-flex rounded-full px-2.5 py-[5px] text-[11px] font-semibold leading-none"
+                :class="
+                  item.is_active
+                    ? 'bg-[var(--app-success-bg)] text-[var(--app-success)]'
+                    : 'bg-[var(--app-danger-bg)] text-[var(--app-danger)]'
+                "
+              >
+                {{ item.is_active ? 'Aktif' : 'Nonaktif' }}
+              </span>
+
+              <span class="text-[12px] font-medium text-[var(--app-muted)]">
                 {{ item.template_mode }}
               </span>
             </div>
@@ -686,7 +689,7 @@ onMounted(() => {
 
       <section class="mt-6">
         <div class="flex flex-col gap-3 px-2 md:flex-row md:items-center md:justify-between">
-          <span class="text-sm text-[#858a91]">
+          <span class="text-sm text-[var(--app-muted)]">
             Menampilkan halaman {{ pagination?.page || 1 }} dari {{ pagination?.total_pages || 1 }}
           </span>
 
@@ -725,8 +728,10 @@ onMounted(() => {
       ]"
     >
       <template #icon>
-        <div class="flex items-center justify-center w-[72px] h-[72px] rounded-full bg-[#f9dede]">
-          <Trash2 class="w-[32px] h-[32px] text-[#d92d20]" />
+        <div
+          class="flex items-center justify-center w-[72px] h-[72px] rounded-full bg-[var(--app-danger-bg)]"
+        >
+          <Trash2 class="w-[32px] h-[32px] text-[var(--app-danger)]" />
         </div>
       </template>
     </VModal>

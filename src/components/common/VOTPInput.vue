@@ -8,7 +8,7 @@
       type="text"
       inputmode="numeric"
       maxlength="1"
-      class="w-[45px] h-[55px] sm:w-[50px] sm:h-[60px] text-center text-[24px] font-bold text-[#111827] bg-[#f8fafc] border-2 border-[#d4e8da] rounded-[12px] focus:border-[#3f9760] focus:ring-2 focus:ring-[#3f9760]/20 focus:outline-none transition-all shadow-sm disabled:opacity-50"
+      class="w-[45px] h-[55px] sm:w-[50px] sm:h-[60px] text-center text-[24px] font-bold text-[var(--app-text)] bg-[var(--app-card)] border-2 border-[var(--app-input-border)] rounded-[12px] focus:border-[var(--app-accent)] focus:ring-2 focus:ring-[var(--app-accent)]/20 focus:outline-none transition-all shadow-sm disabled:opacity-50"
       @input="handleInput($event, index)"
       @keydown="handleKeydown($event, index)"
       :disabled="disabled"

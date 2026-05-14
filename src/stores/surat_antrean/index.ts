@@ -5,7 +5,6 @@ export interface SuratAntrean {
   id_surat: number
   id_pengajuan?: number
   nomor_surat: string | null
-  perihal?: string
   perkara: string
   deskripsi: string
   description?: string
@@ -70,6 +69,7 @@ function normalizeSurat(raw: Record<string, any>): SuratAntrean {
     id_surat: Number(raw.id_surat ?? raw.id_pengajuan ?? raw.id ?? 0),
     id_pengajuan: Number(raw.id_pengajuan ?? raw.id_surat ?? raw.id ?? 0),
     nomor_surat: raw.nomor_surat ?? null,
+    nomor_agenda: raw.nomor_agenda ?? null,
     perihal: raw.perihal ?? raw.template_nama ?? raw.perkara ?? '',
     perkara: raw.perkara ?? raw.perihal ?? raw.template_nama ?? '',
     deskripsi: raw.deskripsi ?? raw.description ?? '',

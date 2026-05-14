@@ -7,8 +7,8 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Wali Murid</h1>
-          <p class="text-[#718096] text-sm mt-1">Daftar akun wali murid yang terdaftar</p>
+          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Kelola Wali Murid</h1>
+          <p class="text-[var(--app-muted)] text-sm mt-1">Daftar akun wali murid yang terdaftar</p>
         </div>
         <VButton variant="primary" @click="openCreateModal">
           <template #leftIcon><Plus :size="18" /></template>
@@ -37,39 +37,39 @@
       </div>
 
       <!-- Table -->
-      <div class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 flex flex-col">
+      <div class="bg-[var(--app-card)] rounded-2xl border border-[var(--app-card-border)] overflow-hidden flex-1 flex flex-col">
         <div class="overflow-x-auto flex-1">
           <table class="w-full text-left">
             <thead>
-              <tr class="border-b border-[#e2e8f0] bg-[#f8fafc]">
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">No</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Nama</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Email</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">No. HP</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Tanggal Lahir</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider">Aksi</th>
+              <tr class="border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)]">
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase tracking-wider">No</th>
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase tracking-wider">Nama</th>
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase tracking-wider">Email</th>
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase tracking-wider">No. HP</th>
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase tracking-wider">Tanggal Lahir</th>
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="store.isLoading">
-                <td colspan="6" class="px-6 py-12 text-center text-[#718096]">Memuat data...</td>
+                <td colspan="6" class="px-6 py-12 text-center text-[var(--app-muted)]">Memuat data...</td>
               </tr>
               <tr v-else-if="store.parents.length === 0">
-                <td colspan="6" class="px-6 py-12 text-center text-[#718096]">Tidak ada data wali murid</td>
+                <td colspan="6" class="px-6 py-12 text-center text-[var(--app-muted)]">Tidak ada data wali murid</td>
               </tr>
               <tr
                 v-else
                 v-for="(parent, index) in store.parents"
                 :key="parent.id"
-                class="border-b border-[#f1f5f9] hover:bg-[#f8fafc] transition-colors"
+                class="border-b border-[var(--app-card-border)] hover:bg-[var(--app-bg)] transition-colors"
               >
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">
+                <td class="px-6 py-4 text-[14px] text-[var(--app-text-soft)]">
                   {{ (store.pagination.currentPage - 1) * store.pagination.limit + index + 1 }}
                 </td>
-                <td class="px-6 py-4 text-[14px] font-medium text-[#1a202c]">{{ parent.nama }}</td>
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ parent.email }}</td>
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ parent.no_hp }}</td>
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ parent.tanggal_lahir || '-' }}</td>
+                <td class="px-6 py-4 text-[14px] font-medium text-[var(--app-text)]">{{ parent.nama }}</td>
+                <td class="px-6 py-4 text-[14px] text-[var(--app-text-soft)]">{{ parent.email }}</td>
+                <td class="px-6 py-4 text-[14px] text-[var(--app-text-soft)]">{{ parent.no_hp }}</td>
+                <td class="px-6 py-4 text-[14px] text-[var(--app-text-soft)]">{{ parent.tanggal_lahir || '-' }}</td>
                 <td class="px-6 py-4">
                   <div class="flex justify-center gap-2">
                     <VButton
@@ -101,12 +101,12 @@
         </div>
 
         <!-- Pagination -->
-        <div class="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0]">
-          <span class="text-[13px] text-[#718096]">
+        <div class="flex items-center justify-between px-6 py-4 border-t border-[var(--app-card-border)]">
+          <span class="text-[13px] text-[var(--app-muted)]">
             Halaman {{ store.pagination.currentPage }} dari {{ store.pagination.totalPages }}
             ({{ store.pagination.totalData }} data)
           </span>
-          
+
           <VPagination
             v-model:currentPage="currentPage"
             :totalPages="store.pagination.totalPages"

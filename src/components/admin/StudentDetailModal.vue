@@ -74,22 +74,21 @@ const detailRows = computed(() => [
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="background: linear-gradient(#f8fafc, #f8fafc) padding-box, linear-gradient(243.74deg, rgba(255,255,255,0.05), #ffffff 47.12%, rgba(255,255,255,0.05)) border-box;"
+            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-[var(--app-modal-border)] overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[var(--app-modal-text)] bg-[var(--app-modal-bg)] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
           >
             <div class="flex flex-col gap-5">
               <div class="flex justify-end">
                 <button
                   type="button"
                   @click="closeModal"
-                  class="text-[#111827] hover:opacity-70 transition"
+                  class="text-[var(--app-modal-text)] hover:opacity-70 transition"
                 >
                   <X class="w-5 h-5" />
                 </button>
               </div>
 
               <div class="flex flex-col items-center gap-2">
-                <Eye class="w-12 h-12 text-[#3f9760]" />
+                <Eye class="w-12 h-12 text-[var(--app-accent)]" />
                 <b class="text-[24px] leading-[120%]">Detail Data Siswa</b>
               </div>
 
@@ -100,15 +99,15 @@ const detailRows = computed(() => [
                   :class="item.label === 'Alamat' ? 'md:col-span-2' : ''"
                   class="flex flex-col gap-2"
                 >
-                  <div class="text-[16px] font-semibold text-[#111827]">
+                  <div class="text-[16px] font-semibold text-[var(--app-text)]">
                     {{ item.label }}
                   </div>
 
                   <div
-                    class="rounded-[12px] border-2 border-[#b2b5ba] bg-[#f8fafc] px-[19px] py-[14px] min-h-[52px] flex items-start"
+                    class="rounded-[12px] border-2 border-[var(--app-input-border)] bg-[var(--app-input-bg)] px-[19px] py-[14px] min-h-[52px] flex items-start"
                   >
                     <div
-                      class="w-full text-[16px] leading-[150%] text-[#111827] break-words whitespace-pre-line"
+                      class="w-full text-[16px] leading-[150%] text-[var(--app-text)] break-words whitespace-pre-line"
                     >
                       {{ item.value }}
                     </div>

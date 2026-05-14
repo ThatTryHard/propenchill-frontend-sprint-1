@@ -10,7 +10,7 @@
     <div :class="['relative flex items-center w-full rounded-[12px]', wrapperStyles]">
       <div
         v-if="actualState === 'search'"
-        class="absolute left-[19px] flex items-center text-[#b2b5ba]"
+        class="absolute left-[19px] flex items-center text-[var(--app-input-placeholder)]"
       >
         <SearchIcon class="w-[24px] h-[24px]" />
       </div>
@@ -39,17 +39,17 @@
           v-if="isPassword && !disabled"
           type="button"
           @click="togglePassword"
-          class="text-[#b2b5ba] hover:text-[#111827] focus:outline-none transition-colors"
+          class="text-[var(--app-input-placeholder)] hover:text-[var(--app-text)] focus:outline-none transition-colors"
         >
           <component :is="showPassword ? EyeOffIcon : EyeIcon" class="w-[24px] h-[24px]" />
         </button>
 
-        <XCircleIcon v-else-if="actualState === 'error'" class="w-[24px] h-[24px] text-[#A0453B]" />
+        <XCircleIcon v-else-if="actualState === 'error'" class="w-[24px] h-[24px] text-[var(--app-danger)]" />
         <CheckCircle2Icon
           v-else-if="actualState === 'success'"
-          class="w-[24px] h-[24px] text-[#509664]"
+          class="w-[24px] h-[24px] text-[var(--app-success)]"
         />
-        <LockIcon v-else-if="disabled" class="w-[24px] h-[24px] text-[#b2b5ba]" />
+        <LockIcon v-else-if="disabled" class="w-[24px] h-[24px] text-[var(--app-muted)]" />
       </div>
     </div>
 
@@ -110,19 +110,19 @@ const actualState = computed(() => {
 // STYLING DINAMIS SESUAI LOCOFY LU
 
 const labelStyles = computed(() => {
-  if (actualState.value === 'disabled') return 'text-[#b2b5ba]'
+  if (actualState.value === 'disabled') return 'text-[var(--app-input-placeholder)]'
   if (actualState.value === 'error')
-    return 'bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent'
+    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
   if (actualState.value === 'success')
-    return 'bg-[linear-gradient(91.01deg,#6caf85,#0f5b2b)] bg-clip-text text-transparent'
-  return 'text-[#111827]'
+    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
+  return 'text-[var(--app-text)]'
 })
 
 const messageStyles = computed(() => {
   if (actualState.value === 'error')
-    return 'bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent'
+    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
   if (actualState.value === 'success')
-    return 'bg-[linear-gradient(91.01deg,#6caf85,#0f5b2b)] bg-clip-text text-transparent'
+    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
   return 'hidden' // Sembunyikan kalau nggak ada pesan
 })
 
@@ -132,26 +132,27 @@ const wrapperStyles = computed(() => {
   const base = 'p-[2px]'
 
   if (actualState.value === 'active' || isFocused.value)
-    return `${base} bg-[linear-gradient(90.74deg,#3f9760,#d1955f)]`
-  if (actualState.value === 'error') return `${base} bg-[linear-gradient(91.01deg,#c37973,#81413c)]`
+    return `${base} bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))]`
+  if (actualState.value === 'error')
+    return `${base} bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))]`
   if (actualState.value === 'success')
-    return `${base} bg-[linear-gradient(91.01deg,#6caf85,#0f5b2b)]`
+    return `${base} bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))]`
 
   // Default, Search, dan Disabled pakai background abu-abu yang seolah-olah jadi "border" 2px
-  return `${base} bg-[#b2b5ba]`
+  return `${base} bg-[var(--app-input-border)]`
 })
 
 const inputStyles = computed(() => {
   // Inner radius tetap 10px biar pas di dalam wrapper 12px
-  const base = 'rounded-[10px] text-[#111827] placeholder-[#b2b5ba]'
+  const base = 'rounded-[10px] text-[var(--app-text)] placeholder-[var(--app-input-placeholder)]'
 
   if (actualState.value === 'disabled') {
-    return `${base} bg-[rgba(226,227,229,0.8)] cursor-not-allowed`
+    return `${base} bg-[var(--app-input-disabled-bg)] cursor-not-allowed`
   }
   if (actualState.value === 'search') {
-    return `${base} bg-[#f3f3f4]`
+    return `${base} bg-[var(--app-input-muted-bg)]`
   }
 
-  return `${base} bg-white`
+  return `${base} bg-[var(--app-input-bg)]`
 })
 </script>

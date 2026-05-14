@@ -211,13 +211,15 @@ onMounted(async () => {
       <SIMPSidebar />
     </template>
 
-    <div class="w-full max-w-[1180px] mx-auto px-10 py-8 flex flex-col gap-6 max-[768px]:px-4">
+    <div
+      class="w-full max-w-[1180px] mx-auto px-10 py-8 flex flex-col gap-6 max-[768px]:px-4 bg-[var(--app-bg)] text-[var(--app-text)]"
+    >
       <section class="flex items-start justify-between gap-8 max-[1200px]:flex-col max-[1200px]:items-start">
         <div class="flex flex-col gap-2">
-          <h1 class="m-0 text-[32px] leading-[120%] font-extrabold text-[#111827]">
+          <h1 class="m-0 text-[32px] leading-[120%] font-extrabold text-[var(--app-heading)]">
             Manajemen Siswa dan Staf
           </h1>
-          <p class="m-0 text-[20px] leading-[120%] text-[#858a91]">
+          <p class="m-0 text-[20px] leading-[120%] text-[var(--app-muted)]">
             Lihat dan kelola Siswa dan Staf
           </p>
         </div>
@@ -235,7 +237,7 @@ onMounted(async () => {
 
             <VButton
               variant="secondary"
-              class="!h-[48px] !rounded-[20px] !text-[16px] !font-semibold !bg-[#c9e9da] !text-[#111827] !border-0"
+              class="!h-[48px] !rounded-[20px] !text-[16px] !font-semibold"
               @click="openStaffModal"
             >
               <template #leftIcon><Plus :size="18" /></template>
@@ -249,8 +251,10 @@ onMounted(async () => {
         <VCard paddingClass="p-0">
           <div class="relative h-[186px] overflow-hidden rounded-[28px]">
             <div class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
-              <b class="w-full text-center text-[32px] leading-[120%] text-[#111827]">Total Data</b>
-              <b class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent">
+              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-heading)]">
+                Total Data
+              </b>
+              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-accent)]">
                 {{ totalData }}
               </b>
             </div>
@@ -265,8 +269,10 @@ onMounted(async () => {
         <VCard paddingClass="p-0">
           <div class="relative h-[186px] overflow-hidden rounded-[28px]">
             <div class="absolute top-[34px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
-              <b class="w-full text-center text-[32px] leading-[120%] text-[#111827]">Siswa</b>
-              <b class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent">
+              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-heading)]">
+                Siswa
+              </b>
+              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-accent)]">
                 {{ totalSiswa }}
               </b>
             </div>
@@ -281,8 +287,10 @@ onMounted(async () => {
         <VCard paddingClass="p-0">
           <div class="relative h-[186px] overflow-hidden rounded-[28px]">
             <div class="absolute top-[34px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
-              <b class="w-full text-center text-[32px] leading-[120%] text-[#111827]">Staf</b>
-              <b class="w-full text-center text-[32px] leading-[120%] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] bg-clip-text text-transparent">
+              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-heading)]">
+                Staf
+              </b>
+              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-accent)]">
                 {{ totalStaf }}
               </b>
             </div>
@@ -299,8 +307,10 @@ onMounted(async () => {
         <div class="flex flex-col gap-5 w-full">
           <div class="flex items-center justify-between gap-5 max-[1100px]:flex-col max-[1100px]:items-start">
             <div class="flex items-center gap-[10px]">
-              <Filter class="w-10 h-10 text-[#111827]" />
-              <b class="text-[24px] leading-[120%] text-[#111827] font-bold">Filter Data</b>
+              <Filter class="w-10 h-10 text-[var(--app-heading)]" />
+              <b class="text-[24px] leading-[120%] text-[var(--app-heading)] font-bold">
+                Filter Data
+              </b>
             </div>
 
             <div class="w-[254px] max-[1100px]:w-full">
@@ -314,18 +324,18 @@ onMounted(async () => {
 
           <div class="grid grid-cols-4 gap-4 items-end max-[1200px]:grid-cols-2 max-[768px]:grid-cols-1">
             <div class="flex items-center gap-3">
-              <div class="min-w-[72px] text-[20px] leading-[120%] font-semibold text-[#111827]">
+              <div class="min-w-[72px] text-[20px] leading-[120%] font-semibold text-[var(--app-heading)]">
                 Nama
               </div>
               <VInputField
-              v-model="namaFilter"
-              placeholder="Masukkan nama"
-              class="flex-1"
+                v-model="namaFilter"
+                placeholder="Masukkan nama"
+                class="flex-1"
               />
             </div>
 
             <div class="flex items-center gap-3">
-              <div class="min-w-[120px] text-[20px] leading-[120%] font-semibold text-[#111827]">
+              <div class="min-w-[120px] text-[20px] leading-[120%] font-semibold text-[var(--app-heading)]">
                 Nomor Induk
               </div>
               <VInputField
@@ -336,7 +346,7 @@ onMounted(async () => {
             </div>
 
             <div class="flex items-center gap-3">
-              <div class="min-w-[108px] text-[20px] leading-[120%] font-semibold text-[#111827]">
+              <div class="min-w-[108px] text-[20px] leading-[120%] font-semibold text-[var(--app-heading)]">
                 Kelas
               </div>
               <VInputField
@@ -350,9 +360,9 @@ onMounted(async () => {
               <button
                 @click="resetFilter"
                 type="button"
-                class="h-[52px] w-[56px] rounded-[12px] border-2 border-transparent bg-[linear-gradient(#f8fafc,#f8fafc)_padding-box,linear-gradient(90.74deg,#3f9760,#d1955f)_border-box] flex items-center justify-center"
+                class="h-[52px] w-[56px] rounded-[12px] border border-[var(--app-card-border)] bg-[var(--app-card)] flex items-center justify-center hover:bg-[var(--app-bg)] transition-colors"
               >
-                <RotateCcw class="w-6 h-6 text-[#111827]" />
+                <RotateCcw class="w-6 h-6 text-[var(--app-heading)]" />
               </button>
             </div>
           </div>
@@ -367,14 +377,14 @@ onMounted(async () => {
 
       <div
         v-if="studentStore.error && !studentStore.loading && selectedDataType === 'Siswa'"
-        class="bg-white rounded-[14px] px-[26px] py-[22px] text-[14px] font-semibold text-[#b42318]"
+        class="bg-[var(--app-danger-bg)] rounded-[14px] px-[26px] py-[22px] text-[14px] font-semibold text-[var(--app-danger)] border border-[var(--app-danger-border)]"
       >
         {{ studentStore.error }}
       </div>
 
       <div
         v-if="selectedDataType === 'Staf'"
-        class="bg-white rounded-[14px] px-[26px] py-[22px] text-[14px] font-semibold text-[#111827]"
+        class="bg-[var(--app-card)] rounded-[14px] px-[26px] py-[22px] text-[14px] font-semibold text-[var(--app-heading)] border border-[var(--app-card-border)]"
       >
         Data staf belum tersedia.
       </div>
@@ -382,38 +392,38 @@ onMounted(async () => {
       <div v-else class="flex flex-col gap-4">
         <VTable :columns="tableColumns" :rows="tableRows" :isLoading="studentStore.loading">
           <template #cell-nomor="{ value }">
-            <div class="text-center text-[14px] text-[#202632]">{{ value }}</div>
+            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
           </template>
 
           <template #cell-nama="{ value }">
-            <div class="text-center text-[14px] text-[#202632] font-medium">{{ value }}</div>
+            <div class="text-center text-[14px] text-[var(--app-text)] font-medium">{{ value }}</div>
           </template>
 
           <template #cell-nisn="{ value }">
-            <div class="text-center text-[14px] text-[#202632]">{{ value }}</div>
+            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
           </template>
 
           <template #cell-nis="{ value }">
-            <div class="text-center text-[14px] text-[#202632]">{{ value }}</div>
+            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
           </template>
 
           <template #cell-email="{ value }">
-            <div class="text-center text-[14px] text-[#202632] break-all">{{ value }}</div>
+            <div class="text-center text-[14px] text-[var(--app-text)] break-all">{{ value }}</div>
           </template>
 
           <template #cell-kelas="{ value }">
-            <div class="text-center text-[14px] text-[#202632]">{{ value }}</div>
+            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
           </template>
 
           <template #cell-jenis_kelamin_label="{ value }">
-            <div class="text-center text-[14px] text-[#202632]">{{ value }}</div>
+            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
           </template>
 
           <template #cell-aksi="{ row }">
             <div class="flex justify-center gap-2">
               <VButton
                 variant="secondary"
-                class="!h-[26px] !min-w-[66px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium !bg-[#e9f5ee] !text-[#111827] !border-0"
+                class="!h-[26px] !min-w-[66px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
                 @click="openDetailModal(row)"
               >
                 <template #leftIcon><Eye :size="12" /></template>
@@ -422,7 +432,7 @@ onMounted(async () => {
 
               <VButton
                 variant="secondary"
-                class="!h-[26px] !min-w-[58px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium !bg-[#c9e9da] !text-[#111827] !border-0"
+                class="!h-[26px] !min-w-[58px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
                 @click="openEditModal(row)"
               >
                 <template #leftIcon><Pencil :size="12" /></template>
@@ -443,7 +453,7 @@ onMounted(async () => {
 
         <div class="flex flex-col gap-4">
           <div class="flex justify-between items-center">
-            <div class="text-[16px] font-semibold text-[#858a91]">Show All</div>
+            <div class="text-[16px] font-semibold text-[var(--app-muted)]">Show All</div>
 
             <VPagination
               v-model:currentPage="currentPage"
@@ -458,7 +468,7 @@ onMounted(async () => {
           >
             <VButton
               variant="secondary"
-              class="!flex-1 !h-[48px] !rounded-[20px] !text-[16px] !font-semibold !bg-[#c9e9da] !text-[#111827] !border-0"
+              class="!flex-1 !h-[48px] !rounded-[20px] !text-[16px] !font-semibold"
               @click="isImportModalOpen = true"
             >
               <template #leftIcon><Upload :size="18" /></template>
@@ -467,7 +477,7 @@ onMounted(async () => {
 
             <VButton
               variant="primary"
-              class="!flex-1 !h-[48px] !rounded-[20px] !text-[16px] !font-semibold !bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] !text-white !border-0"
+              class="!flex-1 !h-[48px] !rounded-[20px] !text-[16px] !font-semibold"
               @click="isExportModalOpen = true"
             >
               <template #leftIcon><Download :size="18" /></template>
@@ -512,8 +522,8 @@ onMounted(async () => {
     />
 
     <ExportStudentModal
-    :isOpen="isExportModalOpen"
-    @update:isOpen="isExportModalOpen = $event"
+      :isOpen="isExportModalOpen"
+      @update:isOpen="isExportModalOpen = $event"
     />
   </DashboardLayout>
 </template>

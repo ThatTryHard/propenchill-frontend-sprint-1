@@ -8,21 +8,21 @@
       <div class="main-content-wrapper">
         <div class="header-section">
           <div class="title-group">
-            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[#111827]">
+            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[var(--app-heading)]">
               Daftar Pengajuan Surat Keluar
             </h1>
-            <p class="text-[13px] md:text-[14px] leading-[145%] text-[#858a91] mt-1">
+            <p class="text-[13px] md:text-[14px] leading-[145%] text-[var(--app-muted)] mt-1">
               Lihat dan kelola pengajuan surat yang telah dibuat
             </p>
           </div>
           <VButton class="hifi-btn-custom-green" @click="$router.push('/surat-keluar/pengajuan')">
             <template #left-icon>
-              <Plus :size="20" :stroke-width="3" color="white" class="mr-2" />
+              <Plus :size="20" :stroke-width="3" color="currentColor" class="mr-2" />
             </template>
             <template #icon>
-              <Plus :size="20" :stroke-width="3" color="white" class="mr-2" />
+              <Plus :size="20" :stroke-width="3" color="currentColor" class="mr-2" />
             </template>
-            <Plus :size="20" :stroke-width="3" color="white" class="mr-2 inline-block" />
+            <Plus :size="20" :stroke-width="3" color="currentColor" class="mr-2 inline-block" />
             <span>Buat Pengajuan</span>
           </VButton>
         </div>
@@ -234,7 +234,8 @@ onMounted(fetchRiwayat)
 }
 
 .layout-bg {
-  background: var(--Gradient-Primary-Background, linear-gradient(180deg, #fff 0%, #eaf7ef 100%));
+  background: var(--app-bg);
+  color: var(--app-text);
 }
 
 .header-section {
@@ -253,13 +254,10 @@ onMounted(fetchRiwayat)
   border-radius: 20px !important;
   border: none !important;
   cursor: pointer;
-  color: #ffffff !important;
+  color: var(--app-text-inverse) !important;
   font-weight: 700 !important;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background: radial-gradient(77.91% 77.91% at 50% 100%, #3f9760 4.91%, #0c4923 100%) !important;
-  box-shadow:
-    0 -2px 0 0 rgba(0, 0, 0, 0.4) inset,
-    0 1px 0 0 rgba(248, 250, 252, 0.4) inset !important;
+  background: var(--app-accent) !important;
   position: relative;
   z-index: 10;
 }
@@ -274,7 +272,9 @@ onMounted(fetchRiwayat)
   width: 100%;
   padding: 14px 20px 14px 54px;
   border-radius: 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--app-input-border);
+  background: var(--app-input-bg);
+  color: var(--app-text);
   font-size: 16px;
 }
 
@@ -283,7 +283,7 @@ onMounted(fetchRiwayat)
   left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--app-muted);
 }
 
 .search-section {
@@ -316,10 +316,11 @@ onMounted(fetchRiwayat)
 .hifi-dropdown select {
   padding: 10px 40px 10px 16px;
   border-radius: 10px;
-  border: 1px solid #111827;
+  border: 1px solid var(--app-input-border);
   appearance: none;
   font-weight: 600;
-  background: white;
+  background: var(--app-input-bg);
+  color: var(--app-text);
 }
 
 .chevron-icon {
@@ -328,14 +329,15 @@ onMounted(fetchRiwayat)
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+  color: var(--app-muted);
 }
 
 .table-wrapper {
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
-  background-color: white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--app-card-border);
+  background-color: var(--app-card);
+  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08);
 }
 
 .hifi-table {
@@ -344,37 +346,42 @@ onMounted(fetchRiwayat)
 }
 
 .hifi-table thead th {
-  background-color: #c6decf;
-  color: #111827;
+  background-color: var(--app-table-head-bg);
+  color: var(--app-heading);
   font-weight: 700;
   font-size: 18px;
   padding: 20px;
   text-align: center;
+  border-bottom: 1px solid var(--app-card-border);
 }
 
 .hifi-table tbody tr:nth-child(even) {
-  background-color: #f8fafc;
+  background-color: var(--app-table-row-hover);
+}
+
+.hifi-table tbody tr:hover {
+  background-color: var(--app-bg);
 }
 
 .hifi-table tbody td {
   padding: 16px 20px;
   font-size: 16px;
-  color: #111827;
-  border-bottom: 1px solid #f3f4f6;
+  color: var(--app-text);
+  border-bottom: 1px solid var(--app-card-border);
   vertical-align: middle;
 }
 
 .empty-state {
   text-align: center;
   padding: 40px !important;
-  color: #6b7280;
+  color: var(--app-muted);
   font-style: italic;
 }
 
 .loading-state {
   text-align: center;
   padding: 40px !important;
-  color: #334155;
+  color: var(--app-muted);
   font-style: italic;
 }
 
@@ -384,7 +391,7 @@ onMounted(fetchRiwayat)
 
 .cell-jenis-surat {
   font-weight: 600;
-  color: #111827;
+  color: var(--app-heading);
   max-width: 280px;
   line-height: 1.4;
 }
@@ -392,6 +399,7 @@ onMounted(fetchRiwayat)
 .cell-status {
   text-align: center;
   font-weight: 600;
+  color: var(--app-text);
 }
 
 .cell-action {
@@ -399,11 +407,16 @@ onMounted(fetchRiwayat)
   text-decoration: underline;
   font-weight: 700;
   cursor: pointer;
-  color: #111827;
+  color: var(--app-heading);
+  transition: color 0.2s ease;
+}
+
+.cell-action:hover {
+  color: var(--app-accent);
 }
 
 .show-all {
-  color: #9b9fa5;
+  color: var(--app-muted);
   font-size: 14px;
   margin-top: 12px;
   font-weight: 500;
@@ -414,9 +427,11 @@ onMounted(fetchRiwayat)
   justify-content: center;
   margin-top: 40px;
 }
+
 .inline-block {
   display: inline-block;
 }
+
 .mr-2 {
   margin-right: 8px;
 }
@@ -427,7 +442,8 @@ onMounted(fetchRiwayat)
     flex-direction: column;
   }
 
-  .hifi-dropdown {
+  .hifi-dropdown,
+  .hifi-dropdown-status {
     width: 100%;
     flex: 1 1 auto;
   }

@@ -4,6 +4,7 @@
     :bottomItems="bottomItems"
     :userName="authStore.user?.nama"
     :userEmail="authStore.user?.email"
+    :userAvatar="userAvatar"
   />
 
   <LogoutConfirmationModal
@@ -14,9 +15,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
+import { useProfileStore } from '@/stores/profile'
 import type { NavItem, BottomNavItem } from '@/components/common/VSidebar.vue'
 import VSidebar from '@/components/common/VSidebar.vue'
 import LogoutConfirmationModal from '@/components/common/LogoutConfirmationModal.vue'
@@ -35,11 +35,32 @@ import {
   LogOut,
   Mail,
   LayoutDashboard,
+  ClipboardList,
 } from 'lucide-vue-next'
+import { computed, ref, h } from 'vue'
+import { useRouter, useRoute } from 'vue-router' 
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
+const profileStore = useProfileStore()
 const isLogoutModalOpen = ref(false)
+
+const CustomDetailIcon = () => h('svg', {
+  xmlns: 'http://www.w3.org/2000/svg',
+  width: '22',
+  height: '18',
+  viewBox: '0 0 22 18',
+  fill: 'none'
+}, [
+  h('path', {
+    d: 'M21.0002 4L12.0092 9.727C11.7041 9.90421 11.3576 9.99755 11.0047 9.99755C10.6519 9.99755 10.3054 9.90421 10.0002 9.727L1.00024 4M3.00024 1H19.0002C20.1048 1 21.0002 1.89543 21.0002 3V15C21.0002 16.1046 20.1048 17 19.0002 17H3.00024C1.89567 17 1.00024 16.1046 1.00024 15V3C1.00024 1.89543 1.89567 1 3.00024 1Z',
+    stroke: 'currentColor', 
+    'stroke-width': '2',
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round'
+  })
+])
 
 const handleLogout = () => {
   authStore.logout()
@@ -49,6 +70,9 @@ const handleLogout = () => {
 const openLogoutModal = () => {
   isLogoutModalOpen.value = true
 }
+
+// Get avatar from profile store
+const userAvatar = computed(() => profileStore.profile?.avatar_url || null)
 
 // DEFINISI MENU BERDASARKAN ROLE
 const currentNavItems = computed(() => {
@@ -105,14 +129,55 @@ const currentNavItems = computed(() => {
         icon: FileText,
         matchPaths: ['/surat-keluar/detail'],
       },
+      {
+        name: 'activity-logs-admin',
+        label: 'Log dan Riwayat Aktivitas',
+        path: '/admin/activity-logs',
+        icon: ClipboardList,
+        matchPaths: ['/admin/activity-logs'],
+      },
     ]
 
     return adminItems
   }
 
   // 2. ROLE GURU BIDANG (AKADEMIK, KESISWAAN, AGAMA)
-  if (['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(role || '')) {
+  if (['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(role)) {
+    let bidangLabel = ''
+    let dashboardPath = ''
+
+    if (role === 'BIDANG_AKADEMIK') {
+      bidangLabel = 'Akademik'
+      dashboardPath = '/akademik/dashboard'
+    } else if (role === 'BIDANG_KESISWAAN') {
+      bidangLabel = 'Kesiswaan'
+      dashboardPath = '/kesiswaan/dashboard'
+    } else if (role === 'BIDANG_AGAMA') {
+      bidangLabel = 'Keagamaan'
+      dashboardPath = '/keagamaan/dashboard'
+    }
+
     const departmentItems: NavItem[] = [
+      {
+        name: `dashboard-${bidangLabel.toLowerCase()}`,
+        label: `Dashboard Ringkasan Surat Bidang ${bidangLabel}`,
+        path: dashboardPath,
+        icon: LayoutDashboard, 
+        matchPaths: [dashboardPath],
+      }
+    ]
+
+    if (route.path.includes('/detail/')) {
+      departmentItems.push({
+        name: 'letter-detail',
+        label: 'Detail Informasi Surat',
+        path: route.path, 
+        icon: CustomDetailIcon, 
+        matchPaths: [route.path], 
+      })
+    }
+
+    departmentItems.push(
       {
         name: 'surat-antrean-department',
         label: 'Verifikasi Berjenjang',
@@ -138,14 +203,8 @@ const currentNavItems = computed(() => {
         label: 'Manajemen Template',
         path: '/letter_templates',
         icon: Mail,
-      },
-      {
-        name: 'template-create',
-        label: 'Tambah Template',
-        path: '/letter_templates/create',
-        icon: PlusCircle,
-      },
-    ]
+      }
+    )
 
     return departmentItems
   }
@@ -175,6 +234,13 @@ const currentNavItems = computed(() => {
         matchPaths: ['/kepsek/surat-antrean'],
       },
       { name: 'inbox', label: 'Arsip Surat Masuk', path: '/kepsek/surat-masuk', icon: Inbox },
+      {
+        name: 'activity-logs-kepsek',
+        label: 'Log dan Riwayat Aktivitas',
+        path: '/kepsek/activity-logs',
+        icon: ClipboardList,
+        matchPaths: ['/kepsek/activity-logs'],
+      },
     ]
 
     return kepsekItems
@@ -211,7 +277,9 @@ const bottomItems = computed<BottomNavItem[]>(() => {
     {
       name: 'settings',
       label: 'Settings',
+      path: '/settings',
       icon: Settings,
+      matchPaths: ['/settings'],
     },
   ]
 
@@ -235,3 +303,11 @@ const bottomItems = computed<BottomNavItem[]>(() => {
   return items
 })
 </script>
+
+<style scoped>
+:deep(.lucide) {
+  flex-shrink: 0 !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+</style>

@@ -28,6 +28,11 @@ import { useGlobalAlert } from '@/composables/useGlobalAlert'
 import SuratAntreanListView from '@/views/surat_antrean/SuratAntreanListView.vue'
 import SuratAntreanDetailView from '@/views/surat_antrean/SuratAntreanDetailView.vue'
 import HelpFAQView from '@/views/users/HelpFAQView.vue'
+import SettingsView from '@/views/users/SettingsView.vue'
+import ProfileView from '@/views/users/ProfileView.vue'
+import ActivityLogListView from '@/views/activity_logs/ActivityLogListView.vue'
+import ActivityLogDetailView from '@/views/activity_logs/ActivityLogDetailView.vue'
+import DashboardSummary from '@/views/field_summary/DashboardSummary.vue'
 
 const departmentRoles = ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK']
 const teacherListRoles = ['ADMIN']
@@ -85,7 +90,7 @@ const router = createRouter({
     },
     {
       path: '/status',
-      name: 'status',
+      name: 'status',  
       component: StatusView,
     },
     {
@@ -185,7 +190,15 @@ const router = createRouter({
       component: FormPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN'],
+        roleAccess: [
+          'GURU',
+          'WALI_MURID',
+          'ADMIN',
+          'KEPSEK',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
       },
     },
     {
@@ -194,7 +207,15 @@ const router = createRouter({
       component: RiwayatPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN'],
+        roleAccess: [
+          'GURU',
+          'WALI_MURID',
+          'ADMIN',
+          'KEPSEK',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
       },
     },
     {
@@ -203,7 +224,15 @@ const router = createRouter({
       component: DetailPengajuanSuratView,
       meta: {
         requiresAuth: true,
-        roleAccess: ['GURU', 'WALI_MURID', 'ADMIN'],
+        roleAccess: [
+          'GURU',
+          'WALI_MURID',
+          'ADMIN',
+          'KEPSEK',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
       },
     },
     {
@@ -258,6 +287,24 @@ const router = createRouter({
       path: '/admin/surat-antrean/:id',
       name: 'admin-surat-antrean-detail',
       component: SuratAntreanDetailView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['ADMIN'],
+      },
+    },
+    {
+      path: '/admin/activity-logs',
+      name: 'admin-activity-logs',
+      component: ActivityLogListView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['ADMIN'],
+      },
+    },
+    {
+      path: '/admin/activity-logs/:surat_type/:surat_id',
+      name: 'admin-activity-logs-detail',
+      component: ActivityLogDetailView,
       meta: {
         requiresAuth: true,
         roleAccess: ['ADMIN'],
@@ -334,12 +381,47 @@ const router = createRouter({
       },
     },
     {
+      path: '/kepsek/activity-logs',
+      name: 'kepsek-activity-logs',
+      component: ActivityLogListView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['KEPSEK'],
+      },
+    },
+    {
+      path: '/kepsek/activity-logs/:surat_type/:surat_id',
+      name: 'kepsek-activity-logs-detail',
+      component: ActivityLogDetailView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: ['KEPSEK'],
+      },
+    },
+    {
       path: '/help',
       name: 'help-faq',
-      component: () => import('@/views/users/HelpFAQView.vue'),
+      component: HelpFAQView,
       meta: {
         requiresAuth: true,
         roleAccess: ['WALI_MURID'],
+      },
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: [
+          'ADMIN',
+          'KEPSEK',
+          'GURU',
+          'WALI_MURID',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
       },
     },
     {
@@ -363,7 +445,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('@/views/users/ProfileView.vue'),
+      component: ProfileView,
       meta: {
         requiresAuth: true,
         roleAccess: [
@@ -377,7 +459,30 @@ const router = createRouter({
         ],
       },
     },
-    // TODO: Add routes for other roles here
+    {
+      path: '/akademik/dashboard',
+      name: 'DashboardAkademik',
+      component: DashboardSummary,
+      props: { kategori: 'akademik' },
+    },
+    {
+      path: '/keagamaan/dashboard',
+      name: 'DashboardKeagamaan',
+      component: DashboardSummary,
+      props: { kategori: 'keagamaan' },
+    },
+    {
+      path: '/kesiswaan/dashboard',
+      name: 'DashboardKesiswaan',
+      component: DashboardSummary,
+      props: { kategori: 'kesiswaan' },
+    },
+    {
+      path: '/akademik/detail/:kategori/:id',
+      name: 'LetterDetail',
+      component: () => import('@/views/field_summary/LetterDetailView.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 

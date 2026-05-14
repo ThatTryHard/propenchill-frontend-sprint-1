@@ -141,10 +141,10 @@ function goBack() {
     <main class="flex-1 px-4 py-8 overflow-y-auto md:px-8 lg:px-10">
       <div class="w-full">
         <section class="mb-6 flex flex-col gap-1">
-          <h1 class="text-[28px] md:text-[32px] font-bold text-[#111827]">
+          <h1 class="text-[28px] md:text-[32px] font-bold text-[var(--app-heading)]">
             Tambah Template Surat Baru
           </h1>
-          <p class="text-[14px] md:text-[16px] text-[#858a91]">
+          <p class="text-[14px] md:text-[16px] text-[var(--app-muted)]">
             Buat template surat baru untuk digunakan pengguna
           </p>
         </section>
@@ -169,8 +169,8 @@ function goBack() {
             <VCard padding-class="p-6 !overflow-visible">
               <div class="flex flex-col gap-5">
                 <div>
-                  <h2 class="text-[24px] font-semibold text-[#111827]">Informasi Template</h2>
-                  <p class="text-[14px] text-[#858a91]">
+                  <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Informasi Template</h2>
+                  <p class="text-[14px] text-[var(--app-muted)]">
                     Isi identitas dasar template surat terlebih dahulu
                   </p>
                 </div>
@@ -187,22 +187,22 @@ function goBack() {
 
                 <div class="grid lg:grid-cols-2 gap-4">
                   <div class="flex flex-col gap-2">
-                    <label class="font-semibold text-[#111827]">Jenis Template</label>
+                    <label class="font-semibold text-[var(--app-text)]">Jenis Template</label>
                     <VDropdown
                       v-model="form.jenis"
                       :options="jenisOptions"
                       placeholder="Pilih jenis template"
                     />
-                    <span v-if="fieldErrors.jenis" class="text-xs text-[#A0453B]">
+                    <span v-if="fieldErrors.jenis" class="text-xs text-[var(--app-danger)]">
                       {{ fieldErrors.jenis }}
                     </span>
                   </div>
 
                   <div class="flex flex-col gap-2">
                     <div class="flex items-center gap-2">
-                      <label class="font-semibold text-[#111827]"> Metode Template </label>
+                      <label class="font-semibold text-[var(--app-text)]"> Metode Template </label>
                       <VTooltip type="small" text="Pilih Upload DOCX atau Input Manual">
-                        <button type="button" class="text-[#858a91] hover:text-[#111827]">
+                        <button type="button" class="text-[var(--app-muted)] hover:text-[var(--app-text)]">
                           <InfoIcon class="h-4 w-4" />
                         </button>
                       </VTooltip>
@@ -213,7 +213,7 @@ function goBack() {
                       :options="modeOptions"
                       placeholder="Pilih metode template"
                     />
-                    <span v-if="fieldErrors.template_mode" class="text-xs text-[#A0453B]">
+                    <span v-if="fieldErrors.template_mode" class="text-xs text-[var(--app-danger)]">
                       {{ fieldErrors.template_mode }}
                     </span>
                   </div>
@@ -226,18 +226,18 @@ function goBack() {
             <div class="flex flex-col gap-5">
               <div>
                 <div class="flex items-center gap-2">
-                  <h2 class="text-[24px] font-semibold text-[#111827]">Kontrol Akses</h2>
+                  <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Kontrol Akses</h2>
                   <VTooltip
                     type="large"
                     title="Kontrol Akses"
                     text="Pilih role mana yang dapat melihat atau menggunakan template ini."
                   >
-                    <button type="button" class="text-[#858a91] hover:text-[#111827]">
+                    <button type="button" class="text-[var(--app-muted)] hover:text-[var(--app-text)]">
                       <InfoIcon class="h-5 w-5" />
                     </button>
                   </VTooltip>
                 </div>
-                <p class="text-[14px] text-[#858a91]">
+                <p class="text-[14px] text-[var(--app-muted)]">
                   Tentukan role mana yang dapat mengakses template ini
                 </p>
               </div>
@@ -256,7 +256,7 @@ function goBack() {
                 </button>
               </div>
 
-              <span v-if="fieldErrors.allowed_roles" class="text-xs text-[#A0453B]">
+              <span v-if="fieldErrors.allowed_roles" class="text-xs text-[var(--app-danger)]">
                 {{ fieldErrors.allowed_roles }}
               </span>
             </div>
@@ -265,8 +265,8 @@ function goBack() {
           <VCard v-if="form.template_mode === 'DOCX'" padding-class="p-6">
             <div class="flex flex-col gap-5">
               <div>
-                <h2 class="text-[24px] font-semibold text-[#111827]">Unggah Template Surat</h2>
-                <p class="text-[14px] text-[#858a91]">
+                <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Unggah Template Surat</h2>
+                <p class="text-[14px] text-[var(--app-muted)]">
                   Unggah file .docx yang berisi placeholder seperti
                   <span class="font-semibold">{{ placeholderNama }}</span
                   >, <span class="font-semibold">{{ placeholderNis }}</span
@@ -283,7 +283,7 @@ function goBack() {
                 @update:modelValue="(file) => handleFileChange(file)"
               />
 
-              <p v-if="fieldErrors.file_template" class="text-xs text-[#A0453B]">
+              <p v-if="fieldErrors.file_template" class="text-xs text-[var(--app-danger)]">
                 {{ fieldErrors.file_template }}
               </p>
             </div>
@@ -292,66 +292,36 @@ function goBack() {
           <VCard v-else padding-class="p-6">
             <div class="flex flex-col gap-5">
               <div>
-                <h2 class="text-[24px] font-semibold text-[#111827]">Isi Konten Template</h2>
-                <p class="text-[14px] text-[#858a91]">
+                <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Isi Konten Template</h2>
+                <p class="text-[14px] text-[var(--app-muted)]">
                   Header surat sudah disediakan sistem. Anda hanya perlu mengisi konten utama surat.
                 </p>
               </div>
 
-              <div class="overflow-hidden rounded-[20px] border border-[#d9e2e7] bg-white">
-                <div class="border-b bg-[#f8fafc] px-6 py-5">
+              <div class="overflow-hidden rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)]">
+                <div class="border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)] px-6 py-5">
                   <div
                     v-if="!isLoadingConfig"
-                    class="prose max-w-none text-[#111827]"
+                    class="prose max-w-none text-[var(--app-text)]"
                     v-html="headerHtml"
                   />
-                  <div v-else class="text-sm text-[#858a91]">Memuat header surat...</div>
+                  <div v-else class="text-sm text-[var(--app-muted)]">Memuat header surat...</div>
                 </div>
 
                 <div class="px-6 py-5">
-                  <label class="mb-3 block font-semibold text-[#111827]"> Konten Template </label>
+                  <label class="mb-3 block font-semibold text-[var(--app-text)]"> Konten Template </label>
 
                   <div class="mb-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{nama}')"
-                    >
-                      Masukkan {nama}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{nis}')"
-                    >
-                      Masukkan {nis}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{kelas}')"
-                    >
-                      Masukkan {kelas}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{tanggal}')"
-                    >
-                      Masukkan {tanggal}
-                    </button>
-                    <button
-                      type="button"
-                      class="rounded-full border border-[#d9e2e7] bg-white px-3 py-1.5 text-sm text-[#111827] hover:bg-[#f8fafc]"
-                      @click="insertPlaceholder('{keperluan}')"
-                    >
-                      Masukkan {keperluan}
-                    </button>
+                    <button type="button" @click="insertPlaceholder('{nama}')">Masukkan {nama}</button>
+                    <button type="button" @click="insertPlaceholder('{nis}')">Masukkan {nis}</button>
+                    <button type="button" @click="insertPlaceholder('{kelas}')">Masukkan {kelas}</button>
+                    <button type="button" @click="insertPlaceholder('{tanggal}')">Masukkan {tanggal}</button>
+                    <button type="button" @click="insertPlaceholder('{keperluan}')">Masukkan {keperluan}</button>
                   </div>
 
                   <div
                     class="rounded-[16px] border"
-                    :class="fieldErrors.konten_template ? 'border-[#A0453B]' : 'border-[#d9e2e7]'"
+                    :class="fieldErrors.konten_template ? 'border-[var(--app-danger)]' : 'border-[var(--app-card-border)]'"
                   >
                     <QuillEditor
                       ref="quillRef"
@@ -364,7 +334,7 @@ function goBack() {
                     />
                   </div>
 
-                  <p v-if="fieldErrors.konten_template" class="mt-2 text-xs text-[#A0453B]">
+                  <p v-if="fieldErrors.konten_template" class="mt-2 text-xs text-[var(--app-danger)]">
                     {{ fieldErrors.konten_template }}
                   </p>
                 </div>
@@ -393,14 +363,14 @@ function goBack() {
 <style scoped>
 :deep(.ql-toolbar.ql-snow) {
   border: none;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--app-card-border);
 }
 
 :deep(.ql-container.ql-snow) {
   border: none;
   min-height: 220px;
   font-size: 14px;
-  color: #111827;
+  color: var(--app-text);
 }
 
 :deep(.ql-editor) {

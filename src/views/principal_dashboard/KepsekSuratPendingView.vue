@@ -7,10 +7,10 @@
     <div class="p-8 flex flex-col gap-[20px] h-full font-['Plus_Jakarta_Sans']">
       <section class="flex flex-col gap-3">
         <div>
-          <h1 class="text-[32px] font-bold text-[#111827]">
+          <h1 class="text-[32px] font-bold text-[var(--app-heading)]">
             Daftar Surat Pending
           </h1>
-          <p class="text-[24px] text-[#858a91]">
+          <p class="text-[24px] text-[var(--app-muted)]">
             Surat menunggu verifikasi kepsek
           </p>
         </div>
@@ -76,18 +76,18 @@
           </template>
 
           <template #cell-status="{ value }">
-            <span class="text-[16px] font-semibold text-[#c77e3c]">{{ value }}</span>
+            <span class="text-[16px] font-semibold text-[var(--app-warning)]">{{ value }}</span>
           </template>
 
           <template #cell-aksi="{ row }">
             <button
               v-if="resolveDetailPath(row)"
-              class="text-[#2f8f58] font-semibold text-[16px] hover:underline"
+              class="text-[var(--app-accent)] font-semibold text-[16px] hover:underline"
               @click="goToDetail(row)"
             >
               Lihat Detail
             </button>
-            <span v-else class="text-[#94a3b8] text-[16px]">-</span>
+            <span v-else class="text-[var(--app-muted)] text-[16px]">-</span>
           </template>
         </KepsekPendingTable>
       </section>
@@ -139,28 +139,28 @@ const columns = [
 const errorMessage = computed(() => store.error)
 
 const distribusiChart = computed(() => [
-  { label: 'Surat Izin', value: store.distribusiJenisSurat.izin, color: '#6c8f6f' },
-  { label: 'Surat Tugas', value: store.distribusiJenisSurat.tugas, color: '#7b9f7d' },
-  { label: 'Surat Keterangan', value: store.distribusiJenisSurat.keterangan, color: '#5d7d60' },
-  { label: 'Surat Undangan', value: store.distribusiJenisSurat.undangan, color: '#b19777' },
-  { label: 'Surat Pengajuan', value: store.distribusiJenisSurat.pengajuan, color: '#8f7458' },
+  { label: 'Surat Izin', value: store.distribusiJenisSurat.izin, color: 'var(--app-success)' },
+  { label: 'Surat Tugas', value: store.distribusiJenisSurat.tugas, color: 'var(--app-accent)' },
+  { label: 'Surat Keterangan', value: store.distribusiJenisSurat.keterangan, color: 'var(--app-accent-2)' },
+  { label: 'Surat Undangan', value: store.distribusiJenisSurat.undangan, color: 'var(--app-warning)' },
+  { label: 'Surat Pengajuan', value: store.distribusiJenisSurat.pengajuan, color: 'var(--app-danger)' },
 ])
 
 const flowBidangChart = computed(() => [
   {
     label: 'Kesiswaan',
     value: store.flowPerBidang.kesiswaan.surat_masuk + store.flowPerBidang.kesiswaan.surat_keluar,
-    color: '#5f7f64',
+    color: 'var(--app-success)',
   },
   {
     label: 'Keagamaan',
     value: store.flowPerBidang.keagamaan.surat_masuk + store.flowPerBidang.keagamaan.surat_keluar,
-    color: '#9db08f',
+    color: 'var(--app-accent)',
   },
   {
     label: 'Akademik',
     value: store.flowPerBidang.akademik.surat_masuk + store.flowPerBidang.akademik.surat_keluar,
-    color: '#c7ad86',
+    color: 'var(--app-accent-2)',
   },
 ])
 

@@ -220,15 +220,15 @@ onUnmounted(() => {
     <div class="w-full min-h-screen bg-white">
       <div class="w-full max-w-[1120px] mx-auto px-8 py-8 max-[768px]:px-4">
         <section class="mb-6">
-          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[#111827]">
+          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
           Form Pengajuan Surat Masuk
           </h1>
-          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[#71757b]">
+          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[var(--app-muted)]">
           Lengkapi form di bawah ini untuk mengajukan surat masuk
           </p>
         </section>
 
-        <div class="bg-white border border-[#e2e8f0] rounded-[28px] p-6 md:p-8">
+        <div class="bg-[var(--app-card)] border border-[var(--app-border)] rounded-[28px] p-6 md:p-8">
         <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
           <VInputField
             :modelValue="form.nomor_surat_pengirim"
@@ -277,7 +277,7 @@ onUnmounted(() => {
           />
 
           <div class="flex flex-col gap-2 w-full font-sans" ref="autocompleteRef">
-            <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]">
               Pengirim (Instansi)
             </label>
 
@@ -293,20 +293,20 @@ onUnmounted(() => {
 
               <div
                 v-if="autocompleteOpen && filteredPengirim.length > 0"
-                class="absolute top-[calc(100%+6px)] left-0 w-full bg-white border border-[#e2e3e5] rounded-[12px] shadow-lg z-20 overflow-hidden"
+                class="absolute top-[calc(100%+6px)] left-0 w-full bg-[var(--app-card)] border border-[var(--app-border)] rounded-[12px] shadow-lg z-20 overflow-hidden"
               >
                 <ul class="m-0 p-0 list-none max-h-[240px] overflow-auto">
                   <li
                     v-for="item in filteredPengirim"
                     :key="item.id_pengirim || item.nama_instansi"
-                    class="px-4 py-3 cursor-pointer text-[14px] text-[#111827] hover:bg-[#f3f3f4] transition-colors"
+                    class="px-4 py-3 cursor-pointer text-[14px] text-[var(--app-text)] hover:bg-[var(--app-bg)] transition-colors"
                     @mousedown.prevent="selectPengirim(item)"
                   >
                     <div class="flex items-center gap-2 font-semibold">
                       <Building2 :size="16" />
                       <span>{{ item.nama_instansi }}</span>
                     </div>
-                    <p v-if="item.alamat || item.kontak" class="m-0 mt-1 text-[12px] text-[#71757b]">
+                    <p v-if="item.alamat || item.kontak" class="m-0 mt-1 text-[12px] text-[var(--app-muted)]">
                       {{ item.alamat || '-' }}
                       <span v-if="item.kontak"> | {{ item.kontak }}</span>
                     </p>
@@ -315,16 +315,16 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <p v-if="suratMasukStore.loadingPengirim" class="m-0 text-[12px] text-[#71757b]">
+            <p v-if="suratMasukStore.loadingPengirim" class="m-0 text-[12px] text-[var(--app-muted)]">
               Memuat data pengirim...
             </p>
             <p
               v-else-if="!suratMasukStore.loadingPengirim && !filteredPengirim.length && form.nama_instansi.trim()"
-              class="m-0 text-[12px] text-[#71757b]"
+              class="m-0 text-[12px] text-[var(--app-muted)]"
             >
               Instansi belum ditemukan, data baru akan dibuat saat submit.
             </p>
-            <p v-if="selectedPengirimId" class="m-0 text-[12px] text-[#3f9760]">
+            <p v-if="selectedPengirimId" class="m-0 text-[12px] text-[var(--app-success)]">
               Instansi terpilih dari data existing.
             </p>
           </div>
@@ -348,7 +348,7 @@ onUnmounted(() => {
           />
 
           <div class="flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]">
               Lampiran Surat (Opsional)
             </label>
             <VInputFile
@@ -359,14 +359,14 @@ onUnmounted(() => {
             />
           </div>
 
-          <p v-if="formError" class="m-0 text-[14px] font-semibold text-[#A0453B]">
+          <p v-if="formError" class="m-0 text-[14px] font-semibold text-[var(--app-danger)]">
             {{ formError }}
           </p>
 
           <div class="pt-2">
             <button
               type="submit"
-              class="w-full h-[40px] rounded-[20px] bg-[linear-gradient(180deg,#2f8a50_0%,#0f5b2b_100%)] text-white text-[16px] font-semibold leading-[120%] transition-opacity duration-200 disabled:cursor-not-allowed disabled:opacity-70"
+              class="w-full h-[40px] rounded-[20px] bg-[linear-gradient(180deg,var(--app-success)_0%,var(--app-success-dark)_100%)] text-white text-[16px] font-semibold leading-[120%] transition-opacity duration-200 disabled:cursor-not-allowed disabled:opacity-70"
               :disabled="suratMasukStore.submitting"
             >
               <span class="inline-flex items-center gap-2 justify-center">

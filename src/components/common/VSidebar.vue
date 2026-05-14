@@ -1,9 +1,14 @@
 <template>
   <aside
-    class="flex flex-col h-screen w-[210px] min-w-[210px] bg-gradient-to-b from-[#f0f7f2] to-[#e8f3eb] border-r border-[#d4e8da] py-4 px-3 overflow-hidden"
+    class="simp-sidebar flex flex-col h-screen w-[210px] min-w-[210px] border-r py-4 px-3 overflow-hidden"
   >
     <div class="flex items-center mb-5">
-      <img src="@/assets/SIMP_logo.png" alt="SIMP" class="h-24 object-contain" />
+      <img
+        :src="sidebarLogo"
+        :key="sidebarLogo"
+        alt="SIMP"
+        class="h-24 object-contain"
+      />
     </div>
 
     <nav class="flex flex-col gap-1 flex-1 overflow-y-auto min-h-0">
@@ -17,10 +22,10 @@
         <button
           @click="navigate"
           :class="[
-            'flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10.5px] font-semibold transition-all duration-200 w-full text-left',
+            'sidebar-menu-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10.5px] font-semibold transition-all duration-200 w-full text-left',
             isNavItemActive(item)
-              ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
-              : 'text-[#4a5568] hover:bg-[#d4e8da]/60',
+              ? 'sidebar-menu-active text-white shadow-md'
+              : 'sidebar-menu-inactive',
           ]"
         >
           <component :is="item.icon" :size="20" :stroke-width="2" />
@@ -36,10 +41,10 @@
           :key="item.name"
           @click="handleBottomItemClick(item)"
           :class="[
-            'flex items-center gap-3 px-4 py-1.5 rounded-xl text-[10.5px] font-medium transition-all duration-200 w-full text-left',
+            'sidebar-menu-item flex items-center gap-3 px-4 py-1.5 rounded-xl text-[10.5px] font-medium transition-all duration-200 w-full text-left',
             isBottomItemActive(item)
-              ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
-              : 'text-[#4a5568] hover:bg-[#d4e8da]/60',
+              ? 'sidebar-menu-active text-white shadow-md'
+              : 'sidebar-menu-inactive',
           ]"
         >
           <component :is="item.icon" :size="20" :stroke-width="2" />
@@ -47,20 +52,19 @@
         </button>
       </div>
 
-      <!-- User Profile -->
       <button
         type="button"
         @click="goToProfile"
         :class="[
-          'flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-all duration-200',
+          'sidebar-profile-card flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-all duration-200',
           isProfileActive
-            ? 'bg-gradient-to-r from-[#3F9760] to-[#D1955F] text-white shadow-md'
-            : 'bg-[#4d8b47] hover:brightness-105 hover:shadow-md',
+            ? 'sidebar-menu-active text-white shadow-md'
+            : 'hover:brightness-105 hover:shadow-md',
         ]"
       >
         <div class="profile-ring flex items-center justify-center w-9 h-9 rounded-full">
-          <div class="flex items-center justify-center w-7 h-7 rounded-full bg-[#f0f7f2]">
-            <UserRound :size="18" class="text-[#3F9760]" />
+          <div class="profile-icon-bg flex items-center justify-center w-7 h-7 rounded-full">
+            <UserRound :size="18" class="text-[var(--app-accent)]" />
           </div>
         </div>
 
@@ -81,6 +85,9 @@
 import { computed, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { UserRound } from 'lucide-vue-next'
+import simpLogoLight from '@/assets/SIMP_logo.png'
+import simpLogoDark from '@/assets/SIMP_logo_dark.png'
+import { useSettingsPreferenceStore } from '@/stores/settingsPreference'
 
 export interface NavItem {
   name: string
@@ -105,10 +112,18 @@ const props = defineProps<{
   bottomItems: BottomNavItem[]
   userName?: string
   userEmail?: string
+  userAvatar?: string | null
 }>()
 
 const route = useRoute()
 const router = useRouter()
+const settingsPreferenceStore = useSettingsPreferenceStore()
+
+const sidebarLogo = computed(() => {
+  const savedTheme = settingsPreferenceStore.preference?.theme || localStorage.getItem('theme')
+
+  return savedTheme === 'DARK' ? simpLogoDark : simpLogoLight
+})
 
 const isProfileActive = computed(() => normalizePath(route.path) === '/profile')
 
@@ -134,12 +149,10 @@ function isPathWithinModule(currentPath: string, modulePath: string) {
 
 function getMatchScore(currentPath: string, itemPath: string) {
   if (currentPath === itemPath) {
-    // Exact match has highest priority.
     return 2000 + itemPath.length
   }
 
   if (isPathWithinModule(currentPath, itemPath)) {
-    // Prefix/module match gets lower priority than exact.
     return 1000 + itemPath.length
   }
 
@@ -190,7 +203,6 @@ function isNavItemActive(item: NavItem) {
 
   const highestScore = getHighestMatchScore(currentPath)
 
-  // Only keep the most specific matching menu item active.
   if (itemScore < highestScore) {
     return false
   }
@@ -229,8 +241,43 @@ const handleBottomItemClick = (item: BottomNavItem) => {
 </script>
 
 <style scoped>
+.simp-sidebar {
+  background: linear-gradient(180deg, var(--app-sidebar-bg-start) 0%, var(--app-sidebar-bg-end) 100%);
+  border-color: var(--app-sidebar-border);
+  color: var(--app-sidebar-text);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.sidebar-menu-inactive {
+  color: var(--app-sidebar-muted);
+}
+
+.sidebar-menu-inactive:hover {
+  background: var(--app-sidebar-hover);
+}
+
+.sidebar-menu-active {
+  background: linear-gradient(90.74deg, var(--app-accent), var(--app-accent-2));
+}
+
+.sidebar-profile-card {
+  background: var(--app-sidebar-profile-bg);
+}
+
+.profile-icon-bg {
+  background: var(--app-soft-card);
+}
+
 .profile-ring {
-  background: conic-gradient(#3f9760 0deg, #3f9760 120deg, #d1955f 240deg, #3f9760 360deg);
+  background: conic-gradient(
+    var(--app-accent) 0deg,
+    var(--app-accent) 120deg,
+    var(--app-accent-2) 240deg,
+    var(--app-accent) 360deg
+  );
   padding: 2.5px;
 }
 </style>
