@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full font-sans text-[#111827]">
+  <div class="w-full font-sans text-[var(--app-text)]">
     <input
       type="file"
       ref="fileInputRef"
@@ -16,7 +16,7 @@
       :class="[
         'w-full min-h-[288px] flex flex-col items-center justify-center p-[16px] cursor-pointer transition-transform duration-300',
         'shadow-[0px_4px_4px_rgba(0,0,0,0.25)] rounded-[20px]',
-        isDragging ? 'scale-[1.02] bg-[#eaf0eb]' : 'scale-100 bg-[#f8fafc]',
+        isDragging ? 'scale-[1.02] bg-[var(--app-soft-card)]' : 'scale-100 bg-[var(--app-card)]',
       ]"
     >
       <div class="relative w-full h-full flex-1 flex flex-col items-center justify-center">
@@ -26,8 +26,8 @@
         >
           <defs>
             <linearGradient id="dashedBorderGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#3f9760" />
-              <stop offset="100%" stop-color="#d1955f" />
+              <stop offset="0%" stop-color="var(--app-accent)" />
+              <stop offset="100%" stop-color="var(--app-accent-2)" />
             </linearGradient>
           </defs>
           <rect
@@ -37,7 +37,7 @@
             height="calc(100% - 2px)"
             rx="16"
             fill="none"
-            :stroke="isDragging ? '#3f9760' : 'url(#dashedBorderGrad)'"
+            :stroke="isDragging ? 'var(--app-accent)' : 'url(#dashedBorderGrad)'"
             stroke-width="2"
             stroke-dasharray="12 12"
           />
@@ -55,8 +55,8 @@
             >
               <defs>
                 <linearGradient id="spinnerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stop-color="#3f9760" />
-                  <stop offset="100%" stop-color="#d1955f" />
+                  <stop offset="0%" stop-color="var(--app-accent)" />
+                  <stop offset="100%" stop-color="var(--app-accent-2)" />
                 </linearGradient>
               </defs>
               <path
@@ -67,7 +67,7 @@
               />
             </svg>
             <span
-              class="font-semibold text-[16px] bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent"
+              class="font-semibold text-[16px] bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] bg-clip-text text-transparent"
             >
               Mengunggah file...
             </span>
@@ -76,16 +76,16 @@
           <div v-else-if="uploadedFile" class="flex flex-col items-center gap-5">
             <div class="flex w-full max-w-[360px] items-center justify-center gap-2">
               <div
-                class="min-w-0 flex-1 px-4 py-2 bg-white rounded-full shadow-sm border border-gray-100"
+                class="min-w-0 flex-1 px-4 py-2 bg-[var(--app-card)] rounded-full shadow-sm border border-[var(--app-card-border)]"
               >
-                <span class="block truncate text-[12px] text-gray-700 font-bold">
+                <span class="block truncate text-[12px] text-[var(--app-text)] font-bold">
                   {{ uploadedFile.name }}
                 </span>
               </div>
 
               <button
                 type="button"
-                class="shrink-0 h-8 w-8 rounded-full border border-[#f3d2ce] bg-white shadow-sm text-[#A0453B] transition-colors hover:bg-[#fff1ef] hover:text-[#8b3e37]"
+                class="shrink-0 h-8 w-8 rounded-full border border-[var(--app-danger-border)] bg-[var(--app-card)] shadow-sm text-[var(--app-danger)] transition-colors hover:bg-[var(--app-danger-bg)] hover:text-[var(--app-danger-dark)]"
                 aria-label="Hapus file"
                 @click.stop="clearUploadedFile"
               >
@@ -96,13 +96,13 @@
             <img src="@/assets/check-gradient.svg" alt="Success" class="w-[60px] h-[60px]" />
 
             <div class="flex flex-col items-center font-semibold text-[16px] leading-[120%]">
-              <div class="text-[#111827]">File successfully</div>
+              <div class="text-[var(--app-text)]">File successfully</div>
               <div class="flex gap-1">
                 <span
-                  class="bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent"
+                  class="bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] bg-clip-text text-transparent"
                   >uploaded</span
                 >
-                <span class="text-[#111827]">!</span>
+                <span class="text-[var(--app-text)]">!</span>
               </div>
             </div>
           </div>
@@ -117,20 +117,20 @@
             <div class="flex flex-col items-center gap-[8px] text-[16px] leading-[120%]">
               <div class="flex flex-col items-center gap-[4px]">
                 <div class="flex items-center gap-[4px] flex-wrap justify-center text-center">
-                  <span class="font-semibold text-[#111827]">Drag & Drop</span>
+                  <span class="font-semibold text-[var(--app-text)]">Drag & Drop</span>
                   <span
-                    class="font-semibold bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent"
+                    class="font-semibold bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] bg-clip-text text-transparent"
                   >
                     {{ fileTypesText }}
                   </span>
-                  <span class="font-semibold text-[#111827]">here</span>
+                  <span class="font-semibold text-[var(--app-text)]">here</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-[4px] text-[12px] mt-1 text-gray-500">
+              <div class="flex items-center gap-[4px] text-[12px] mt-1 text-[var(--app-muted)]">
                 <span>or</span>
                 <span
-                  class="underline font-medium bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent cursor-pointer"
+                  class="underline font-medium bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] bg-clip-text text-transparent cursor-pointer"
                 >
                   browse files
                 </span>
@@ -142,7 +142,7 @@
       </div>
     </div>
 
-    <div v-if="errorMessage" class="mt-3 text-[12px] font-semibold text-[#A0453B] text-center">
+    <div v-if="errorMessage" class="mt-3 text-[12px] font-semibold text-[var(--app-danger)] text-center">
       {{ errorMessage }}
     </div>
   </div>

@@ -286,31 +286,37 @@ onMounted(() => {
       <SIMPSidebar :userAvatar="profile?.avatar_url" />
     </template>
 
-    <section class="min-h-full bg-[#F8FAFC] px-5 py-5">
+    <section class="min-h-full bg-[var(--app-bg)] px-5 py-5 text-[var(--app-text)]">
       <div class="mx-auto max-w-4xl">
         <!-- Header -->
         <div
-          class="mb-5 overflow-hidden rounded-[24px] bg-gradient-to-br from-white via-[#F8FAFC] to-[#E8F3EB] p-5 shadow-sm">
-          <h1 class="text-2xl font-bold text-slate-900">Profil Pengguna</h1>
-          <p class="mt-1 text-[12px] text-slate-500">Kelola dan pantau informasi akun Anda.</p>
+          class="mb-5 overflow-hidden rounded-[24px] bg-[var(--app-card)] p-5 shadow-sm border border-[var(--app-card-border)]"
+        >
+          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Profil Pengguna</h1>
+          <p class="mt-1 text-[12px] text-[var(--app-muted)]">
+            Kelola dan pantau informasi akun Anda.
+          </p>
 
           <div v-if="profile" class="mt-4 flex flex-wrap gap-2.5">
             <VChip :label="profile.status_akun" :variant="accountChipVariant" class="!px-3 !py-2 !text-[13px]">
               <template #icon>
-                <CheckCircle2 class="h-4 w-4 text-[#3F9760]" />
+                <CheckCircle2 class="h-4 w-4 text-[var(--app-accent)]" />
               </template>
             </VChip>
 
             <VChip :label="`Role: ${roleLabel}`" variant="tertiary" class="!px-3 !py-2 !text-[13px]">
               <template #icon>
-                <UsersRound class="h-4 w-4 text-[#3F9760]" />
+                <UsersRound class="h-4 w-4 text-[var(--app-accent)]" />
               </template>
             </VChip>
 
-            <VChip :label="profile.status_verifikasi" :variant="verificationChipVariant"
-              class="!px-3 !py-2 !text-[13px]">
+            <VChip
+              :label="profile.status_verifikasi"
+              :variant="verificationChipVariant"
+              class="!px-3 !py-2 !text-[13px]"
+            >
               <template #icon>
-                <ShieldCheck class="h-4 w-4 text-[#3F9760]" />
+                <ShieldCheck class="h-4 w-4 text-[var(--app-accent)]" />
               </template>
             </VChip>
           </div>
@@ -318,12 +324,14 @@ onMounted(() => {
 
         <!-- Loading -->
         <VCard v-if="profileStore.loading" paddingClass="p-4">
-          <p class="text-[12px] text-slate-600">Memuat data profil...</p>
+          <p class="text-[12px] text-[var(--app-muted)]">Memuat data profil...</p>
         </VCard>
 
         <!-- Error -->
-        <div v-else-if="profileStore.error"
-          class="rounded-2xl border border-red-200 bg-red-50 p-4 text-[12px] text-red-700 shadow-sm">
+        <div
+          v-else-if="profileStore.error"
+          class="rounded-2xl border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-4 text-[12px] text-[var(--app-danger)] shadow-sm"
+        >
           {{ profileStore.error }}
         </div>
 
@@ -334,45 +342,68 @@ onMounted(() => {
             <VCard paddingClass="p-4">
               <div class="flex flex-col items-center text-center">
                 <div
-                  class="relative mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-white shadow-inner ring-8 ring-white">
-                  <div v-if="avatarPreview || profile?.avatar_url"
-                    class="flex h-20 w-20 items-center justify-center rounded-full overflow-hidden">
-                    <img :src="avatarPreview || profile?.avatar_url || undefined" alt="Avatar"
-                      class="h-full w-full object-cover" />
+                  class="relative mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-[var(--app-card)] shadow-inner ring-8 ring-[var(--app-card)]"
+                >
+                  <div
+                    v-if="avatarPreview || profile?.avatar_url"
+                    class="flex h-20 w-20 items-center justify-center rounded-full overflow-hidden"
+                  >
+                    <img
+                      :src="avatarPreview || profile?.avatar_url || undefined"
+                      alt="Avatar"
+                      class="h-full w-full object-cover"
+                    />
                   </div>
-                  <div v-else class="flex h-20 w-20 items-center justify-center rounded-full bg-[#E8F3EB]">
-                    <UserRound class="h-12 w-12 text-[#3F9760]" />
+                  <div
+                    v-else
+                    class="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--app-soft-card)]"
+                  >
+                    <UserRound class="h-12 w-12 text-[var(--app-accent)]" />
                   </div>
 
                   <!-- Upload overlay -->
-                  <button type="button"
+                  <button
+                    type="button"
                     class="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                    @click="triggerAvatarUpload" title="Ubah foto profil">
-                    <Camera class="h-6 w-6 text-white" />
+                    @click="triggerAvatarUpload"
+                    title="Ubah foto profil"
+                  >
+                    <Camera class="h-6 w-6 text-[var(--app-text-inverse)]" />
                   </button>
                 </div>
 
-                <input ref="avatarInputRef" type="file" accept="image/jpeg,image/png,image/gif,image/webp"
-                  class="hidden" @change="handleAvatarFileChange" />
+                <input
+                  ref="avatarInputRef"
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  class="hidden"
+                  @change="handleAvatarFileChange"
+                />
 
                 <!-- Avatar upload preview & actions -->
                 <div v-if="avatarPreview" class="mt-3 flex flex-col items-center gap-2">
-                  <p class="text-[11px] text-slate-500">Pratinjau foto baru</p>
+                  <p class="text-[11px] text-[var(--app-muted)]">Pratinjau foto baru</p>
                   <div class="flex items-center gap-2">
-                    <VButton variant="primary" class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
-                      :loading="isUploadingAvatar" @click="handleUploadAvatar">
+                    <VButton
+                      variant="primary"
+                      class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
+                      :loading="isUploadingAvatar"
+                      @click="handleUploadAvatar"
+                    >
                       Simpan
                     </VButton>
-                    <VButton variant="secondary" class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
-                      @click="cancelAvatarUpload">
+                    <VButton
+                      variant="secondary"
+                      class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
+                      @click="cancelAvatarUpload"
+                    >
                       Batal
                     </VButton>
                   </div>
                 </div>
-                <div v-else>
-                </div>
+                <div v-else></div>
 
-                <h2 class="text-xl font-bold text-[#0C4923]">
+                <h2 class="text-xl font-bold text-[var(--app-accent)]">
                   {{ displayValue(profile.nama) }}
                 </h2>
 
@@ -380,30 +411,38 @@ onMounted(() => {
                   <VChip :label="roleLabel" variant="primary" class="!px-3 !py-1.5 !text-[12px]" />
                 </div>
 
-                <div class="my-4 h-px w-full bg-white/70"></div>
+                <div class="my-4 h-px w-full bg-[var(--app-card-border)]"></div>
 
                 <div class="flex w-full flex-col gap-3 text-left">
                   <div class="flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]">
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
+                    >
                       <Mail class="h-4.5 w-4.5" />
                     </div>
-                    <p class="truncate text-[12px] text-slate-600">
+                    <p class="truncate text-[12px] text-[var(--app-muted)]">
                       {{ displayValue(profile.email) }}
                     </p>
                   </div>
 
                   <div class="flex items-center gap-3">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F9FDFB] text-[#3F9760]">
+                    <div
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
+                    >
                       <Phone class="h-4.5 w-4.5" />
                     </div>
-                    <p class="text-[12px] text-slate-600">
+                    <p class="text-[12px] text-[var(--app-muted)]">
                       {{ displayValue(profile.nomor_hp) }}
                     </p>
                   </div>
                 </div>
 
-                <VButton v-if="profile.show_verification_button" variant="primary"
-                  class="mt-5 !w-full !rounded-xl !px-4 !py-2 !text-[12px]" @click="handleVerifyNow">
+                <VButton
+                  v-if="profile.show_verification_button"
+                  variant="primary"
+                  class="mt-5 !w-full !rounded-xl !px-4 !py-2 !text-[12px]"
+                  @click="handleVerifyNow"
+                >
                   <template #leftIcon>
                     <BadgeCheck class="h-4 w-4" />
                   </template>
@@ -415,13 +454,15 @@ onMounted(() => {
             <!-- Right Information Card -->
             <VCard paddingClass="p-4">
               <div class="mb-4 flex items-center gap-2.5">
-                <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]">
+                <div
+                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
+                >
                   <ClipboardCheck class="h-4.5 w-4.5" />
                 </div>
-                <h2 class="text-lg font-bold text-[#0C4923]">Informasi Pribadi</h2>
+                <h2 class="text-lg font-bold text-[var(--app-accent)]">Informasi Pribadi</h2>
               </div>
 
-              <div class="overflow-hidden rounded-2xl border border-white/70 bg-white/50">
+              <div class="overflow-hidden rounded-2xl border border-[var(--app-card-border)] bg-[var(--app-card)]">
                 <div class="profile-row">
                   <div class="profile-label">
                     <UserRound class="profile-icon" />
@@ -472,7 +513,11 @@ onMounted(() => {
               </div>
 
               <div class="mt-4 flex justify-end">
-                <VButton variant="primary" class="!rounded-xl !px-4 !py-2 !text-[12px]" @click="handleEditProfile">
+                <VButton
+                  variant="primary"
+                  class="!rounded-xl !px-4 !py-2 !text-[12px]"
+                  @click="handleEditProfile"
+                >
                   <template #rightIcon>
                     <Pencil class="h-3.5 w-3.5" />
                   </template>
@@ -485,10 +530,12 @@ onMounted(() => {
           <!-- Account Summary -->
           <VCard paddingClass="p-4" class="mt-4">
             <div class="mb-4 flex items-center gap-2.5">
-              <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#E8F3EB] text-[#3F9760]">
+              <div
+                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
+              >
                 <BriefcaseBusiness class="h-4.5 w-4.5" />
               </div>
-              <h2 class="text-lg font-bold text-[#0C4923]">Ringkasan Akun</h2>
+              <h2 class="text-lg font-bold text-[var(--app-accent)]">Ringkasan Akun</h2>
             </div>
 
             <div class="grid gap-3 md:grid-cols-3">
@@ -508,18 +555,31 @@ onMounted(() => {
                 </div>
                 <div>
                   <p class="summary-title">Status Akun</p>
-                  <p class="summary-value text-[#3F9760]">{{ profile.status_akun }}</p>
+                  <p class="summary-value text-[var(--app-accent)]">{{ profile.status_akun }}</p>
                 </div>
               </div>
 
               <div class="summary-card">
-                <div class="summary-icon"
-                  :class="completenessVariant === 'secondary' ? '!bg-[#F2E0D0] !text-[#9A5B2F]' : ''">
+                <div
+                  class="summary-icon"
+                  :class="
+                    completenessVariant === 'secondary'
+                      ? '!bg-[var(--app-warning-bg)] !text-[var(--app-warning)]'
+                      : ''
+                  "
+                >
                   <ClipboardCheck class="h-5 w-5" />
                 </div>
                 <div>
                   <p class="summary-title">Kelengkapan Data</p>
-                  <p class="summary-value" :class="profile.is_profile_complete ? 'text-[#3F9760]' : 'text-[#9A5B2F]'">
+                  <p
+                    class="summary-value"
+                    :class="
+                      profile.is_profile_complete
+                        ? 'text-[var(--app-accent)]'
+                        : 'text-[var(--app-warning)]'
+                    "
+                  >
                     {{ profile.kelengkapan_data }}
                   </p>
                 </div>
@@ -531,13 +591,21 @@ onMounted(() => {
     </section>
 
     <!-- Edit Profile Modal -->
-    <VModal :isOpen="showEditModal" title="Edit Profil" @update:isOpen="showEditModal = $event"
-      maxWidthClass="max-w-[440px]" :buttons="[
+    <VModal
+      :isOpen="showEditModal"
+      title="Edit Profil"
+      @update:isOpen="showEditModal = $event"
+      maxWidthClass="max-w-[440px]"
+      :buttons="[
         { label: 'Batal', variant: 'secondary', action: closeEditModal },
-        { label: 'Simpan', variant: 'primary', action: handleSaveProfile }
-      ]">
+        { label: 'Simpan', variant: 'primary', action: handleSaveProfile },
+      ]"
+    >
       <div class="w-full flex flex-col gap-4 mt-2 text-left">
-        <div v-if="editError" class="text-[12px] text-red-600 bg-red-50 p-3 rounded-lg">
+        <div
+          v-if="editError"
+          class="text-[12px] text-[var(--app-danger)] bg-[var(--app-danger-bg)] border border-[var(--app-danger-border)] p-3 rounded-lg"
+        >
           {{ editError }}
         </div>
 
@@ -547,12 +615,14 @@ onMounted(() => {
 
         <VInputField v-model="editForm.email" label="Email" type="email" placeholder="Masukkan email" />
 
-
-
         <VInputField v-model="editForm.alamat" label="Alamat" placeholder="Masukkan alamat" />
-        <VInputField v-model="editForm.nomor_hp" label="Nomor Telepon" type="tel"
-          placeholder="Masukkan nomor telepon" />
 
+        <VInputField
+          v-model="editForm.nomor_hp"
+          label="Nomor Telepon"
+          type="tel"
+          placeholder="Masukkan nomor telepon"
+        />
       </div>
     </VModal>
   </DashboardLayout>
@@ -565,7 +635,7 @@ onMounted(() => {
   gap: 12px;
   align-items: center;
   padding: 11px 14px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid var(--app-card-border);
 }
 
 .profile-row:last-child {
@@ -576,7 +646,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #64748b;
+  color: var(--app-muted);
   font-size: 12px;
   font-weight: 500;
 }
@@ -584,11 +654,11 @@ onMounted(() => {
 .profile-icon {
   height: 16px;
   width: 16px;
-  color: #3f9760;
+  color: var(--app-accent);
 }
 
 .profile-value {
-  color: #111827;
+  color: var(--app-heading);
   font-size: 12px;
   font-weight: 600;
 }
@@ -598,12 +668,10 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  background: rgba(249, 253, 251, 0.65);
+  border: 1px solid var(--app-card-border);
+  background: var(--app-card);
   padding: 14px;
-  box-shadow:
-    inset 0 1px 2px rgba(255, 255, 255, 0.5),
-    0 1px 4px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
 }
 
 .summary-icon {
@@ -614,20 +682,20 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #c7e1d0;
-  color: #0c4923;
+  background: var(--app-soft-card);
+  color: var(--app-accent);
 }
 
 .summary-title {
   font-size: 12px;
-  color: #64748b;
+  color: var(--app-muted);
 }
 
 .summary-value {
   margin-top: 2px;
   font-size: 15px;
   font-weight: 700;
-  color: #111827;
+  color: var(--app-heading);
 }
 
 @media (max-width: 768px) {

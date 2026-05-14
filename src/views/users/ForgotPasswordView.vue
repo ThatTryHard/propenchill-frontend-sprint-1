@@ -1,11 +1,11 @@
 <template>
   <div
-    class="w-full max-w-[420px] bg-white rounded-[24px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-[#d4e8da] p-8 flex flex-col items-center text-center"
+    class="w-full max-w-[420px] bg-[var(--app-card)] rounded-[24px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-[var(--app-border)] p-8 flex flex-col items-center text-center"
   >
     <img src="@/assets/SIMP.png" alt="SIMP Logo" class="w-[125px] h-[125px] object-contain mb-6" />
 
-    <h1 class="text-[24px] font-bold text-[#111827] mb-2">Lupa Kata Sandi?</h1>
-    <p class="text-[14px] text-[#718096] leading-relaxed mb-6">
+    <h1 class="text-[24px] font-bold text-[var(--app-heading)] mb-2">Lupa Kata Sandi?</h1>
+    <p class="text-[14px] text-[var(--app-muted)] leading-relaxed mb-6">
       Jangan khawatir! Masukkan email yang terdaftar pada akun SIMP Anda, dan kami akan mengirimkan
       kode OTP untuk mengatur ulang kata sandi.
     </p>
@@ -39,7 +39,7 @@
     <div class="mt-8">
       <button
         @click="$router.push('/login')"
-        class="text-[14px] font-semibold text-[#3f9760] hover:text-[#0c4923] transition-colors"
+        class="text-[14px] font-semibold text-[var(--app-accent)] hover:text-[var(--app-accent-2)] transition-colors"
       >
         Kembali ke Halaman Login
       </button>

@@ -110,12 +110,14 @@ onMounted(() => {
       <SIMPSidebar />
     </template>
 
-    <section class="min-h-full bg-[#F8FAFC] px-7 py-7">
+    <section class="min-h-full bg-[var(--app-bg)] px-7 py-7 text-[var(--app-text)]">
       <div class="mx-auto max-w-5xl">
         <!-- Header -->
         <div class="mb-5">
-          <h1 class="text-2xl font-bold text-slate-900">Help Desk</h1>
-          <p class="mt-1 text-sm text-slate-500">Bagaimana kami dapat membantu Anda?</p>
+          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Help Desk</h1>
+          <p class="mt-1 text-sm text-[var(--app-muted)]">
+            Bagaimana kami dapat membantu Anda?
+          </p>
         </div>
 
         <!-- Search Bar -->
@@ -134,13 +136,13 @@ onMounted(() => {
           v-if="helpStore.loading"
           paddingClass="p-5"
         >
-          <p class="text-[13px] text-slate-600">Memuat data Help & FAQ...</p>
+          <p class="text-[13px] text-[var(--app-muted)]">Memuat data Help & FAQ...</p>
         </VCard>
 
         <!-- Error -->
         <div
           v-else-if="helpStore.error"
-          class="rounded-2xl border border-red-200 bg-red-50 p-5 text-[13px] text-red-700 shadow-sm"
+          class="rounded-2xl border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-5 text-[13px] text-[var(--app-danger)] shadow-sm"
         >
           {{ helpStore.error }}
         </div>
@@ -158,8 +160,8 @@ onMounted(() => {
                 class="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl"
                 :class="
                   category.id === 'info-surat'
-                    ? 'bg-[#C98D4A]/15 text-[#C98D4A]'
-                    : 'bg-[#4A8B50]/15 text-[#4A8B50]'
+                    ? 'bg-[var(--app-accent-2-soft)] text-[var(--app-accent-2)]'
+                    : 'bg-[var(--app-accent-soft)] text-[var(--app-accent)]'
                 "
               >
                 <component
@@ -168,11 +170,11 @@ onMounted(() => {
                 />
               </div>
 
-              <h2 class="text-base font-semibold text-slate-900">
+              <h2 class="text-base font-semibold text-[var(--app-heading)]">
                 {{ category.title }}
               </h2>
 
-              <p class="mt-2 min-h-[52px] text-[13px] leading-6 text-slate-600">
+              <p class="mt-2 min-h-[52px] text-[13px] leading-6 text-[var(--app-muted)]">
                 {{ category.description }}
               </p>
 
@@ -199,7 +201,7 @@ onMounted(() => {
             paddingClass="p-5"
             class="mt-5"
           >
-            <p class="text-[13px] text-slate-600">
+            <p class="text-[13px] text-[var(--app-muted)]">
               Tidak ada kategori bantuan yang sesuai dengan pencarian.
             </p>
           </VCard>
@@ -212,10 +214,10 @@ onMounted(() => {
           >
             <div class="mb-4 flex items-start justify-between gap-4">
               <div>
-                <h2 class="text-lg font-bold text-slate-900">
+                <h2 class="text-lg font-bold text-[var(--app-heading)]">
                   {{ activeCategory.title }}
                 </h2>
-                <p class="mt-1 text-[13px] text-slate-600">
+                <p class="mt-1 text-[13px] text-[var(--app-muted)]">
                   {{ activeCategory.description }}
                 </p>
               </div>
@@ -240,7 +242,7 @@ onMounted(() => {
                 titleClass="text-[13px]"
                 contentClass="text-[12px]"
               >
-                <p class="text-[12px] leading-6 text-[#f8fafc]/90">
+                <p class="text-[12px] leading-6 text-[var(--app-text-inverse)]/90">
                   {{ item.answer }}
                 </p>
               </VAccordion>
@@ -248,7 +250,7 @@ onMounted(() => {
 
             <p
               v-else
-              class="text-[13px] text-slate-600"
+              class="text-[13px] text-[var(--app-muted)]"
             >
               Belum ada panduan pada kategori ini.
             </p>
@@ -256,7 +258,7 @@ onMounted(() => {
 
           <!-- Popular Questions -->
           <div class="mt-7">
-            <h2 class="mb-3 text-lg font-bold text-slate-900">FAQ</h2>
+            <h2 class="mb-3 text-lg font-bold text-[var(--app-heading)]">FAQ</h2>
 
             <div
               v-if="filteredQuestions.length"
@@ -269,7 +271,7 @@ onMounted(() => {
                 titleClass="text-[13px]"
                 contentClass="text-[12px]"
               >
-                <p class="text-[12px] leading-6 text-[#f8fafc]/90">
+                <p class="text-[12px] leading-6 text-[var(--app-text-inverse)]/90">
                   {{ item.answer }}
                 </p>
               </VAccordion>
@@ -279,7 +281,7 @@ onMounted(() => {
               v-else
               paddingClass="p-5"
             >
-              <p class="text-[13px] text-slate-600">
+              <p class="text-[13px] text-[var(--app-muted)]">
                 Tidak ada pertanyaan yang sesuai dengan pencarian.
               </p>
             </VCard>
@@ -292,22 +294,22 @@ onMounted(() => {
           >
             <div class="grid items-center gap-4 md:grid-cols-[1.35fr_1fr]">
               <div>
-                <h2 class="text-lg font-bold text-slate-900">
+                <h2 class="text-lg font-bold text-[var(--app-heading)]">
                   {{ helpData.additional_help.title }}
                 </h2>
 
-                <p class="mt-1.5 max-w-xl text-[12px] leading-5 text-slate-600">
+                <p class="mt-1.5 max-w-xl text-[12px] leading-5 text-[var(--app-muted)]">
                   {{ helpData.additional_help.description }}
                 </p>
 
                 <div class="mt-3 flex items-center gap-3">
                   <div
-                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4A8B50]/15 text-[#4A8B50]"
+                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-accent-soft)] text-[var(--app-accent)]"
                   >
                     <Mail class="h-4 w-4" />
                   </div>
 
-                  <p class="break-all text-base font-semibold text-slate-800">
+                  <p class="break-all text-base font-semibold text-[var(--app-heading)]">
                     {{ helpData.support_email }}
                   </p>
                 </div>
@@ -340,20 +342,20 @@ onMounted(() => {
               </div>
 
               <div
-                class="flex items-center gap-3 border-t border-white/60 pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"
+                class="flex items-center gap-3 border-t border-[var(--app-card-border)] pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"
               >
                 <div
-                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#4A8B50]/15 text-[#4A8B50]"
+                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-accent-soft)] text-[var(--app-accent)]"
                 >
                   <Clock class="h-4 w-4" />
                 </div>
 
                 <div>
-                  <p class="text-[12px] font-semibold text-slate-800">Jam Layanan</p>
-                  <p class="mt-0.5 text-[12px] text-slate-600">
+                  <p class="text-[12px] font-semibold text-[var(--app-heading)]">Jam Layanan</p>
+                  <p class="mt-0.5 text-[12px] text-[var(--app-muted)]">
                     {{ helpData.additional_help.operational_days }}
                   </p>
-                  <p class="text-[12px] text-slate-600">
+                  <p class="text-[12px] text-[var(--app-muted)]">
                     {{ helpData.additional_help.operational_hours }}
                   </p>
                 </div>

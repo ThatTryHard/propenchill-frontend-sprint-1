@@ -11,9 +11,9 @@ defineProps<{
   <div
     class="
       relative w-full h-[186px] overflow-hidden flex-shrink-0
-      rounded-[28px] border-[0.5px] border-transparent
-      text-center text-[#111827]
-      bg-[rgba(154,200,172,0.3)]
+      rounded-[28px] border-[0.5px] border-[var(--app-card-border)]
+      text-center text-[var(--app-text)]
+      bg-[var(--app-soft-card)]
       shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.4)]
       backdrop-blur-[10px]
     "
@@ -33,7 +33,7 @@ defineProps<{
       <b
         class="
           w-full text-[32px] leading-[120%]
-          bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)]
+          bg-[radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))]
           bg-clip-text text-transparent
         "
       >

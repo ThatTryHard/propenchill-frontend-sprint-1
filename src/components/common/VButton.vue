@@ -32,16 +32,16 @@ defineEmits(['click'])
 const buttonVariantClasses = computed(() => {
   switch (props.variant) {
     case 'primary':
-      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] text-[#f8fafc] hover:scale-101 active:scale-98 shadow-[0px_-2px_60px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_-2px_20px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[linear-gradient(rgba(17,24,39,0.3),rgba(17,24,39,0.3)),radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] disabled:text-[rgba(248,250,252,0.5)] disabled:cursor-not-allowed disabled:brightness-100'
+      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))] text-[var(--app-text-inverse)] hover:scale-101 active:scale-98 shadow-[0px_-2px_60px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_-2px_20px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[linear-gradient(rgba(17,24,39,0.3),rgba(17,24,39,0.3)),radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))] disabled:text-[var(--app-text-inverse-muted)] disabled:cursor-not-allowed disabled:brightness-100'
 
     case 'secondary':
-      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[#c9e9da] text-[#111827] hover:scale-101 brightness-95 active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[rgba(201,233,218,0.8)] disabled:text-[#71757b] disabled:cursor-not-allowed'
+      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[var(--app-chip-primary)] text-[var(--app-text)] hover:scale-101 brightness-95 active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[var(--app-input-disabled-bg)] disabled:text-[var(--app-muted)] disabled:cursor-not-allowed'
 
     case 'tertiary':
-      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[#f8fafc] text-[#111827] hover:scale-101 bg-[#e2e8f0] active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[#e2e3e5] disabled:text-[#71757b] disabled:cursor-not-allowed'
+      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[var(--app-card)] text-[var(--app-text)] hover:scale-101 bg-[var(--app-soft-card)] active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[var(--app-input-disabled-bg)] disabled:text-[var(--app-muted)] disabled:cursor-not-allowed'
 
     case 'login':
-      return 'bg-[#88929A] text-white hover:bg-[#767E86] rounded-xl px-6 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95'
+      return 'bg-[var(--app-muted)] text-[var(--app-text-inverse)] hover:bg-[var(--app-text-soft)] rounded-xl px-6 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95'
 
     default:
       return ''

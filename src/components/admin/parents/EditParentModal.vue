@@ -5,6 +5,7 @@ import { useParentStore } from '@/stores/parents'
 import { parseFieldErrors } from '@/lib/fieldErrors'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
+import VTextareaField from '@/components/common/VTextareaField.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -30,6 +31,7 @@ const errors = reactive({
   nama: '',
   email: '',
   no_hp: '',
+  alamat: '',
 })
 
 const submitError = ref('')
@@ -51,6 +53,7 @@ const resetErrors = () => {
   errors.nama = ''
   errors.email = ''
   errors.no_hp = ''
+  errors.alamat = ''
   submitError.value = ''
 }
 
@@ -91,9 +94,10 @@ const loadParentData = async () => {
 
   try {
     const parent = await store.fetchParentById(props.parentId)
+
     form.nama = parent.nama || ''
     form.email = parent.email || ''
-    form.no_hp = parent.no_hp || ''
+    form.no_hp = parent.no_hp || parent.no_hp || ''
     form.tanggal_lahir = toDateInputValue(parent.tanggal_lahir)
     form.alamat = parent.alamat || ''
   } catch (error) {
@@ -138,6 +142,7 @@ const handleSubmit = async () => {
     if (form.alamat.trim()) body.alamat = form.alamat.trim()
 
     const data = await store.updateParent(props.parentId, body)
+
     emit('updated', data.message || 'Data wali murid berhasil diperbarui.')
     closeModal()
   } catch (error) {
@@ -145,11 +150,13 @@ const handleSubmit = async () => {
       nama: ['nama', 'name'],
       email: ['email'],
       no_hp: ['no_hp', 'nomor_hp', 'nomor hp', 'phone'],
+      alamat: ['alamat', 'address'],
     })
 
     errors.nama = parsed.fieldErrors.nama || ''
     errors.email = parsed.fieldErrors.email || ''
     errors.no_hp = parsed.fieldErrors.no_hp || ''
+    errors.alamat = parsed.fieldErrors.alamat || ''
     submitError.value = parsed.generalError
   } finally {
     isSubmitting.value = false
@@ -169,7 +176,7 @@ const handleSubmit = async () => {
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
         @click.self="closeModal"
       >
         <transition
@@ -180,95 +187,78 @@ const handleSubmit = async () => {
           leave-from-class="opacity-100 scale-100 translate-y-0"
           leave-to-class="opacity-0 scale-95 translate-y-4"
         >
-          <div
-            v-if="isOpen"
-            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="background: linear-gradient(#f8fafc, #f8fafc) padding-box, linear-gradient(243.74deg, rgba(255,255,255,0.05), #ffffff 47.12%, rgba(255,255,255,0.05)) border-box;"
-          >
+          <div v-if="isOpen" class="parent-modal relative w-full max-w-[720px]">
             <div class="flex flex-col gap-5">
               <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="text-[#111827] hover:opacity-70 transition"
-                >
-                  <X class="w-5 h-5" />
+                <button type="button" class="modal-close-button" @click="closeModal">
+                  <X class="h-5 w-5" />
                 </button>
               </div>
 
-              <div class="flex flex-col items-center gap-2">
-                <Edit class="w-12 h-12 text-[#3f9760]" />
-                <b class="text-[24px] leading-[120%]">Edit Wali Murid</b>
+              <div class="flex flex-col items-center gap-2 text-center">
+                <Edit class="h-12 w-12 text-[var(--app-accent)]" />
+                <b class="modal-title text-[1.7rem] leading-[120%]">Edit Wali Murid</b>
               </div>
 
-              <div v-if="isFetching" class="text-center text-[14px] text-[#718096] py-8">
+              <div
+                v-if="isFetching"
+                class="py-8 text-center text-[1rem] text-[var(--app-muted)]"
+              >
                 Memuat data...
               </div>
 
               <div v-else class="flex flex-col gap-4">
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Nama Lengkap </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.nama"
-                      type="text"
-                      placeholder="Masukkan nama lengkap"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
-                    />
-                  </div>
-                  <p v-if="errors.nama" class="text-[12px] text-[#A0453B]">{{ errors.nama }}</p>
-                </div>
+                <VInputField
+                  v-model="form.nama"
+                  label="Nama Lengkap"
+                  type="text"
+                  placeholder="Masukkan nama lengkap"
+                  :disabled="isSubmitting"
+                  :state="errors.nama ? 'error' : 'default'"
+                  :message="errors.nama"
+                />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Email </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.email"
-                      type="email"
-                      placeholder="nama@email.com"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
-                    />
-                  </div>
-                  <p v-if="errors.email" class="text-[12px] text-[#A0453B]">{{ errors.email }}</p>
-                </div>
+                <VInputField
+                  v-model="form.email"
+                  label="Email"
+                  type="email"
+                  placeholder="nama@email.com"
+                  :disabled="isSubmitting"
+                  :state="errors.email ? 'error' : 'default'"
+                  :message="errors.email"
+                />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Nomor HP </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.no_hp"
-                      type="text"
-                      placeholder="08123456789"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
-                    />
-                  </div>
-                  <p v-if="errors.no_hp" class="text-[12px] text-[#A0453B]">{{ errors.no_hp }}</p>
-                </div>
+                <VInputField
+                  v-model="form.no_hp"
+                  label="Nomor HP"
+                  type="text"
+                  placeholder="08123456789"
+                  :disabled="isSubmitting"
+                  :state="errors.no_hp ? 'error' : 'default'"
+                  :message="errors.no_hp"
+                />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Tanggal Lahir </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.tanggal_lahir"
-                      type="date"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827]"
-                    />
-                  </div>
-                </div>
+                <VInputField
+                  v-model="form.tanggal_lahir"
+                  label="Tanggal Lahir"
+                  type="date"
+                  placeholder="Pilih tanggal lahir"
+                  :disabled="isSubmitting"
+                />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Alamat </label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input
-                      v-model="form.alamat"
-                      type="text"
-                      placeholder="Masukkan alamat"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]"
-                    />
-                  </div>
-                </div>
+                <VTextareaField
+                  v-model="form.alamat"
+                  label="Alamat"
+                  placeholder="Masukkan alamat"
+                  :rows="3"
+                  :disabled="isSubmitting"
+                  :state="errors.alamat ? 'error' : 'default'"
+                  :message="errors.alamat"
+                />
 
-                <p v-if="submitError" class="text-[13px] text-[#A0453B] font-medium">{{ submitError }}</p>
+                <p v-if="submitError" class="text-[0.93rem] font-medium text-[var(--app-danger)]">
+                  {{ submitError }}
+                </p>
               </div>
 
               <div class="flex items-center justify-end gap-2">
@@ -297,3 +287,33 @@ const handleSubmit = async () => {
     </transition>
   </Teleport>
 </template>
+
+<style scoped>
+.parent-modal {
+  overflow: visible;
+  border: 0.5px solid var(--app-modal-border);
+  border-radius: 24px;
+  background: var(--app-modal-bg);
+  color: var(--app-modal-text);
+  padding: 28px 32px;
+  box-shadow:
+    0px -2px 4px rgba(0, 0, 0, 0.2),
+    0px 2px 4px rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.modal-close-button {
+  color: var(--app-modal-text);
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease;
+}
+
+.modal-close-button:hover {
+  opacity: 0.7;
+}
+
+.modal-title {
+  color: var(--app-modal-text);
+}
+</style>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { X, Clock, User } from 'lucide-vue-next'
 import VButton from '@/components/common/VButton.vue'
+import VTextareaField from '@/components/common/VTextareaField.vue'
 
 const props = defineProps({
   isOpen: {
@@ -10,11 +11,11 @@ const props = defineProps({
   },
   reviewerName: {
     type: String,
-    default: 'Dra. Siti Aminah, M.Pd',
+    default: '-',
   },
   reviewerTitle: {
     type: String,
-    default: 'Guru Akademik',
+    default: '-',
   },
   rejectionNote: {
     type: String,
@@ -22,7 +23,7 @@ const props = defineProps({
   },
   rejectionDate: {
     type: String,
-    default: '25 Februari 2026, 10:30',
+    default: '-',
   },
   reviewerPhoto: {
     type: String,
@@ -38,6 +39,17 @@ const emit = defineEmits<{
 const needRevision = ref<boolean>(true)
 const userNote = ref<string>(props.rejectionNote)
 const errorMessage = ref<string>('')
+
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      needRevision.value = true
+      userNote.value = props.rejectionNote || ''
+      errorMessage.value = ''
+    }
+  },
+)
 
 function closeModal() {
   userNote.value = ''
@@ -68,106 +80,115 @@ function handleCancel() {
 
 <template>
   <Teleport to="body">
-    <transition enter-active-class="transition duration-300 ease-out" enter-from-class="opacity-0"
-      enter-to-class="opacity-100" leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100"
-      leave-to-class="opacity-0">
-      <div v-if="isOpen" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-        @click.self="closeModal">
-        <transition enter-active-class="transition duration-300 ease-out"
-          enter-from-class="opacity-0 scale-95 translate-y-4" enter-to-class="opacity-100 scale-100 translate-y-0"
-          leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 scale-100 translate-y-0"
-          leave-to-class="opacity-0 scale-95 translate-y-4">
-          <div v-if="isOpen"
-            class="relative w-full max-w-[520px] bg-white rounded-[24px] p-6 shadow-2xl overflow-hidden font-['Plus_Jakarta_Sans']">
-            <!-- Close Button -->
-            <button @click="closeModal"
-              class="absolute top-5 right-5 text-[#6b7280] hover:text-[#111827] transition-colors">
-              <X class="w-6 h-6" />
+    <transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+        @click.self="closeModal"
+      >
+        <transition
+          enter-active-class="transition duration-300 ease-out"
+          enter-from-class="opacity-0 scale-95 translate-y-4"
+          enter-to-class="opacity-100 scale-100 translate-y-0"
+          leave-active-class="transition duration-200 ease-in"
+          leave-from-class="opacity-100 scale-100 translate-y-0"
+          leave-to-class="opacity-0 scale-95 translate-y-4"
+        >
+          <div v-if="isOpen" class="revision-note-modal relative w-full max-w-[520px]">
+            <button type="button" class="modal-close-button" @click="closeModal">
+              <X class="h-6 w-6" />
             </button>
 
-            <!-- Title -->
-            <h3 class="text-[24px] font-bold leading-[120%] text-[#111827] mb-6">
+            <h3 class="modal-title mb-6 text-[1.7rem] font-bold leading-[120%]">
               Catatan
             </h3>
 
-            <!-- Reviewer Card -->
-            <div class="bg-[#f5f5f5] rounded-[12px] p-4 mb-6">
+            <div class="reviewer-card mb-6 rounded-[12px] p-4">
               <div class="flex gap-4">
-                <!-- Profile Photo -->
                 <div class="flex-shrink-0">
-                  <div
-                    class="w-[48px] h-[48px] rounded-full bg-[#d4e8d9] flex items-center justify-center overflow-hidden">
-                    <img v-if="reviewerPhoto" :src="reviewerPhoto" :alt="reviewerName"
-                      class="w-full h-full object-cover" />
-                    <User v-else class="w-6 h-6 text-[#3f9760]" />
+                  <div class="reviewer-avatar flex h-[3.45rem] w-[3.45rem] items-center justify-center overflow-hidden rounded-full">
+                    <img
+                      v-if="reviewerPhoto"
+                      :src="reviewerPhoto"
+                      :alt="reviewerName"
+                      class="h-full w-full object-cover"
+                    />
+                    <User v-else class="h-6 w-6 text-[var(--app-accent)]" />
                   </div>
                 </div>
 
-                <!-- Reviewer Info & Note Input -->
-                <div class="flex-1 min-w-0">
-                  <h4 class="text-[16px] font-bold text-[#111827] mb-0.5">
+                <div class="min-w-0 flex-1">
+                  <h4 class="modal-title mb-0.5 text-[1.125rem] font-bold">
                     {{ reviewerName }}
                   </h4>
-                  <p class="text-[14px] text-[#6b7280] mb-3">
+
+                  <p class="modal-muted mb-3 text-[1rem]">
                     {{ reviewerTitle }}
                   </p>
 
-                  <!-- Rejection Note Textarea -->
-                  <textarea v-model="userNote" placeholder="Ketik catatan di sini..." rows="3"
-                    class="w-full rounded-[8px] border border-[#d9e2e7] bg-white px-3 py-2 text-[14px] text-[#111827] outline-none transition placeholder:text-[#b2b5ba] focus:border-[#3f9760] resize-none mb-2" />
-                  <p v-if="errorMessage" class="text-[12px] text-[#dc3545] mb-2">
-                    {{ errorMessage }}
-                  </p>
+                  <VTextareaField
+                    v-model="userNote"
+                    placeholder="Ketik catatan di sini..."
+                    :rows="3"
+                    :state="errorMessage ? 'error' : 'default'"
+                    :message="errorMessage"
+                  />
 
-                  <!-- Timestamp -->
-                  <div class="flex items-center gap-1.5 text-[12px] text-[#9ca3af]">
-                    <Clock class="w-3.5 h-3.5" />
+                  <div class="modal-muted mt-2 flex items-center gap-1.5 text-[0.85rem]">
+                    <Clock class="h-3.5 w-3.5" />
                     <span>{{ rejectionDate }}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Radio Options -->
-            <div class="flex items-center justify-end gap-6 mb-6">
-              <label class="flex items-center gap-2 cursor-pointer group">
+            <div class="mb-6 flex items-center justify-end gap-6">
+              <label class="revision-radio-label group flex cursor-pointer items-center gap-2">
                 <div class="relative">
                   <input v-model="needRevision" type="radio" :value="true" class="peer sr-only" />
+
+                  <div class="radio-circle"></div>
+
                   <div
-                    class="w-5 h-5 rounded-full border-2 border-[#d4e8d9] peer-checked:border-[#3f9760] peer-checked:bg-[#3f9760] transition-all">
-                  </div>
-                  <div
-                    class="absolute inset-0 flex items-center justify-center opacity-0 peer-checked:opacity-100 transition-opacity">
-                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                    class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity peer-checked:opacity-100"
+                  >
+                    <div class="h-2 w-2 rounded-full bg-[var(--app-text-inverse)]"></div>
                   </div>
                 </div>
-                <span class="text-[14px] font-semibold text-[#111827] group-hover:text-[#3f9760] transition-colors">
+
+                <span class="text-[1rem] font-semibold transition-colors">
                   Ajukan Revisi
                 </span>
               </label>
 
-              <label class="flex items-center gap-2 cursor-pointer group">
+              <label class="revision-radio-label group flex cursor-pointer items-center gap-2">
                 <div class="relative">
                   <input v-model="needRevision" type="radio" :value="false" class="peer sr-only" />
+
+                  <div class="radio-circle"></div>
+
                   <div
-                    class="w-5 h-5 rounded-full border-2 border-[#d4e8d9] peer-checked:border-[#3f9760] peer-checked:bg-[#3f9760] transition-all">
-                  </div>
-                  <div
-                    class="absolute inset-0 flex items-center justify-center opacity-0 peer-checked:opacity-100 transition-opacity">
-                    <div class="w-2 h-2 rounded-full bg-white"></div>
+                    class="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity peer-checked:opacity-100"
+                  >
+                    <div class="h-2 w-2 rounded-full bg-[var(--app-text-inverse)]"></div>
                   </div>
                 </div>
-                <span class="text-[14px] font-semibold text-[#111827] group-hover:text-[#3f9760] transition-colors">
+
+                <span class="text-[1rem] font-semibold transition-colors">
                   Tidak Perlu Revisi
                 </span>
               </label>
             </div>
 
-            <!-- Submit Button -->
             <div class="flex justify-end">
-              <VButton variant="primary"
-                class="!px-8 !py-3 !rounded-full !bg-[#3f9760] !hover:bg-[#2d7a4a] !text-white !font-semibold !text-[14px]"
-                @click="handleConfirm">
+              <VButton variant="primary" class="!w-[132px]" @click="handleConfirm">
                 Kirim
               </VButton>
             </div>
@@ -177,3 +198,73 @@ function handleCancel() {
     </transition>
   </Teleport>
 </template>
+
+<style scoped>
+.revision-note-modal {
+  overflow: visible;
+  border: 0.5px solid var(--app-modal-border);
+  border-radius: 24px;
+  background: var(--app-modal-bg);
+  color: var(--app-modal-text);
+  padding: 28px 32px;
+  box-shadow:
+    0px -2px 4px rgba(0, 0, 0, 0.2),
+    0px 2px 4px rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: var(--app-modal-text);
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease;
+}
+
+.modal-close-button:hover {
+  opacity: 0.7;
+}
+
+.modal-title {
+  color: var(--app-modal-text);
+}
+
+.modal-muted {
+  color: var(--app-muted);
+}
+
+.reviewer-card {
+  background: var(--app-soft-card);
+  border: 1px solid var(--app-border);
+}
+
+.reviewer-avatar {
+  background: rgba(63, 151, 96, 0.14);
+}
+
+.revision-radio-label {
+  color: var(--app-modal-text);
+}
+
+.revision-radio-label:hover {
+  color: var(--app-accent);
+}
+
+.radio-circle {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  border: 2px solid var(--app-border);
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.peer:checked + .radio-circle {
+  border-color: var(--app-accent);
+  background: var(--app-accent);
+}
+</style>

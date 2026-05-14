@@ -7,8 +7,8 @@
     <div class="p-8 flex flex-col gap-6 h-full font-sans">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Akun Staff/Admin</h1>
-          <p class="text-[#718096] text-sm mt-1">Daftar akun pengelola sistem yang terdaftar</p>
+          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Kelola Akun Staff/Admin</h1>
+          <p class="text-[var(--app-muted)] text-sm mt-1">Daftar akun pengelola sistem yang terdaftar</p>
         </div>
         <VButton variant="primary" @click="$router.push('/admin-management/create')">
           <template #leftIcon><Plus :size="18" /></template>
@@ -34,33 +34,33 @@
         />
       </div>
 
-      <div class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 shadow-sm">
+      <div class="bg-[var(--app-card)] rounded-2xl border border-[var(--app-card-border)] overflow-hidden flex-1 shadow-sm">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-[#e2e8f0] bg-[#f8fafc]">
+              <tr class="border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)]">
                 <th
-                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                  class="px-6 py-4 text-[13px] font-semibold text-[var(--app-muted)] uppercase tracking-wider"
                 >
                   No
                 </th>
                 <th
-                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                  class="px-6 py-4 text-[13px] font-semibold text-[var(--app-muted)] uppercase tracking-wider"
                 >
                   Nama
                 </th>
                 <th
-                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                  class="px-6 py-4 text-[13px] font-semibold text-[var(--app-muted)] uppercase tracking-wider"
                 >
                   Email
                 </th>
                 <th
-                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider"
+                  class="px-6 py-4 text-[13px] font-semibold text-[var(--app-muted)] uppercase tracking-wider"
                 >
                   Role
                 </th>
                 <th
-                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase tracking-wider text-center"
+                  class="px-6 py-4 text-[13px] font-semibold text-[var(--app-muted)] uppercase tracking-wider text-center"
                 >
                   Aksi
                 </th>
@@ -68,12 +68,12 @@
             </thead>
             <tbody>
               <tr v-if="adminStore.isLoading">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                <td colspan="5" class="px-6 py-12 text-center text-[var(--app-muted)]">
                   Memuat data admin...
                 </td>
               </tr>
               <tr v-else-if="adminStore.admins.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                <td colspan="5" class="px-6 py-12 text-center text-[var(--app-muted)]">
                   Data tidak tersedia
                 </td>
               </tr>
@@ -81,14 +81,14 @@
                 v-else
                 v-for="(admin, index) in adminStore.admins"
                 :key="admin.id"
-                class="border-b border-[#f1f5f9] hover:bg-[#f8fafc] transition-colors"
+                class="border-b border-[var(--app-card-border)] hover:bg-[var(--app-table-row-hover)] transition-colors"
               >
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ index + 1 }}</td>
-                <td class="px-6 py-4 text-[14px] font-medium text-[#1a202c]">{{ admin.nama }}</td>
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ admin.email }}</td>
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">
+                <td class="px-6 py-4 text-[14px] text-[var(--app-subtext)]">{{ index + 1 }}</td>
+                <td class="px-6 py-4 text-[14px] font-medium text-[var(--app-heading)]">{{ admin.nama }}</td>
+                <td class="px-6 py-4 text-[14px] text-[var(--app-subtext)]">{{ admin.email }}</td>
+                <td class="px-6 py-4 text-[14px] text-[var(--app-subtext)]">
                   <span
-                    class="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-semibold uppercase"
+                    class="px-2 py-1 bg-[var(--app-info-bg)] text-[var(--app-info)] rounded text-xs font-semibold uppercase"
                   >
                     {{ admin.role }}
                   </span>
@@ -97,14 +97,14 @@
                   <div class="flex items-center justify-center gap-2">
                     <button
                       @click="$router.push('/admin-management/edit/' + admin.id)"
-                      class="p-2 rounded-lg text-[#3F9760] hover:bg-[#e8f3eb] transition-colors"
+                      class="p-2 rounded-lg text-[var(--app-accent)] hover:bg-[var(--app-soft-card)] transition-colors"
                       title="Edit"
                     >
                       <Pencil :size="16" />
                     </button>
                     <button
                       @click="openDeleteConfirm(admin)"
-                      class="p-2 rounded-lg text-[#A0453B] hover:bg-[#fde8e8] transition-colors"
+                      class="p-2 rounded-lg text-[var(--app-danger)] hover:bg-[var(--app-danger-bg)] transition-colors"
                       title="Hapus"
                     >
                       <Trash2 :size="16" />
@@ -128,7 +128,7 @@
         :buttons="formButtons"
       >
         <template #icon>
-          <component :is="isEdit ? UserCheck : UserPlus" class="w-10 h-10 text-[#3f9760]" />
+          <component :is="isEdit ? UserCheck : UserPlus" class="w-10 h-10 text-[var(--app-accent)]" />
         </template>
 
         <div class="w-full flex flex-col gap-5 mt-4 text-left">
@@ -152,7 +152,7 @@
           />
 
           <div class="flex flex-col gap-2">
-            <label class="text-[16px] font-semibold text-[#111827]">Role Akses</label>
+            <label class="text-[16px] font-semibold text-[var(--app-text)]">Role Akses</label>
             <VDropdown
               v-model="form.role"
               :options="roleOptions"
@@ -170,7 +170,7 @@
         :buttons="deleteButtons"
       >
         <template #icon>
-          <UserX class="w-10 h-10 text-red-500" />
+          <UserX class="w-10 h-10 text-[var(--app-danger)]" />
         </template>
       </VModal>
     </div>

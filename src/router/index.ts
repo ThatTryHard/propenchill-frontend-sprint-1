@@ -28,6 +28,8 @@ import { useGlobalAlert } from '@/composables/useGlobalAlert'
 import SuratAntreanListView from '@/views/surat_antrean/SuratAntreanListView.vue'
 import SuratAntreanDetailView from '@/views/surat_antrean/SuratAntreanDetailView.vue'
 import HelpFAQView from '@/views/users/HelpFAQView.vue'
+import SettingsView from '@/views/users/SettingsView.vue'
+import ProfileView from '@/views/users/ProfileView.vue'
 import ActivityLogListView from '@/views/activity_logs/ActivityLogListView.vue'
 import ActivityLogDetailView from '@/views/activity_logs/ActivityLogDetailView.vue'
 import DashboardSummary from '@/views/field_summary/DashboardSummary.vue'
@@ -88,7 +90,7 @@ const router = createRouter({
     },
     {
       path: '/status',
-      name: 'status',
+      name: 'status',  
       component: StatusView,
     },
     {
@@ -399,10 +401,27 @@ const router = createRouter({
     {
       path: '/help',
       name: 'help-faq',
-      component: () => import('@/views/users/HelpFAQView.vue'),
+      component: HelpFAQView,
       meta: {
         requiresAuth: true,
         roleAccess: ['WALI_MURID'],
+      },
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: [
+          'ADMIN',
+          'KEPSEK',
+          'GURU',
+          'WALI_MURID',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
       },
     },
     {
@@ -426,7 +445,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('@/views/users/ProfileView.vue'),
+      component: ProfileView,
       meta: {
         requiresAuth: true,
         roleAccess: [

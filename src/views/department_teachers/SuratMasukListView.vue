@@ -196,23 +196,23 @@ onMounted(() => {
     </template>
 
     <div
-      class="w-full min-h-screen bg-[#f8fafc] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans"
+      class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans"
     >
       <section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[#1e293b]">
+          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
             Arsip Surat Masuk
           </h1>
-          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[#64748b]">
+          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[var(--app-muted)]">
             Kelola dan pantau seluruh daftar surat masuk kedinasan.
           </p>
         </div>
       </section>
 
-      <div class="bg-white border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm">
+      <div class="bg-[var(--app-card)] border border-[var(--app-border)] rounded-[24px] p-6 shadow-sm">
         <div class="flex flex-wrap items-end gap-4 w-full">
           <div class="flex-[3] min-w-[280px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">Pencarian</label>
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]">Pencarian</label>
             <VInputField
               v-model="filters.search"
               state="search"
@@ -230,7 +230,7 @@ onMounted(() => {
           </div>
 
           <div class="flex-[2] min-w-[180px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[#111827]"
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]"
               >Status Surat</label
             >
             <VDropdown
@@ -243,7 +243,7 @@ onMounted(() => {
           <div class="flex-[1] min-w-[120px]">
             <button
               @click="fetchSurat(1)"
-              class="w-full h-[56px] rounded-[12px] bg-[#3f9760] hover:bg-[#2f8a50] text-white font-semibold transition-colors flex items-center justify-center gap-2"
+              class="w-full h-[56px] rounded-[12px] bg-[var(--app-success)] hover:bg-[var(--app-success-dark)] text-white font-semibold transition-colors flex items-center justify-center gap-2"
             >
               <SearchIcon class="w-5 h-5" /> Cari
             </button>
@@ -251,7 +251,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="w-full bg-white border border-[#e2e8f0] rounded-[24px] shadow-sm overflow-hidden">
+      <div class="w-full bg-[var(--app-card)] border border-[var(--app-border)] rounded-[24px] shadow-sm overflow-hidden">
         <VTable
           :columns="tableColumns"
           :rows="suratMasukStore.suratList"
@@ -259,23 +259,23 @@ onMounted(() => {
           class="w-full table-fixed break-words"
         >
           <template #cell-nomor_surat="{ row }">
-            <span class="font-semibold text-[#1e293b]">
+            <span class="font-semibold text-[var(--app-heading)]">
               {{ row.nomor_surat_sistem || row.nomor_surat_pengirim || '-' }}
             </span>
           </template>
 
           <template #cell-tanggal_terima="{ value }">
-            <span class="whitespace-nowrap text-[#64748b]">{{ formatDate(value) }}</span>
+            <span class="whitespace-nowrap text-[var(--app-muted)]">{{ formatDate(value) }}</span>
           </template>
 
           <template #cell-pengirim="{ row }">
-            <span class="text-[#334155] line-clamp-2" :title="row.pengirim?.nama_instansi">
+            <span class="text-[var(--app-text)] line-clamp-2" :title="row.pengirim?.nama_instansi">
               {{ row.pengirim?.nama_instansi || '-' }}
             </span>
           </template>
 
           <template #cell-perihal="{ value }">
-            <span class="text-[#334155] line-clamp-2" :title="value">{{ value }}</span>
+            <span class="text-[var(--app-text)] line-clamp-2" :title="value">{{ value }}</span>
           </template>
 
           <template #cell-status="{ value }">
@@ -300,7 +300,7 @@ onMounted(() => {
                 variant="login"
                 @click="confirmDelete(row.id_surat_masuk)"
                 :disabled="!canDeleteRow(row)"
-                class="!px-3 !py-1.5 !text-[13px] !rounded-[10px] !bg-[#fee2e2] !text-[#dc2626] !border-none hover:!bg-[#fecaca]"
+                class="!px-3 !py-1.5 !text-[13px] !rounded-[10px] !bg-[var(--app-danger-light)] !text-[var(--app-danger)] !border-none hover:!bg-[var(--app-danger-lighter)]"
               >
                 Hapus
               </VButton>

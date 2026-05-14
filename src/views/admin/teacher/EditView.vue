@@ -7,19 +7,19 @@
     <div class="p-8 flex flex-col gap-6 max-w-[800px]">
       <button
         @click="$router.push('/admin/teachers')"
-        class="flex items-center gap-1 text-sm text-[#718096] mb-4 hover:text-[#3f9760] transition-colors"
+        class="flex items-center gap-1 text-sm text-[var(--app-muted)] mb-4 hover:text-[var(--app-accent)] transition-colors"
       >
         <ArrowLeft :size="16" /> Kembali
       </button>
 
-      <h1 class="text-2xl font-bold text-[#1a202c]">Edit Data Guru</h1>
+      <h1 class="text-2xl font-bold text-[var(--app-heading)]">Edit Data Guru</h1>
 
-      <div v-if="isFetching" class="py-12 text-center text-[#718096]">Memuat data...</div>
+      <div v-if="isFetching" class="py-12 text-center text-[var(--app-muted)]">Memuat data...</div>
 
       <template v-else>
         <VAlert v-if="alert.visible" v-bind="alert" @close="alert.visible = false" />
 
-        <div class="flex flex-col gap-4 bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-sm">
+        <div class="flex flex-col gap-4 bg-[var(--app-card)] p-6 rounded-2xl border border-[var(--app-card-border)] shadow-sm">
           <VInputField
             v-model="form.nama"
             label="Nama Lengkap"
@@ -40,13 +40,13 @@
           />
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium text-[#4a5568]">Jabatan</label>
+            <label class="text-sm font-medium text-[var(--app-text-soft)]">Jabatan</label>
             <VDropdown
               v-model="form.jabatan"
               :options="jabatanOptions"
               placeholder="Pilih Jabatan"
             />
-            <span v-if="errors.jabatan" class="text-xs text-red-500 mt-1">{{
+            <span v-if="errors.jabatan" class="text-xs text-[var(--app-danger)] mt-1">{{
               errors.jabatan
             }}</span>
           </div>
@@ -70,7 +70,7 @@
         description="Apakah Anda yakin ingin memperbarui data ini?"
         :buttons="updateButtons"
       >
-        <template #icon><UserCheck class="w-10 h-10 text-[#3f9760]" /></template>
+        <template #icon><UserCheck class="w-10 h-10 text-[var(--app-accent)]" /></template>
       </VModal>
     </div>
   </DashboardLayout>
