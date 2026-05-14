@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { X, Eye, Copy, Check } from 'lucide-vue-next'
+import { Check, Copy, UserRound, X } from 'lucide-vue-next'
 import type { Student } from '@/stores/students'
 import VButton from '@/components/common/VButton.vue'
 
@@ -13,57 +13,106 @@ const emit = defineEmits<{
   (e: 'update:isOpen', value: boolean): void
 }>()
 
+const copiedField = ref('')
+
 const closeModal = () => {
   emit('update:isOpen', false)
 }
 
-const copiedField = ref<string | null>(null)
+const copyValue = async (field: string, value?: string | number | null) => {
+  if (!value) return
 
-const copyToClipboard = async (label: string, text: string | number) => {
-  if (text === '-') return
+  await navigator.clipboard.writeText(String(value))
+  copiedField.value = field
 
-  try {
-    await navigator.clipboard.writeText(String(text))
-    copiedField.value = label
-
-    setTimeout(() => {
-      copiedField.value = null
-    }, 2000)
-  } catch (err) {
-    console.error('Gagal copy text: ', err)
-  }
+  setTimeout(() => {
+    copiedField.value = ''
+  }, 1200)
 }
 
-const jenisKelaminLabel = computed(() => {
+const genderLabel = computed(() => {
   if (!props.student?.jenis_kelamin) return '-'
-  return props.student.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'
+  if (props.student.jenis_kelamin === 'L') return 'Laki-laki'
+  if (props.student.jenis_kelamin === 'P') return 'Perempuan'
+  return props.student.jenis_kelamin
 })
 
-const formattedTanggalLahir = computed(() => {
-  if (!props.student?.tanggal_lahir) return '-'
+const formatValue = (value?: string | number | null) => {
+  if (value === null || value === undefined || value === '') return '-'
+  return String(value)
+}
 
-  const date = new Date(props.student.tanggal_lahir)
-  if (Number.isNaN(date.getTime())) return props.student.tanggal_lahir
+const formatDate = (value?: string | null) => {
+  if (!value) return '-'
+
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return value
+  }
 
   return date.toLocaleDateString('id-ID', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   })
-})
+}
 
-const detailRows = computed(() => [
-  { label: 'ID Siswa', value: props.student?.id_siswa ?? '-', multiline: false },
-  { label: 'Nama', value: props.student?.nama || '-', multiline: false },
-  { label: 'NIS', value: props.student?.nis || '-', multiline: false },
-  { label: 'NISN', value: props.student?.nisn || '-', multiline: false },
-  { label: 'Email', value: props.student?.email || '-', multiline: false },
-  { label: 'Jenis Kelamin', value: jenisKelaminLabel.value, multiline: false },
-  { label: 'Kelas', value: props.student?.kelas || '-', multiline: false },
-  { label: 'Tanggal Lahir', value: formattedTanggalLahir.value, multiline: false },
-  { label: 'No HP', value: props.student?.no_hp || '-', multiline: false },
-  { label: 'Alamat', value: props.student?.alamat || '-', multiline: true },
-])
+const detailItems = computed(() => {
+  const student = props.student
+
+  return [
+    {
+      key: 'nis',
+      label: 'NIS',
+      value: formatValue(student?.nis),
+      copyable: true,
+    },
+    {
+      key: 'nisn',
+      label: 'NISN',
+      value: formatValue(student?.nisn),
+      copyable: true,
+    },
+    {
+      key: 'email',
+      label: 'Email',
+      value: formatValue(student?.email),
+      copyable: true,
+    },
+    {
+      key: 'jenis_kelamin',
+      label: 'Jenis Kelamin',
+      value: genderLabel.value,
+      copyable: false,
+    },
+    {
+      key: 'kelas',
+      label: 'Kelas',
+      value: formatValue(student?.kelas),
+      copyable: false,
+    },
+    {
+      key: 'tanggal_lahir',
+      label: 'Tanggal Lahir',
+      value: formatDate(student?.tanggal_lahir),
+      copyable: false,
+    },
+    {
+      key: 'no_hp',
+      label: 'Nomor HP',
+      value: formatValue(student?.no_hp),
+      copyable: true,
+    },
+    {
+      key: 'alamat',
+      label: 'Alamat',
+      value: formatValue(student?.alamat),
+      copyable: false,
+      wide: true,
+    },
+  ]
+})
 </script>
 
 <template>
@@ -78,7 +127,7 @@ const detailRows = computed(() => [
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
         @click.self="closeModal"
       >
         <transition
@@ -91,82 +140,93 @@ const detailRows = computed(() => [
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[min(92vw,680px)] max-h-[calc(100dvh-2rem)] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-4 py-5 sm:px-6 sm:py-6 md:px-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)] flex flex-col"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
+            class="student-detail-panel relative flex max-h-[calc(100vh-2rem)] w-full max-w-[720px] flex-col"
           >
-            <div class="flex h-full min-h-0 flex-col gap-4 sm:gap-5">
+            <div class="flex flex-col gap-5 min-h-0">
               <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="text-[#111827] hover:opacity-70 transition"
-                >
-                  <X class="w-5 h-5" />
+                <button type="button" class="student-detail-close" @click="closeModal">
+                  <X class="h-5 w-5" />
                 </button>
               </div>
 
-              <div class="flex flex-col items-center gap-2">
-                <Eye class="w-12 h-12 text-[#3f9760]" />
-                <b class="text-[24px] leading-[120%]">Detail Data Siswa</b>
+              <div class="flex flex-col items-center gap-3 text-center">
+                <div
+                  class="student-avatar flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border"
+                >
+                  <UserRound class="h-[2rem] w-[2rem]" />
+                </div>
+
+                <div>
+                  <h2 class="student-detail-title text-[1.7rem] font-bold leading-[120%]">
+                    Detail Siswa
+                  </h2>
+
+                  <p class="student-detail-subtitle mt-1 text-[1rem] leading-[150%]">
+                    Informasi lengkap data siswa
+                  </p>
+                </div>
               </div>
 
-              <div class="flex-1 min-h-0 overflow-y-auto pr-1 -mr-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div
-                    v-for="item in detailRows"
-                    :key="item.label"
-                    :class="item.label === 'Alamat' ? 'md:col-span-2' : ''"
-                    class="flex flex-col gap-2"
-                  >
-                    <div class="text-[16px] font-semibold text-[#111827]">
-                      {{ item.label }}
-                    </div>
+              <div v-if="student" class="flex-1 overflow-y-auto pr-1">
+                <div class="mb-4 rounded-2xl border p-4 student-main-card">
+                  <p class="text-[0.85rem] font-semibold student-detail-muted">Nama Lengkap</p>
 
-                    <div
-                      class="rounded-[14px] border border-[#e5e7eb] bg-white/80 px-4 py-3 flex justify-between gap-3 group shadow-[0_1px_2px_rgba(17,24,39,0.06)]"
-                      :class="
-                        item.multiline ? 'min-h-[88px] items-start' : 'min-h-[52px] items-center'
-                      "
+                  <div class="mt-1 flex items-center justify-between gap-3">
+                    <p class="text-[1.25rem] font-bold student-detail-title">
+                      {{ student.nama || '-' }}
+                    </p>
+
+                    <button
+                      type="button"
+                      class="copy-button"
+                      @click="copyValue('nama', student.nama)"
                     >
-                      <div
-                        class="w-full text-[16px] leading-[150%] text-[#111827] break-words whitespace-pre-line font-medium"
-                      >
-                        {{ item.value }}
+                      <Check v-if="copiedField === 'nama'" class="h-4 w-4" />
+                      <Copy v-else class="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div
+                    v-for="item in detailItems"
+                    :key="item.key"
+                    class="student-detail-item rounded-2xl border p-4"
+                    :class="{ 'md:col-span-2': item.wide }"
+                  >
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="min-w-0">
+                        <p class="text-[0.85rem] font-semibold student-detail-muted">
+                          {{ item.label }}
+                        </p>
+
+                        <p class="mt-1 break-words text-[1rem] font-semibold student-detail-value">
+                          {{ item.value }}
+                        </p>
                       </div>
 
                       <button
-                        v-if="item.value !== '-'"
-                        @click="copyToClipboard(item.label, item.value)"
-                        class="flex-shrink-0 p-1.5 rounded-lg transition-all duration-200 border border-transparent hover:border-[#d1d5db]"
-                        :class="
-                          copiedField === item.label
-                            ? 'bg-green-100 text-[#3f9760]'
-                            : 'text-[#b2b5ba] hover:bg-gray-200 hover:text-[#111827]'
-                        "
-                        :title="copiedField === item.label ? 'Copied!' : 'Copy to clipboard'"
+                        v-if="item.copyable && item.value !== '-'"
+                        type="button"
+                        class="copy-button"
+                        @click="copyValue(item.key, item.value)"
                       >
-                        <Check v-if="copiedField === item.label" class="w-4 h-4" />
-                        <Copy
-                          v-else
-                          class="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity"
-                        />
+                        <Check v-if="copiedField === item.key" class="h-4 w-4" />
+                        <Copy v-else class="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="flex items-center justify-end gap-2">
-                <VButton variant="primary" class="!w-[132px]" @click="closeModal"> Tutup </VButton>
+
+              <div v-else class="py-8 text-center text-[1rem] text-[var(--app-muted)]">
+                Data siswa tidak ditemukan.
+              </div>
+
+              <div class="flex justify-end">
+                <VButton variant="primary" class="!w-[132px]" @click="closeModal">
+                  Tutup
+                </VButton>
               </div>
             </div>
           </div>
@@ -175,3 +235,72 @@ const detailRows = computed(() => [
     </transition>
   </Teleport>
 </template>
+
+<style scoped>
+.student-detail-panel {
+  overflow: hidden;
+  border: 0.5px solid var(--app-modal-border);
+  border-radius: 24px;
+  background: var(--app-modal-bg);
+  color: var(--app-modal-text);
+  padding: 28px 32px;
+  box-shadow:
+    0px -2px 4px rgba(0, 0, 0, 0.2),
+    0px 2px 4px rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.student-detail-close {
+  color: var(--app-modal-text);
+  transition: opacity 0.2s ease;
+}
+
+.student-detail-close:hover {
+  opacity: 0.7;
+}
+
+.student-detail-title {
+  color: var(--app-modal-text);
+}
+
+.student-detail-subtitle,
+.student-detail-muted {
+  color: var(--app-muted);
+}
+
+.student-main-card,
+.student-detail-item {
+  background: var(--app-card);
+  border-color: var(--app-card-border);
+  color: var(--app-text);
+}
+
+.student-avatar {
+  background: var(--app-soft-card);
+  border-color: var(--app-border);
+  color: var(--app-accent);
+}
+
+.student-detail-value {
+  color: var(--app-heading);
+}
+
+.copy-button {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: var(--app-muted);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.copy-button:hover {
+  background: var(--app-soft-card);
+  color: var(--app-accent);
+}
+</style>

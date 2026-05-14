@@ -1,39 +1,44 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { X, Trash2 } from 'lucide-vue-next'
-import { useStudentStore } from '@/stores/students'
+import { Trash2, X } from 'lucide-vue-next'
 import VButton from '@/components/common/VButton.vue'
 
-const props = defineProps<{
-  isOpen: boolean
-  studentName: string
-  studentId: number | null
-}>()
+const props = withDefaults(
+  defineProps<{
+    isOpen: boolean
+    title?: string
+    studentName?: string
+    loading?: boolean
+    confirmLabel?: string
+    cancelLabel?: string
+  }>(),
+  {
+    title: 'Hapus Data Siswa',
+    studentName: '',
+    loading: false,
+    confirmLabel: 'Hapus',
+    cancelLabel: 'Batal',
+  },
+)
 
 const emit = defineEmits<{
   (e: 'update:isOpen', value: boolean): void
-  (e: 'confirmed'): void
+  (e: 'confirm'): void
 }>()
 
-const studentStore = useStudentStore()
-
 const closeModal = () => {
+  if (props.loading) return
   emit('update:isOpen', false)
 }
 
-const isSubmitDisabled = computed(() => studentStore.loading)
-
-const handleConfirm = async () => {
-  if (!props.studentId) return
-
-  try {
-    await studentStore.deleteStudent(props.studentId)
-    emit('confirmed')
-    closeModal()
-  } catch {
-    // error sudah ditangani di store
-  }
+const handleConfirm = () => {
+  if (props.loading) return
+  emit('confirm')
 }
+
+const confirmText = computed(() => {
+  return props.loading ? 'Menghapus...' : props.confirmLabel
+})
 </script>
 
 <template>
@@ -48,7 +53,7 @@ const handleConfirm = async () => {
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
         @click.self="closeModal"
       >
         <transition
@@ -59,67 +64,52 @@ const handleConfirm = async () => {
           leave-from-class="opacity-100 scale-100 translate-y-0"
           leave-to-class="opacity-0 scale-95 translate-y-4"
         >
-          <div
-            v-if="isOpen"
-            class="relative w-full max-w-[500px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
-          >
-            <div class="flex flex-col gap-5">
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="text-[#111827] hover:opacity-70 transition"
-                >
-                  <X class="w-5 h-5" />
-                </button>
-              </div>
+          <div v-if="isOpen" class="delete-modal-panel relative w-full max-w-[520px]">
+            <button
+              type="button"
+              class="delete-modal-close absolute right-8 top-7"
+              :disabled="loading"
+              @click="closeModal"
+            >
+              <X class="h-5 w-5" />
+            </button>
 
-              <div class="flex flex-col items-center gap-3">
-                <div class="flex items-center justify-center w-[56px] h-[56px] rounded-full bg-[#fee2e2]">
-                  <Trash2 class="w-8 h-8 text-[#dc2626]" />
-                </div>
-                <b class="text-[24px] leading-[120%]">Hapus Data Siswa</b>
-                <p class="text-center text-[14px] leading-[150%] text-[#6b7280]">
-                  Apakah Anda yakin ingin menghapus data <span class="font-semibold text-[#111827]">{{ studentName }}</span>?
-                  Tindakan ini tidak dapat dibatalkan.
-                </p>
-              </div>
-
-              <p
-                v-if="studentStore.error"
-                class="text-[13px] text-[#A0453B] font-medium"
+            <div class="flex flex-col items-center text-center">
+              <div
+                class="delete-icon-wrapper mt-8 flex h-[4.3rem] w-[4.3rem] items-center justify-center rounded-full"
               >
-                {{ studentStore.error }}
+                <Trash2 class="h-[2rem] w-[2rem]" />
+              </div>
+
+              <h2 class="delete-modal-title mt-5 text-[1.7rem] font-bold leading-[120%]">
+                {{ title }}
+              </h2>
+
+              <p class="delete-modal-message mt-3 max-w-[390px] text-[1rem] leading-[150%]">
+                Apakah Anda yakin ingin menghapus data
+                <span class="delete-modal-name font-bold">{{ studentName }}</span
+                >?
+                <br />
+                Tindakan ini tidak dapat dibatalkan.
               </p>
 
-              <div class="flex items-center justify-end gap-2">
+              <div class="mt-6 flex items-center justify-center gap-2">
                 <VButton
                   variant="secondary"
                   class="!w-[132px]"
-                  :disabled="studentStore.loading"
+                  :disabled="loading"
                   @click="closeModal"
                 >
-                  Batal
+                  {{ cancelLabel }}
                 </VButton>
 
                 <VButton
                   variant="primary"
                   class="!w-[132px]"
-                  :disabled="isSubmitDisabled"
+                  :disabled="loading"
                   @click="handleConfirm"
                 >
-                  {{ studentStore.loading ? 'Menghapus...' : 'Hapus' }}
+                  {{ confirmText }}
                 </VButton>
               </div>
             </div>
@@ -129,3 +119,41 @@ const handleConfirm = async () => {
     </transition>
   </Teleport>
 </template>
+
+<style scoped>
+.delete-modal-panel {
+  overflow: visible;
+  border: 0.5px solid var(--app-modal-border);
+  border-radius: 24px;
+  background: var(--app-modal-bg);
+  color: var(--app-modal-text);
+  padding: 28px 32px;
+  box-shadow:
+    0px -2px 4px rgba(0, 0, 0, 0.2),
+    0px 2px 4px rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.delete-modal-close {
+  color: var(--app-modal-text);
+  transition: opacity 0.2s ease;
+}
+
+.delete-modal-close:hover {
+  opacity: 0.7;
+}
+
+.delete-icon-wrapper {
+  background: var(--app-danger-bg);
+  color: var(--app-danger);
+}
+
+.delete-modal-title,
+.delete-modal-name {
+  color: var(--app-modal-text);
+}
+
+.delete-modal-message {
+  color: var(--app-muted);
+}
+</style>

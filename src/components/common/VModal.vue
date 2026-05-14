@@ -10,24 +10,17 @@
           leave-active-class="transition duration-200 ease-in" leave-from-class="opacity-100 scale-100 translate-y-0"
           leave-to-class="opacity-0 scale-95 translate-y-4">
           <div v-if="isOpen" :class="[
-            'relative w-full flex flex-col items-center p-[22px_16px_16px_16px] text-center font-sans text-[#111827]',
+            'relative w-full flex flex-col items-center p-[22px_16px_16px_16px] text-center font-sans',
             'rounded-[24px] backdrop-blur-[10px] overflow-hidden',
             'shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]',
-            'border-[0.5px] border-transparent',
+            'border-[0.5px] bg-[var(--app-modal-bg)] text-[var(--app-modal-text)] border-[var(--app-modal-border)]',
             maxWidthClass,
-          ]" style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    218.68deg,
-                    rgba(255, 255, 255, 0.05),
-                    #fff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            ">
+          ]">
             <div class="w-full flex justify-end mb-[10px]">
-              <button @click="closeModal" class="text-gray-500 hover:text-gray-800 transition-colors">
+              <button
+                @click="closeModal"
+                class="text-[var(--app-muted)] hover:text-[var(--app-text)] transition-colors"
+              >
                 <XIcon class="w-[20px] h-[20px]" />
               </button>
             </div>
@@ -44,8 +37,8 @@
               <button v-for="(btn, index) in buttons" :key="index" @click="handleButtonClick(btn.action)" :class="[
                 'py-[12px] px-[28px] min-w-[120px] rounded-[20px] text-[16px] font-semibold leading-[120%] transition-transform active:scale-95',
                 btn.variant === 'primary'
-                  ? 'text-[#f8fafc] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,#3f9760_4.91%,#0c4923)] shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset]'
-                  : 'text-[#111827] bg-[#c9e9da] shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset]',
+                  ? 'text-[var(--app-text-inverse)] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))] shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset]'
+                  : 'text-[var(--app-text)] bg-[var(--app-chip-primary)] shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset]',
               ]">
                 {{ btn.label }}
               </button>

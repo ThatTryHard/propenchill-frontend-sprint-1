@@ -277,7 +277,9 @@ const bottomItems = computed<BottomNavItem[]>(() => {
     {
       name: 'settings',
       label: 'Settings',
+      path: '/settings',
       icon: Settings,
+      matchPaths: ['/settings'],
     },
   ]
 

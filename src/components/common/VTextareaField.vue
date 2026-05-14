@@ -15,7 +15,7 @@
         :rows="rows"
         :class="[
           'w-full px-[19px] py-[14px] text-[16px] leading-[150%] focus:outline-none transition-all duration-200 resize-y',
-          'rounded-[10px] text-[#111827] placeholder-[#b2b5ba]',
+          'rounded-[10px] text-[var(--app-text)] placeholder-[var(--app-muted)]',
           actualState === 'error' || actualState === 'success' || disabled
             ? 'pr-[53px]'
             : 'pr-[19px]',
@@ -24,12 +24,12 @@
       />
 
       <div class="absolute right-[19px] top-[14px] flex items-start">
-        <XCircleIcon v-if="actualState === 'error'" class="w-[24px] h-[24px] text-[#A0453B]" />
+        <XCircleIcon v-if="actualState === 'error'" class="w-[24px] h-[24px] text-[var(--app-danger)]" />
         <CheckCircle2Icon
           v-else-if="actualState === 'success'"
-          class="w-[24px] h-[24px] text-[#509664]"
+          class="w-[24px] h-[24px] text-[var(--app-success)]"
         />
-        <LockIcon v-else-if="disabled" class="w-[24px] h-[24px] text-[#b2b5ba]" />
+        <LockIcon v-else-if="disabled" class="w-[24px] h-[24px] text-[var(--app-muted)]" />
       </div>
     </div>
 
@@ -68,22 +68,22 @@ const actualState = computed(() => {
 })
 
 const labelStyles = computed(() => {
-  if (actualState.value === 'disabled') return 'text-[#b2b5ba]'
+  if (actualState.value === 'disabled') return 'text-[var(--app-muted)]'
   if (actualState.value === 'error') {
-    return 'bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent'
+    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
   }
   if (actualState.value === 'success') {
-    return 'bg-[linear-gradient(91.01deg,#6caf85,#0f5b2b)] bg-clip-text text-transparent'
+    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
   }
-  return 'text-[#111827]'
+  return 'text-[var(--app-text)]'
 })
 
 const messageStyles = computed(() => {
   if (actualState.value === 'error') {
-    return 'bg-[linear-gradient(91.01deg,#c37973,#81413c)] bg-clip-text text-transparent'
+    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
   }
   if (actualState.value === 'success') {
-    return 'bg-[linear-gradient(91.01deg,#6caf85,#0f5b2b)] bg-clip-text text-transparent'
+    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
   }
   return 'hidden'
 })
@@ -92,23 +92,23 @@ const wrapperStyles = computed(() => {
   const base = 'p-[2px]'
 
   if (actualState.value === 'active') {
-    return `${base} bg-[linear-gradient(90.74deg,#3f9760,#d1955f)]`
+    return `${base} bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))]`
   }
   if (actualState.value === 'error') {
-    return `${base} bg-[linear-gradient(91.01deg,#c37973,#81413c)]`
+    return `${base} bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))]`
   }
   if (actualState.value === 'success') {
-    return `${base} bg-[linear-gradient(91.01deg,#6caf85,#0f5b2b)]`
+    return `${base} bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))]`
   }
 
-  return `${base} bg-[#b2b5ba]`
+  return `${base} bg-[var(--app-input-border)]`
 })
 
 const inputStyles = computed(() => {
-  const base = 'bg-white'
+  const base = 'bg-[var(--app-card)]'
 
   if (actualState.value === 'disabled') {
-    return `${base} cursor-not-allowed bg-[rgba(226,227,229,0.8)]`
+    return `${base} cursor-not-allowed bg-[var(--app-input-bg)]`
   }
 
   return base

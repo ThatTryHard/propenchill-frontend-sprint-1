@@ -75,14 +75,12 @@ const email = ref('')
 const password = ref('')
 const isLoading = ref(false)
 
-// Error state untuk masing-masing field, yang akan menampilkan pesan error di bawah field dan mengubah border jadi merah
 const emailError = ref('')
 const passwordError = ref('')
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Reset error tiap kali user mulai ketik ulang di field email atau password
 watch(email, () => (emailError.value = ''))
 watch(password, () => (passwordError.value = ''))
 
@@ -93,20 +91,62 @@ const goToForgotPassword = () => {
   })
 }
 
+const getFallbackRedirectPath = (role?: string) => {
+  const normalizedRole = role?.toUpperCase()
+
+  if (normalizedRole === 'ADMIN') {
+    return '/admin/surat-antrean'
+  }
+
+  if (normalizedRole === 'KEPSEK') {
+    return '/kepsek/surat-antrean'
+  }
+
+  if (
+    ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(normalizedRole || '')
+  ) {
+    return '/department-teachers/surat-antrean'
+  }
+
+  if (['GURU', 'WALI_MURID'].includes(normalizedRole || '')) {
+    return '/surat-keluar/riwayat'
+  }
+
+  return '/profile'
+}
+
+const getValidRedirectPath = (preferredPath: string | null, role?: string) => {
+  const fallbackPath = getFallbackRedirectPath(role)
+
+  if (!preferredPath) {
+    return fallbackPath
+  }
+
+  const resolvedRoute = router.resolve(preferredPath)
+
+  if (resolvedRoute.matched.length === 0) {
+    return fallbackPath
+  }
+
+  return preferredPath
+}
+
 const handleLogin = async () => {
   emailError.value = ''
   passwordError.value = ''
 
-  // Validasi frontend sederhana: pastikan kedua field terisi
   let hasError = false
+
   if (!email.value) {
     emailError.value = 'Email wajib diisi!'
     hasError = true
   }
+
   if (!password.value) {
     passwordError.value = 'Kata sandi wajib diisi!'
     hasError = true
   }
+
   if (hasError) return
 
   isLoading.value = true
@@ -114,39 +154,34 @@ const handleLogin = async () => {
   try {
     const data = await authStore.login(email.value, password.value)
 
-    // Kalau berhasil, kasih toast sukses dan redirect ke dashboard, placeholder dulu karena dashboard belum dibuat
     toast.custom(VToast, {
       componentProps: {
         type: 'success',
         message: 'Login Berhasil!',
       },
     })
-    const role = data.role?.toUpperCase()
-    let redirectPath = '/login'
 
-    // Logic redirect berdasarkan role
-    if (role === 'ADMIN') {
-      redirectPath = '/admin/surat-antrean'
-    } else if (role === 'KEPSEK') {
-      redirectPath = '/kepsek/surat-antrean'
-    } else if (['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(role)) {
-      redirectPath = '/department-teachers/surat-antrean'
-    } else if (['GURU', 'WALI_MURID'].includes(role)) {
-      redirectPath = '/surat-keluar/riwayat'
-    }
+    const role = data.role?.toUpperCase()
+    const preferredPath =
+      data.default_home_page ||
+      authStore.defaultHomePage ||
+      localStorage.getItem('default_home_page')
+
+    const redirectPath = getValidRedirectPath(preferredPath, role)
 
     setTimeout(() => {
       router.push(redirectPath)
     }, 1000)
   } catch (error: unknown) {
-    // Kalau gagal, warnain kedua field jadi merah
     toast.error((error as Error).message)
+
     toast.custom(VToast, {
       componentProps: {
         type: 'error',
         message: 'Login Gagal! Pastikan email dan kata sandi Anda benar.',
       },
     })
+
     emailError.value = (error as Error).message
     passwordError.value = (error as Error).message
     password.value = ''

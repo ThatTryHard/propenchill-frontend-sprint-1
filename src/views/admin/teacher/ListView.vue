@@ -7,8 +7,10 @@
     <div class="p-8 flex flex-col gap-6 h-full">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-[#1a202c]">Kelola Guru</h1>
-          <p class="text-[#718096] text-sm mt-1">Daftar guru yang terdaftar dalam sistem.</p>
+          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Kelola Guru</h1>
+          <p class="text-[var(--app-muted)] text-sm mt-1">
+            Daftar guru yang terdaftar dalam sistem.
+          </p>
         </div>
         <VButton v-if="!isKepsek" variant="primary" @click="openCreateModal">
           <template #leftIcon><Plus :size="18" /></template>
@@ -38,22 +40,28 @@
       </div>
 
       <div
-        class="bg-white rounded-2xl border border-[#e2e8f0] overflow-hidden flex-1 flex flex-col shadow-sm"
+        class="bg-[var(--app-card)] rounded-2xl border border-[var(--app-card-border)] overflow-hidden flex-1 flex flex-col shadow-sm"
       >
         <div class="overflow-x-auto flex-1">
           <table class="w-full text-left">
             <thead>
-              <tr class="border-b border-[#e2e8f0] bg-[#f8fafc]">
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase w-16">
+              <tr class="border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)]">
+                <th
+                  class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase w-16"
+                >
                   No
                 </th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase">Nama</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase">NIY</th>
-                <th class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase">
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase">
+                  Nama
+                </th>
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase">
+                  NIY
+                </th>
+                <th class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase">
                   Jabatan
                 </th>
                 <th
-                  class="px-6 py-4 text-[13px] font-semibold text-[#718096] uppercase text-center"
+                  class="px-6 py-4 text-[13px] font-semibold text-[var(--app-subtext)] uppercase text-center"
                 >
                   Aksi
                 </th>
@@ -61,13 +69,13 @@
             </thead>
             <tbody>
               <tr v-if="store.isLoading">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                <td colspan="5" class="px-6 py-12 text-center text-[var(--app-muted)]">
                   Memuat data guru...
                 </td>
               </tr>
 
               <tr v-else-if="!store.teachers || store.teachers.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-[#718096]">
+                <td colspan="5" class="px-6 py-12 text-center text-[var(--app-muted)]">
                   Data guru tidak ditemukan.
                 </td>
               </tr>
@@ -76,18 +84,24 @@
                 v-else
                 v-for="(teacher, index) in store.teachers"
                 :key="teacher.id"
-                class="border-b border-[#f1f5f9] hover:bg-[#f8fafc]"
+                class="border-b border-[var(--app-card-border)] hover:bg-[var(--app-bg)]"
               >
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">
+                <td class="px-6 py-4 text-[14px] text-[var(--app-text-soft)]">
                   {{
                     ((store.pagination?.currentPage || 1) - 1) * (store.pagination?.limit || 10) +
                     index +
                     1
                   }}
                 </td>
-                <td class="px-6 py-4 text-[14px] font-medium text-[#1a202c]">{{ teacher.nama }}</td>
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ teacher.niy }}</td>
-                <td class="px-6 py-4 text-[14px] text-[#4a5568]">{{ teacher.jabatan }}</td>
+                <td class="px-6 py-4 text-[14px] font-medium text-[var(--app-text)]">
+                  {{ teacher.nama }}
+                </td>
+                <td class="px-6 py-4 text-[14px] text-[var(--app-text-soft)]">
+                  {{ teacher.niy }}
+                </td>
+                <td class="px-6 py-4 text-[14px] text-[var(--app-text-soft)]">
+                  {{ teacher.jabatan }}
+                </td>
                 <td class="px-6 py-4">
                   <div class="flex justify-center gap-2">
                     <VButton
@@ -117,8 +131,10 @@
           </table>
         </div>
 
-        <div class="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0]">
-          <span class="text-[13px] text-[#718096]">
+        <div
+          class="flex items-center justify-between px-6 py-4 border-t border-[var(--app-card-border)]"
+        >
+          <span class="text-[13px] text-[var(--app-muted)]">
             Halaman {{ currentPage }} dari {{ store.pagination.totalPages }} ({{
               store.pagination.totalData
             }}

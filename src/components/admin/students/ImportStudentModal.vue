@@ -12,7 +12,7 @@
     @update:isOpen="$emit('update:isOpen', $event)"
     @close="resetModal"
   >
-    <div class="w-full mt-4 flex flex-col gap-4">
+    <div class="mt-4 flex w-full flex-col gap-4">
       <VAlert
         v-if="alert.show"
         :type="alert.type"
@@ -33,48 +33,67 @@
 
       <div v-if="step === 2" class="w-full">
         <div
-          class="max-h-[250px] overflow-y-auto border border-[#d4e8da] rounded-xl text-left bg-white shadow-sm"
+          class="max-h-[250px] overflow-y-auto rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card)] text-left shadow-sm"
         >
-          <table class="w-full text-[12px] text-gray-700 whitespace-nowrap">
-            <thead class="bg-[#f0f7f2] text-[#3f9760] sticky top-0 border-b border-[#d4e8da]">
+          <table class="w-full whitespace-nowrap text-[0.85rem] text-[var(--app-text)]">
+            <thead
+              class="sticky top-0 border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)] text-[var(--app-accent)]"
+            >
               <tr>
                 <th
                   v-for="(header, index) in previewHeaders"
                   :key="index"
-                  class="py-2 px-3 font-semibold"
+                  class="px-3 py-2 text-left font-semibold"
                 >
                   {{ header }}
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr v-for="(row, rowIndex) in previewRows" :key="rowIndex" class="hover:bg-gray-50">
-                <td v-for="(col, colIndex) in previewHeaders" :key="colIndex" class="py-2 px-3">
+
+            <tbody class="divide-y divide-[var(--app-card-border)]">
+              <tr
+                v-for="(row, rowIndex) in previewRows"
+                :key="rowIndex"
+                class="transition-colors hover:bg-[var(--app-table-row-hover)]"
+              >
+                <td v-for="(col, colIndex) in previewHeaders" :key="colIndex" class="px-3 py-2">
                   {{ row[col] || '-' }}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p class="text-[11px] text-gray-500 mt-2 italic">
+
+        <p class="mt-2 text-[0.78rem] italic text-[var(--app-muted)]">
           *Hanya menampilkan maksimal 5 baris pertama
         </p>
       </div>
 
-      <div v-if="importErrors.length > 0" class="w-full mt-2">
-        <div class="bg-[#f9eaea] p-2 rounded-t-lg border border-[#d97d7d] border-b-0">
-          <h3 class="text-[12px] font-bold text-[#b42318]">
+      <div v-if="importErrors.length > 0" class="mt-2 w-full">
+        <div
+          class="rounded-t-lg border border-b-0 border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-2"
+        >
+          <h3 class="text-[0.85rem] font-bold text-[var(--app-danger)]">
             ⚠️ {{ importErrors.length }} error pada baris Excel:
           </h3>
         </div>
+
         <div
-          class="max-h-32 overflow-y-auto border border-[#d97d7d] rounded-b-lg text-left bg-white"
+          class="max-h-32 overflow-y-auto rounded-b-lg border border-[var(--app-danger-border)] bg-[var(--app-card)] text-left"
         >
-          <table class="w-full text-[12px] text-gray-700">
-            <tbody class="divide-y divide-gray-100">
-              <tr v-for="(err, idx) in importErrors" :key="idx">
-                <td class="py-1 px-2 font-bold text-[#b42318] w-16">#{{ err.row - 1 }}</td>
-                <td class="py-1 px-2">{{ err.message }}</td>
+          <table class="w-full text-[0.85rem] text-[var(--app-text)]">
+            <tbody class="divide-y divide-[var(--app-card-border)]">
+              <tr
+                v-for="(err, idx) in importErrors"
+                :key="idx"
+                class="transition-colors hover:bg-[var(--app-table-row-hover)]"
+              >
+                <td class="w-16 px-2 py-1 font-bold text-[var(--app-danger)]">
+                  #{{ err.row - 1 }}
+                </td>
+                <td class="px-2 py-1">
+                  {{ err.message }}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -86,7 +105,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import * as xlsx from 'xlsx' // Import library pembaca excel
+import * as xlsx from 'xlsx'
 import { useStudentStore } from '@/stores/students'
 import VModal from '@/components/common/VModal.vue'
 import VInputFile from '@/components/common/VInputFile.vue'
@@ -101,18 +120,17 @@ const selectedFile = ref<File | null>(null)
 const isLoading = ref(false)
 const importErrors = ref<any[]>([])
 
-// State buat Preview
 const previewHeaders = ref<string[]>([])
 const previewRows = ref<any[]>([])
 
-// State buat Alert pengganti Sonner
 const alert = ref({ show: false, type: 'information', message: '' })
 
 const showAlert = (type: string, message: string) => {
   alert.value = { show: true, type, message }
+
   setTimeout(() => {
     alert.value.show = false
-  }, 4000) // Auto close 4 detik
+  }, 4000)
 }
 
 const handleFileError = (msg: string) => {
@@ -128,18 +146,20 @@ const resetModal = () => {
   alert.value.show = false
 }
 
-// FUNGSI BUAT BACA EXCEL DI FRONTEND (PREVIEW)
 const generatePreview = async (file: File) => {
   const reader = new FileReader()
+
   reader.onload = (e) => {
     try {
       const data = new Uint8Array(e.target?.result as ArrayBuffer)
       const workbook = xlsx.read(data, { type: 'array' })
       const firstSheetName = workbook.SheetNames[0]
+
       if (!firstSheetName) {
         showAlert('error', 'File Excel tidak memiliki sheet yang valid.')
         return
       }
+
       const worksheet = workbook.Sheets[firstSheetName]
 
       if (!worksheet) {
@@ -147,13 +167,12 @@ const generatePreview = async (file: File) => {
         return
       }
 
-      // Convert ke JSON
       const json = xlsx.utils.sheet_to_json(worksheet)
 
       if (json.length > 0) {
         previewHeaders.value = Object.keys(json[0] as object)
-        previewRows.value = json.slice(0, 5) // Ambil 5 baris aja
-        step.value = 2 // Pindah ke layar preview
+        previewRows.value = json.slice(0, 5)
+        step.value = 2
       } else {
         showAlert('error', 'File Excel kosong!')
       }
@@ -161,16 +180,19 @@ const generatePreview = async (file: File) => {
       showAlert('error', 'Gagal membaca isi file Excel.')
     }
   }
+
   reader.readAsArrayBuffer(file)
 }
 
 const submitImport = async () => {
   if (!selectedFile.value) return
+
   isLoading.value = true
   importErrors.value = []
 
   try {
     const data = await studentStore.importStudents(selectedFile.value)
+
     showAlert('success', data.message || 'Data berhasil disimpan!')
     emit('imported')
 
@@ -202,16 +224,15 @@ const submitImport = async () => {
   }
 }
 
-// LOGIKA TOMBOL MODAL DINAMIS
 const modalButtons = computed(() => {
   if (step.value === 1) {
-    return [] // Di step 1 ga butuh tombol, nunggu user masukin file
+    return []
   }
 
   return [
     {
       label: 'Kembali',
-      variant: 'secondary' as 'secondary',
+      variant: 'secondary' as const,
       action: () => {
         step.value = 1
         selectedFile.value = null
@@ -220,7 +241,7 @@ const modalButtons = computed(() => {
     },
     {
       label: isLoading.value ? 'Menyimpan...' : 'Konfirmasi & Simpan',
-      variant: 'primary' as 'primary',
+      variant: 'primary' as const,
       action: submitImport,
     },
   ]

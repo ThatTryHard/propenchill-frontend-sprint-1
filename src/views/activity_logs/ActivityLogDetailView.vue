@@ -4,90 +4,90 @@
       <SIMPSidebar />
     </template>
 
-    <div class="w-full min-h-screen bg-[#f8fafc] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans">
+    <div class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans">
       <section class="flex flex-col gap-4">
         <div class="flex items-center gap-3">
           <VActionButton variant="secondary" @click="goBack">Kembali</VActionButton>
           <div>
-            <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[#1e293b]">
+            <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
               Detail Informasi Surat
             </h1>
-            <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[#64748b]">
+            <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[var(--app-subtext)]">
               Berikut detail informasi surat
             </p>
           </div>
         </div>
       </section>
 
-      <div class="bg-white border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm">
+      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-[12px] bg-gradient-to-r from-[#3f9760] to-[#d1955f] flex items-center justify-center text-white font-bold">
+              <div class="w-12 h-12 rounded-[12px] bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)] flex items-center justify-center text-[var(--app-text-inverse)] font-bold">
                 SM
               </div>
               <div>
-                <h2 class="m-0 text-[20px] font-bold text-[#111827]">
+                <h2 class="m-0 text-[20px] font-bold text-[var(--app-text)]">
                   {{ suratInfo.title }}
                 </h2>
-                <p class="m-0 text-[14px] text-[#64748b]">ID: {{ suratInfo.id }}</p>
+                <p class="m-0 text-[14px] text-[var(--app-subtext)]">ID: {{ suratInfo.id }}</p>
               </div>
             </div>
           </div>
           <VChip :label="suratInfo.status" :variant="statusChipVariant" />
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-[14px] text-[#475569]">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-[14px] text-[var(--app-subtext)]">
           <div v-for="field in suratInfo.fields" :key="field.label">
-            <p class="m-0 text-[#94a3b8] font-semibold">{{ field.label }}</p>
-            <p class="m-0 text-[16px] font-semibold text-[#1e293b]">{{ field.value }}</p>
+            <p class="m-0 text-[var(--app-muted)] font-semibold">{{ field.label }}</p>
+            <p class="m-0 text-[16px] font-semibold text-[var(--app-heading)]">{{ field.value }}</p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm">
-        <h3 class="m-0 text-[20px] font-bold text-[#111827]">Ringkasan Log</h3>
+      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
+        <h3 class="m-0 text-[20px] font-bold text-[var(--app-text)]">Ringkasan Log</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
           <div>
-            <p class="m-0 text-[#94a3b8] font-semibold">Total Aktivitas</p>
-            <p class="m-0 text-[24px] font-extrabold text-[#111827]">{{ summary.total }}</p>
+            <p class="m-0 text-[var(--app-muted)] font-semibold">Total Aktivitas</p>
+            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">{{ summary.total }}</p>
           </div>
           <div>
-            <p class="m-0 text-[#94a3b8] font-semibold">Durasi Proses</p>
-            <p class="m-0 text-[24px] font-extrabold text-[#111827]">{{ summary.duration }}</p>
+            <p class="m-0 text-[var(--app-muted)] font-semibold">Durasi Proses</p>
+            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">{{ summary.duration }}</p>
           </div>
           <div>
-            <p class="m-0 text-[#94a3b8] font-semibold">Pengguna Terlibat</p>
-            <p class="m-0 text-[24px] font-extrabold text-[#111827]">{{ summary.uniqueUsers }}</p>
+            <p class="m-0 text-[var(--app-muted)] font-semibold">Pengguna Terlibat</p>
+            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">{{ summary.uniqueUsers }}</p>
           </div>
         </div>
-        <div v-if="summary.longestStage" class="mt-4 text-[14px] text-[#64748b]">
+        <div v-if="summary.longestStage" class="mt-4 text-[14px] text-[var(--app-subtext)]">
           Tahap paling lama: <strong>{{ summary.longestStage }}</strong>
         </div>
       </div>
 
-      <div class="bg-white border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm">
+      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
         <div class="flex items-center justify-between">
-          <h3 class="m-0 text-[20px] font-bold text-[#111827]">Timeline Aktivitas Real-Time</h3>
+          <h3 class="m-0 text-[20px] font-bold text-[var(--app-text)]">Timeline Aktivitas Real-Time</h3>
         </div>
 
-        <div v-if="logsStore.detailLoading" class="py-10 text-center text-[#64748b]">
+        <div v-if="logsStore.detailLoading" class="py-10 text-center text-[var(--app-subtext)]">
           Memuat timeline...
         </div>
 
-        <div v-else-if="timelineItems.length === 0" class="py-10 text-center text-[#64748b]">
+        <div v-else-if="timelineItems.length === 0" class="py-10 text-center text-[var(--app-subtext)]">
           Belum ada aktivitas yang tercatat.
         </div>
 
         <div v-else class="mt-6 flex flex-col gap-6">
           <div v-for="(item, index) in timelineItems" :key="item.id" class="flex gap-6">
             <div class="flex flex-col items-center">
-              <div class="w-12 h-12 rounded-full bg-[#f0f7f2] border-2 border-[#3f9760] flex items-center justify-center text-[#3f9760] font-bold">
+              <div class="w-12 h-12 rounded-full bg-[var(--app-soft-card)] border-2 border-[var(--app-accent)] flex items-center justify-center text-[var(--app-accent)] font-bold">
                 {{ index + 1 }}
               </div>
               <div
                 v-if="index < timelineItems.length - 1"
-                class="w-[6px] flex-1 bg-gradient-to-b from-[#3f9760] to-[#d1955f] rounded-full mt-2"
+                class="w-[6px] flex-1 bg-gradient-to-b from-[var(--app-accent)] to-[var(--app-accent-2)] rounded-full mt-2"
               ></div>
             </div>
 
@@ -95,32 +95,32 @@
               <div class="flex flex-col gap-3">
                 <div class="flex items-start justify-between gap-4">
                   <div>
-                    <h4 class="m-0 text-[18px] font-bold text-[#111827]">
+                    <h4 class="m-0 text-[18px] font-bold text-[var(--app-text)]">
                       {{ item.title || getActionLabel(item) }}
                     </h4>
-                    <p class="m-0 text-[13px] text-[#94a3b8]">{{ formatDateTime(item.created_at) }}</p>
+                    <p class="m-0 text-[13px] text-[var(--app-muted)]">{{ formatDateTime(item.created_at) }}</p>
                   </div>
                   <VChip :label="formatStatus(item)" :variant="getStatusVariant(item)" />
                 </div>
 
-                <div class="flex items-center gap-3 text-[13px] text-[#64748b]">
-                  <div class="w-8 h-8 rounded-full bg-[#e2e8f0] flex items-center justify-center text-[12px] font-semibold">
+                <div class="flex items-center gap-3 text-[13px] text-[var(--app-subtext)]">
+                  <div class="w-8 h-8 rounded-full bg-[var(--app-soft-card)] flex items-center justify-center text-[12px] font-semibold">
                     {{ getInitials(item.actor_name) }}
                   </div>
                   <div>
-                    <p class="m-0 text-[14px] font-semibold text-[#111827]">
+                    <p class="m-0 text-[14px] font-semibold text-[var(--app-text)]">
                       {{ item.actor_name || 'Sistem' }}
                     </p>
-                    <p class="m-0 text-[12px] text-[#94a3b8]">{{ item.actor_role || '-' }}</p>
+                    <p class="m-0 text-[12px] text-[var(--app-muted)]">{{ item.actor_role || '-' }}</p>
                   </div>
                 </div>
 
-                <div class="text-[14px] text-[#475569]">
+                <div class="text-[14px] text-[var(--app-subtext)]">
                   {{ item.description || getActionDetail(item) }}
                 </div>
 
-                <div v-if="noteText(item)" class="bg-[#f3f3f4] rounded-[16px] p-4 text-[13px] text-[#475569]">
-                  <div class="font-semibold text-[#64748b] mb-1">Catatan:</div>
+                <div v-if="noteText(item)" class="bg-[var(--app-input-muted-bg)] rounded-[16px] p-4 text-[13px] text-[var(--app-subtext)]">
+                  <div class="font-semibold text-[var(--app-muted)] mb-1">Catatan:</div>
                   <div>{{ noteText(item) }}</div>
                 </div>
               </div>

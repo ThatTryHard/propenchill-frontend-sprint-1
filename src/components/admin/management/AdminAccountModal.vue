@@ -122,52 +122,45 @@ const handleSubmit = () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[643px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
+            class="relative w-full max-w-[643px] rounded-[24px] border-[0.5px] border-[var(--app-modal-border)] overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[var(--app-modal-text)] bg-[var(--app-modal-bg)] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
           >
             <div class="flex flex-col gap-5">
               <div class="flex justify-end">
-                <button type="button" @click="closeModal" class="text-[#111827] hover:opacity-70 transition">
+                <button
+                  type="button"
+                  @click="closeModal"
+                  class="text-[var(--app-modal-text)] hover:opacity-70 transition"
+                >
                   <X class="w-5 h-5" />
                 </button>
               </div>
 
               <div class="flex flex-col items-center gap-2">
-                <component :is="isEdit ? Edit : PlusCircle" class="w-12 h-12 text-[#3f9760]" />
+                <component :is="isEdit ? Edit : PlusCircle" class="w-12 h-12 text-[var(--app-accent)]" />
                 <b class="text-[24px] leading-[120%]">{{ isEdit ? 'Edit Staff' : 'Tambah Staff' }}</b>
               </div>
 
               <div class="flex flex-col gap-4">
                 <div class="flex flex-col gap-2">
                   <label class="text-[16px] leading-[120%] font-semibold">Nama Lengkap</label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input v-model="form.nama" type="text" placeholder="Masukkan nama lengkap staff" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]" />
+                  <div class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]">
+                    <input v-model="form.nama" type="text" placeholder="Masukkan nama lengkap staff" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]" />
                   </div>
-                  <p v-if="errors.nama" class="text-[12px] text-[#A0453B]">{{ errors.nama }}</p>
+                  <p v-if="errors.nama" class="text-[12px] text-[var(--app-danger)]">{{ errors.nama }}</p>
                 </div>
 
                 <div class="flex flex-col gap-2">
                   <label class="text-[16px] leading-[120%] font-semibold">Alamat Email</label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <input v-model="form.email" type="email" placeholder="contoh: staff@simp.com" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827] placeholder:text-[#b2b5ba]" />
+                  <div class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]">
+                    <input v-model="form.email" type="email" placeholder="contoh: staff@simp.com" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]" />
                   </div>
-                  <p v-if="errors.email" class="text-[12px] text-[#A0453B]">{{ errors.email }}</p>
+                  <p v-if="errors.email" class="text-[12px] text-[var(--app-danger)]">{{ errors.email }}</p>
                 </div>
 
                 <div class="flex flex-col gap-2">
                   <label class="text-[16px] leading-[120%] font-semibold">Role Akses</label>
-                  <div class="rounded-[12px] border-2 border-[#b2b5ba] px-[19px] py-[14px]">
-                    <select v-model="form.role" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[#111827]">
+                  <div class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]">
+                    <select v-model="form.role" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)]">
                       <option value="ADMIN">ADMIN</option>
                       <option value="BIDANG_AGAMA">BIDANG AGAMA</option>
                       <option value="BIDANG_KESISWAAN">BIDANG KESISWAAN</option>
@@ -177,7 +170,7 @@ const handleSubmit = () => {
                   </div>
                 </div>
 
-                <p v-if="submitError" class="text-[13px] text-[#A0453B] font-medium">{{ submitError }}</p>
+                <p v-if="submitError" class="text-[13px] text-[var(--app-danger)] font-medium">{{ submitError }}</p>
               </div>
 
               <div class="flex items-center justify-end gap-2">

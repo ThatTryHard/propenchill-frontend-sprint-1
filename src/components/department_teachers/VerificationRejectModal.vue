@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import VModal from '@/components/common/VModal.vue'
 import VTextareaField from '@/components/common/VTextareaField.vue'
+import VButton from '@/components/common/VButton.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -42,6 +43,7 @@ function handleClose() {
 
 function handleSubmit() {
   const trimmed = notes.value.trim()
+
   if (!trimmed) {
     localError.value = 'Alasan penolakan wajib diisi.'
     return
@@ -69,22 +71,23 @@ function handleSubmit() {
         :rows="5"
         :state="localError ? 'error' : 'default'"
         :message="localError"
+        :disabled="loading"
         @update:modelValue="notes = String($event || '')"
       />
 
       <div class="mt-5 flex items-center justify-end gap-3">
-        <button
-          type="button"
-          class="rounded-[14px] border border-[#d1d5db] px-5 py-2 text-sm font-semibold text-[#374151] hover:bg-[#f3f4f6]"
+        <VButton
+          variant="secondary"
+          class="!w-[132px]"
           :disabled="loading"
           @click="handleClose"
         >
           Batal
-        </button>
+        </VButton>
 
         <button
           type="button"
-          class="rounded-[14px] bg-[#A0453B] px-5 py-2 text-sm font-semibold text-white hover:bg-[#8b3e37] disabled:cursor-not-allowed disabled:opacity-60"
+          class="reject-submit-button min-w-[150px] rounded-[14px] px-5 py-2 text-[0.93rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
           :disabled="loading"
           @click="handleSubmit"
         >
@@ -94,3 +97,14 @@ function handleSubmit() {
     </div>
   </VModal>
 </template>
+
+<style scoped>
+.reject-submit-button {
+  background: var(--app-danger);
+  color: var(--app-text-inverse);
+}
+
+.reject-submit-button:hover:not(:disabled) {
+  background: var(--app-danger-dark);
+}
+</style>

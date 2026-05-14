@@ -1,13 +1,13 @@
 <template>
-  <div class="flex items-center gap-2 text-center text-[14px] text-[#212b36] font-sans">
+  <div class="flex items-center gap-2 text-center text-[14px] text-[var(--app-text)] font-sans">
     <button
       @click="prevPage"
       :disabled="isFirstPage"
       :class="[
         'w-[32px] h-[32px] rounded-[4px] flex items-center justify-center transition-all duration-200',
         isFirstPage
-          ? 'bg-[#919eab] opacity-50 cursor-not-allowed text-white' // State Disabled dari Locofy
-          : 'bg-white border-2 border-[#dfe3e8] hover:border-[#919eab] text-[#212b36] cursor-pointer',
+          ? 'bg-[var(--app-muted)] opacity-50 cursor-not-allowed text-white'
+          : 'bg-[var(--app-card)] border-2 border-[var(--app-card-border)] hover:border-[var(--app-muted)] text-[var(--app-text)] cursor-pointer',
       ]"
     >
       <ChevronLeftIcon class="w-[18px] h-[18px]" />
@@ -16,18 +16,18 @@
     <template v-for="(page, index) in paginationRange" :key="index">
       <div
         v-if="page === '...'"
-        class="w-[32px] h-[32px] rounded-[4px] bg-white border-2 border-[#dfe3e8] flex items-center justify-center font-bold select-none"
+        class="w-[32px] h-[32px] rounded-[4px] bg-[var(--app-card)] border-2 border-[var(--app-card-border)] flex items-center justify-center font-bold select-none"
       >
         ...
       </div>
 
       <button
         v-else-if="page === currentPage"
-        class="w-[32px] h-[32px] rounded-[4px] p-[2px] bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] flex items-center justify-center select-none"
+        class="w-[32px] h-[32px] rounded-[4px] p-[2px] bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] flex items-center justify-center select-none"
       >
-        <div class="w-full h-full bg-white rounded-[2px] flex items-center justify-center">
+        <div class="w-full h-full bg-[var(--app-card)] rounded-[2px] flex items-center justify-center">
           <span
-            class="bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] bg-clip-text text-transparent font-bold leading-[20px]"
+            class="bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] bg-clip-text text-transparent font-bold leading-[20px]"
           >
             {{ page }}
           </span>
@@ -37,7 +37,7 @@
       <button
         v-else
         @click="goToPage(page)"
-        class="w-[32px] h-[32px] rounded-[4px] bg-white border-2 border-[#dfe3e8] hover:border-[#919eab] flex items-center justify-center font-bold leading-[20px] transition-colors duration-200 cursor-pointer select-none"
+        class="w-[32px] h-[32px] rounded-[4px] bg-[var(--app-card)] border-2 border-[var(--app-card-border)] hover:border-[var(--app-muted)] flex items-center justify-center font-bold leading-[20px] transition-colors duration-200 cursor-pointer select-none"
       >
         {{ page }}
       </button>
@@ -49,8 +49,8 @@
       :class="[
         'w-[32px] h-[32px] rounded-[4px] flex items-center justify-center transition-all duration-200',
         isLastPage
-          ? 'bg-[#919eab] opacity-50 cursor-not-allowed text-white'
-          : 'bg-white border-2 border-[#dfe3e8] hover:border-[#919eab] text-[#212b36] cursor-pointer',
+          ? 'bg-[var(--app-muted)] opacity-50 cursor-not-allowed text-white'
+          : 'bg-[var(--app-card)] border-2 border-[var(--app-card-border)] hover:border-[var(--app-muted)] text-[var(--app-text)] cursor-pointer',
       ]"
     >
       <ChevronRightIcon class="w-[18px] h-[18px]" />

@@ -63,41 +63,32 @@ const handleConfirm = () => {
         >
           <div
             v-if="isOpen"
-            class="relative w-full max-w-[500px] rounded-[24px] border-[0.5px] border-transparent overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[#111827] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-            style="
-              background:
-                linear-gradient(#f8fafc, #f8fafc) padding-box,
-                linear-gradient(
-                    243.74deg,
-                    rgba(255, 255, 255, 0.05),
-                    #ffffff 47.12%,
-                    rgba(255, 255, 255, 0.05)
-                  )
-                  border-box;
-            "
+            class="relative w-full max-w-[500px] rounded-[24px] border-[0.5px] border-[var(--app-modal-border)] overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[var(--app-modal-text)] bg-[var(--app-modal-bg)] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
           >
             <div class="flex flex-col gap-5">
               <div class="flex justify-end">
                 <button
                   type="button"
                   @click="closeModal"
-                  class="text-[#111827] hover:opacity-70 transition"
+                  class="text-[var(--app-modal-text)] hover:opacity-70 transition"
                 >
                   <X class="w-5 h-5" />
                 </button>
               </div>
 
               <div class="flex flex-col items-center gap-3">
-                <div class="flex items-center justify-center w-[56px] h-[56px] rounded-full bg-[#fee2e2]">
-                  <Trash2 class="w-8 h-8 text-[#dc2626]" />
+                <div
+                  class="flex items-center justify-center w-[56px] h-[56px] rounded-full bg-[var(--app-danger-bg)]"
+                >
+                  <Trash2 class="w-8 h-8 text-[var(--app-danger)]" />
                 </div>
                 <b class="text-[24px] leading-[120%]">{{ title }}</b>
-                <p class="text-center text-[14px] leading-[150%] text-[#6b7280]">
+                <p class="text-center text-[14px] leading-[150%] text-[var(--app-subtext)]">
                   {{ description }}
                 </p>
               </div>
 
-              <p v-if="errorMessage" class="text-[13px] text-[#A0453B] font-medium">
+              <p v-if="errorMessage" class="text-[13px] text-[var(--app-danger)] font-medium">
                 {{ errorMessage }}
               </p>
 

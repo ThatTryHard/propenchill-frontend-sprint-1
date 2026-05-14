@@ -4,13 +4,13 @@
       <SIMPSidebar />
     </template>
 
-    <div class="w-full min-h-screen bg-[#f8fafc] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans">
+    <div class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans">
       <section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[#1e293b]">
+          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
             Log dan Riwayat Aktivitas Persuratan
           </h1>
-          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[#64748b]">
+          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[var(--app-subtext)]">
             Lihat dan kelola log dan riwayat aktivitas persuratan
           </p>
         </div>
@@ -19,14 +19,14 @@
         </VActionButton>
       </section>
 
-      <div class="bg-white border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm">
+      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
         <div class="flex flex-wrap items-end gap-4 w-full">
           <div class="flex-[1.2] min-w-[180px]">
             <VInputField type="date" v-model="filters.date" label="Tanggal" />
           </div>
 
           <div class="flex-[1.2] min-w-[190px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">Jenis Surat</label>
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-text)]">Jenis Surat</label>
             <VDropdown
               v-model="filters.surat_type"
               :options="jenisSuratOptions"
@@ -35,7 +35,7 @@
           </div>
 
           <div class="flex-[1.2] min-w-[200px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[#111827]">Status</label>
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-text)]">Status</label>
             <VDropdown
               v-model="filters.status"
               :options="statusOptions"
@@ -53,13 +53,13 @@
         </div>
       </div>
 
-      <div class="bg-white border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm">
+      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
         <VInputField v-model="searchQuery" state="search" placeholder="Cari log aktivitas..." />
       </div>
 
       <VTable :columns="tableColumns" :rows="tableRows" :isLoading="logsStore.loading">
         <template #cell-no="{ row }">
-          <span class="font-semibold text-[#111827]">{{ row.index }}</span>
+          <span class="font-semibold text-[var(--app-text)]">{{ row.index }}</span>
         </template>
 
         <template #cell-waktu="{ row }">
@@ -68,8 +68,8 @@
 
         <template #cell-nama="{ row }">
           <div class="flex flex-col">
-            <span class="font-semibold text-[#111827]">{{ row.log.actor_name || '-' }}</span>
-            <span class="text-[12px] text-[#94a3b8]">{{ row.log.actor_role || '-' }}</span>
+            <span class="font-semibold text-[var(--app-text)]">{{ row.log.actor_name || '-' }}</span>
+            <span class="text-[12px] text-[var(--app-muted)]">{{ row.log.actor_role || '-' }}</span>
           </div>
         </template>
 
@@ -79,8 +79,8 @@
 
         <template #cell-aktivitas="{ row }">
           <div class="flex flex-col">
-            <span class="font-semibold text-[#111827]">{{ getActionLabel(row.log) }}</span>
-            <span class="text-[12px] text-[#94a3b8]">{{ getActionDetail(row.log) }}</span>
+            <span class="font-semibold text-[var(--app-text)]">{{ getActionLabel(row.log) }}</span>
+            <span class="text-[12px] text-[var(--app-muted)]">{{ getActionDetail(row.log) }}</span>
           </div>
         </template>
 
@@ -96,7 +96,7 @@
         </template>
       </VTable>
 
-      <div class="flex items-center justify-between text-[13px] text-[#64748b]">
+      <div class="flex items-center justify-between text-[13px] text-[var(--app-subtext)]">
         <span>Menampilkan {{ paginatedLogs.length }} dari {{ filteredLogs.length }} data</span>
       </div>
 

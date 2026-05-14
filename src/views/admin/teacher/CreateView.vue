@@ -8,17 +8,17 @@
       <div class="mb-8 flex flex-col gap-1">
         <button
           @click="$router.push('/admin/teachers')"
-          class="flex items-center text-sm text-[#718096] hover:text-[#3f9760] transition-colors mb-2 w-fit"
+          class="flex items-center text-sm text-[var(--app-muted)] hover:text-[var(--app-accent)] transition-colors mb-2 w-fit"
         >
           <ChevronLeft :size="18" /> Kembali ke Daftar
         </button>
-        <h1 class="text-2xl font-bold text-[#1a202c]">Tambah Guru Baru</h1>
-        <p class="text-[#718096] text-sm">
+        <h1 class="text-2xl font-bold text-[var(--app-heading)]">Tambah Guru Baru</h1>
+        <p class="text-[var(--app-muted)] text-sm">
           Pastikan data NIY dan Email belum pernah terdaftar sebelumnya dalam sistem.
         </p>
       </div>
 
-      <div class="bg-white rounded-2xl border border-[#e2e8f0] p-8 shadow-sm">
+      <div class="bg-[var(--app-card)] rounded-2xl border border-[var(--app-card-border)] p-8 shadow-sm">
         <VAlert
           v-if="alert.visible"
           :type="alert.type"
@@ -30,7 +30,7 @@
         <form @submit.prevent="handleSubmit" class="flex flex-col gap-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex flex-col gap-2">
-              <label class="text-sm font-semibold text-[#4a5568]">Nama Lengkap</label>
+              <label class="text-sm font-semibold text-[var(--app-text-soft)]">Nama Lengkap</label>
               <VInputField
                 v-model="form.nama"
                 placeholder="Masukkan nama lengkap"
@@ -39,7 +39,7 @@
               />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-sm font-semibold text-[#4a5568]">NIY (8 Digit Angka)</label>
+              <label class="text-sm font-semibold text-[var(--app-text-soft)]">NIY (8 Digit Angka)</label>
               <VInputField
                 v-model="form.niy"
                 placeholder="Contoh: 12345678"
@@ -50,7 +50,7 @@
           </div>
 
           <div class="flex flex-col gap-2">
-            <label class="text-sm font-semibold text-[#4a5568]">Alamat Email</label>
+            <label class="text-sm font-semibold text-[var(--app-text-soft)]">Alamat Email</label>
             <VInputField
               v-model="form.email"
               type="email"
@@ -61,18 +61,18 @@
           </div>
 
           <div class="flex flex-col gap-2">
-            <label class="text-sm font-semibold text-[#4a5568]">Jabatan / Bidang</label>
+            <label class="text-sm font-semibold text-[var(--app-text-soft)]">Jabatan / Bidang</label>
             <VDropdown
               v-model="form.jabatan"
               :options="jabatanOptions"
               placeholder="Pilih Jabatan"
             />
-            <span v-if="errors.jabatan" class="text-xs text-red-500 mt-1">{{
+            <span v-if="errors.jabatan" class="text-xs text-[var(--app-danger)] mt-1">{{
               errors.jabatan
             }}</span>
           </div>
 
-          <div class="flex justify-end gap-4 mt-4 pt-6 border-t border-[#f1f5f9]">
+          <div class="flex justify-end gap-4 mt-4 pt-6 border-t border-[var(--app-card-border)]">
             <VButton type="button" variant="secondary" @click="$router.push('/admin/teachers')"
               >Batal</VButton
             >

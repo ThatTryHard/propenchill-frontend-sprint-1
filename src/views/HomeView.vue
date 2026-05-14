@@ -1,20 +1,19 @@
 <template>
   <div
     ref="landingRef"
-    class="relative isolate min-h-screen overflow-hidden bg-[linear-gradient(180deg,#f6fbf8_0%,#edf6f1_100%)] px-5 py-8 sm:px-8"
+    class="landing-page relative isolate min-h-screen overflow-hidden px-5 py-8 sm:px-8"
     :style="waveVars"
     @pointermove="handlePointerMove"
     @pointerleave="handlePointerLeave"
   >
-    <div
-      class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(23,99,61,0.16),transparent_35%),radial-gradient(circle_at_82%_78%,rgba(57,132,88,0.13),transparent_40%)]"
-    />
+    <div class="landing-radial pointer-events-none absolute inset-0" />
 
-    <div class="pointer-events-none absolute top-3 left-4 z-20 sm:left-8 sm:top-5">
+    <!-- Logo sekolah kiri atas -->
+    <div class="pointer-events-none absolute top-5 left-6 z-20 sm:left-10 sm:top-7">
       <img
         src="@/assets/Inrab_Logo.png"
         alt="Logo SMA Insan Rabbany"
-        class="h-9 w-auto object-contain sm:h-10"
+        class="h-14 w-auto object-contain sm:h-16 md:h-20"
       />
     </div>
 
@@ -43,27 +42,30 @@
       class="relative z-10 mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center"
     >
       <section class="flex w-full max-w-4xl flex-col items-center text-center">
+        <!-- Logo SIMP otomatis ganti light/dark -->
         <img
-          src="@/assets/SIMP_logo.png"
+          :src="heroLogo"
           alt="Logo SIMP"
           class="mx-auto h-52 w-auto object-contain sm:h-64 md:h-72"
         />
 
         <h2
-          class="mt-4 text-balance text-3xl font-black leading-[1.14] text-[#0c4923] drop-shadow-[0_1px_0_rgba(255,255,255,0.6)] sm:text-4xl md:text-5xl"
+          class="landing-title mt-4 text-balance text-[2.25rem] font-black leading-[1.14] drop-shadow-[0_1px_0_rgba(255,255,255,0.6)] sm:text-[2.75rem] md:text-[3.5rem]"
         >
           Kelola Surat Sekolah
-          <span class="text-[#2f8f58]">Lebih Cepat, Lebih Rapi</span>
+          <span class="landing-title-accent">Lebih Cepat, Lebih Rapi</span>
         </h2>
 
-        <p class="mt-3 max-w-3xl text-base font-medium leading-relaxed text-[#315f48] sm:text-lg">
+        <p
+          class="landing-description mt-3 max-w-3xl text-[1rem] font-medium leading-relaxed sm:text-[1.125rem]"
+        >
           Platform manajemen persuratan untuk alur yang lebih terstruktur. Setiap surat masuk dan
           keluar tercatat rapi agar koordinasi tim lebih cepat, jelas, dan mudah ditelusuri.
         </p>
 
         <VButton
           variant="primary"
-          class="mt-8 !h-[54px] !w-full !max-w-[340px] !rounded-[16px] !text-[15px]"
+          class="mt-8 !h-[54px] !w-full !max-w-[340px] !rounded-[16px] !text-[0.95rem]"
           @click="goToLogin"
         >
           Mulai sekarang
@@ -72,7 +74,7 @@
     </div>
 
     <div class="pointer-events-none absolute bottom-5 left-0 z-10 w-full text-center sm:bottom-6">
-      <p class="text-[11px] font-medium tracking-[0.08em] text-[#4d6e5a] sm:text-xs">
+      <p class="landing-footer text-[0.7rem] font-medium tracking-[0.08em] sm:text-[0.75rem]">
         Propenchil Team © 2026
       </p>
     </div>
@@ -84,13 +86,30 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import VButton from '@/components/common/VButton.vue'
 
+import simPLogoLight from '@/assets/SIMP_logo.png'
+import simPLogoDark from '@/assets/SIMP_logo_dark.png'
+
 const router = useRouter()
+
 const landingRef = ref<HTMLElement | null>(null)
+
 const pointerTarget = ref({ x: 0.5, y: 0.5 })
 const pointerSmooth = ref({ x: 0.5, y: 0.5 })
 const waveEnergy = ref(0.28)
 const lastPointer = ref<{ x: number; y: number; t: number } | null>(null)
+
+const isDarkMode = ref(false)
+
 let animationFrame = 0
+let themeObserver: MutationObserver | null = null
+
+const syncTheme = () => {
+  isDarkMode.value = document.documentElement.classList.contains('dark')
+}
+
+const heroLogo = computed(() => {
+  return isDarkMode.value ? simPLogoDark : simPLogoLight
+})
 
 const goToLogin = () => {
   router.push('/login')
@@ -109,10 +128,9 @@ const handlePointerMove = (event: PointerEvent) => {
     const dy = y - lastPointer.value.y
     const distance = Math.sqrt(dx * dx + dy * dy)
     const dt = Math.max(16, now - lastPointer.value.t)
-
-    // Kecepatan dalam piksel per frame (asumsi 60fps = 16.67ms per frame)
     const speed = distance / (dt / 16.67)
     const impulse = Math.min(1, speed * 6.4)
+
     waveEnergy.value = Math.max(waveEnergy.value, 0.24 + impulse * 0.6)
   }
 
@@ -131,15 +149,28 @@ const animateFlow = () => {
   pointerSmooth.value.x += (pointerTarget.value.x - pointerSmooth.value.x) * 0.07
   pointerSmooth.value.y += (pointerTarget.value.y - pointerSmooth.value.y) * 0.07
   waveEnergy.value += (0.22 - waveEnergy.value) * 0.034
+
   animationFrame = requestAnimationFrame(animateFlow)
 }
 
 onMounted(() => {
+  syncTheme()
+
+  themeObserver = new MutationObserver(() => {
+    syncTheme()
+  })
+
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class'],
+  })
+
   animationFrame = requestAnimationFrame(animateFlow)
 })
 
 onBeforeUnmount(() => {
   if (animationFrame) cancelAnimationFrame(animationFrame)
+  if (themeObserver) themeObserver.disconnect()
 })
 
 const waveVars = computed(() => ({
@@ -154,7 +185,43 @@ const waveVars = computed(() => ({
 </script>
 
 <style scoped>
-/* Wave Effects */
+.landing-page {
+  background: var(--app-bg);
+  color: var(--app-text);
+}
+
+.landing-radial {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(23, 99, 61, 0.16), transparent 35%),
+    radial-gradient(circle at 82% 78%, rgba(57, 132, 88, 0.13), transparent 40%);
+}
+
+.landing-title {
+  color: var(--app-heading);
+}
+
+.landing-title-accent {
+  color: #2f8f58;
+}
+
+.landing-description {
+  color: var(--app-subtext);
+}
+
+.landing-footer {
+  color: var(--app-muted);
+}
+
+:global(html.dark) .landing-radial {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(63, 151, 96, 0.22), transparent 35%),
+    radial-gradient(circle at 82% 78%, rgba(209, 149, 95, 0.12), transparent 40%);
+}
+
+:global(html.dark) .landing-title-accent {
+  color: #86efac;
+}
+
 .wave-ripples {
   position: absolute;
   inset: -8%;
@@ -179,7 +246,6 @@ const waveVars = computed(() => ({
   animation: ripple-drift var(--ripple-duration) ease-in-out infinite alternate;
 }
 
-/* Bounce Effects */
 .wave-bounce {
   position: absolute;
   inset: -7%;
@@ -205,7 +271,6 @@ const waveVars = computed(() => ({
   animation: ripple-bounce var(--bounce-duration) ease-in-out infinite;
 }
 
-/* Flow Effects */
 .flow-lines {
   position: absolute;
   inset: 0;
@@ -236,6 +301,7 @@ const waveVars = computed(() => ({
       0% 38%;
     transform: translate3d(-2%, -1.2%, 0) scale(1.03);
   }
+
   100% {
     background-position:
       0% 50%,
@@ -251,12 +317,14 @@ const waveVars = computed(() => ({
       14% 48%;
     transform: translate3d(-1.4%, 0, 0) scale(1.02);
   }
+
   50% {
     background-position:
       0% 50%,
       70% 53%;
     transform: translate3d(2.5%, 1.3%, 0) scale(1.08);
   }
+
   100% {
     background-position:
       0% 50%,
@@ -269,9 +337,11 @@ const waveVars = computed(() => ({
   0% {
     transform: translate3d(-6.5%, -4%, 0) scale(1.04);
   }
+
   50% {
     transform: translate3d(6%, 4.5%, 0) scale(1.08);
   }
+
   100% {
     transform: translate3d(-6.5%, -4%, 0) scale(1.04);
   }

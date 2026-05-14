@@ -1,13 +1,18 @@
 <template>
   <div
-    class="w-full max-w-[500px] bg-white rounded-[24px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-[#d4e8da] p-8 flex flex-col items-center text-center"
+    class="set-password-card w-full max-w-[500px] rounded-[24px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border p-8 flex flex-col items-center text-center"
   >
-    <div class="w-[60px] h-[60px] bg-[#e8f3eb] rounded-full flex items-center justify-center mb-6">
-      <LockKeyhole class="w-[30px] h-[30px] text-[#3f9760]" />
+    <div
+      class="set-password-icon w-[4.25rem] h-[4.25rem] rounded-full flex items-center justify-center mb-6"
+    >
+      <LockKeyhole class="w-[2.15rem] h-[2.15rem] text-[var(--app-accent)]" />
     </div>
 
-    <h1 class="text-[24px] font-bold text-[#111827] mb-2">Buat Kata Sandi Baru</h1>
-    <p class="text-[14px] text-[#718096] leading-relaxed mb-6">
+    <h1 class="set-password-heading text-[1.7rem] font-bold mb-2">
+      Buat Kata Sandi Baru
+    </h1>
+
+    <p class="set-password-description text-[1rem] leading-relaxed mb-6">
       Pastikan kata sandi baru Anda memenuhi persyaratan keamanan kami.
     </p>
 
@@ -46,10 +51,13 @@
         :message="confirmPasswordError"
       />
 
-      <div class="w-full bg-[#f8fafc] p-4 rounded-[12px] border border-[#e2e8f0] mb-2">
-        <div class="flex items-center justify-between mb-3">
-          <h4 class="text-[14px] font-bold text-[#111827]">Persyaratan Kata Sandi:</h4>
-          <span class="text-[12px] font-semibold" :class="passwordStrengthColor">
+      <div class="password-rules-card w-full p-4 rounded-[12px] border mb-2">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h4 class="password-rules-title text-[1rem] font-bold">
+            Persyaratan Kata Sandi:
+          </h4>
+
+          <span class="text-[0.85rem] font-semibold" :class="passwordStrengthColor">
             {{ passwordStrengthText }}
           </span>
         </div>
@@ -57,8 +65,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
           <div class="flex items-center gap-2 transition-colors duration-300">
             <svg
-              width="24"
-              height="24"
+              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -67,8 +74,8 @@
                 cx="12"
                 cy="12"
                 r="10"
-                :fill="reqMinLength ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="reqMinLength ? 'none' : '#CBD5E1'"
+                :fill="reqMinLength ? 'url(#grad1)' : 'var(--app-card-border)'"
+                :stroke="reqMinLength ? 'none' : 'var(--app-border)'"
                 stroke-width="1.5"
               />
               <path
@@ -89,20 +96,23 @@
                   y2="12"
                   gradientUnits="userSpaceOnUse"
                 >
-                  <stop stop-color="#D1955F" />
-                  <stop offset="1" stop-color="#3F9760" />
+                  <stop stop-color="var(--app-accent-2)" />
+                  <stop offset="1" stop-color="var(--app-accent)" />
                 </linearGradient>
               </defs>
             </svg>
-            <span :class="reqMinLength ? 'text-[#4a5568]' : 'text-[#94a3b8]'" class="text-[13px]"
-              >Minimal 8 Karakter</span
+
+            <span
+              :class="reqMinLength ? 'rule-text-valid' : 'rule-text-muted'"
+              class="text-[0.93rem]"
             >
+              Minimal 8 Karakter
+            </span>
           </div>
 
           <div class="flex items-center gap-2 transition-colors duration-300">
             <svg
-              width="24"
-              height="24"
+              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -111,8 +121,8 @@
                 cx="12"
                 cy="12"
                 r="10"
-                :fill="reqNumber ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="reqNumber ? 'none' : '#CBD5E1'"
+                :fill="reqNumber ? 'url(#grad2)' : 'var(--app-card-border)'"
+                :stroke="reqNumber ? 'none' : 'var(--app-border)'"
                 stroke-width="1.5"
               />
               <path
@@ -123,16 +133,33 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
+
+              <defs v-if="reqNumber">
+                <linearGradient
+                  id="grad2"
+                  x1="2"
+                  y1="12"
+                  x2="22"
+                  y2="12"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="var(--app-accent-2)" />
+                  <stop offset="1" stop-color="var(--app-accent)" />
+                </linearGradient>
+              </defs>
             </svg>
-            <span :class="reqNumber ? 'text-[#4a5568]' : 'text-[#94a3b8]'" class="text-[13px]"
-              >Mengandung Angka (0-9)</span
+
+            <span
+              :class="reqNumber ? 'rule-text-valid' : 'rule-text-muted'"
+              class="text-[0.93rem]"
             >
+              Mengandung Angka (0-9)
+            </span>
           </div>
 
           <div class="flex items-center gap-2 transition-colors duration-300">
             <svg
-              width="24"
-              height="24"
+              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -141,8 +168,8 @@
                 cx="12"
                 cy="12"
                 r="10"
-                :fill="reqCapital ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="reqCapital ? 'none' : '#CBD5E1'"
+                :fill="reqCapital ? 'url(#grad3)' : 'var(--app-card-border)'"
+                :stroke="reqCapital ? 'none' : 'var(--app-border)'"
                 stroke-width="1.5"
               />
               <path
@@ -153,16 +180,33 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
+
+              <defs v-if="reqCapital">
+                <linearGradient
+                  id="grad3"
+                  x1="2"
+                  y1="12"
+                  x2="22"
+                  y2="12"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="var(--app-accent-2)" />
+                  <stop offset="1" stop-color="var(--app-accent)" />
+                </linearGradient>
+              </defs>
             </svg>
-            <span :class="reqCapital ? 'text-[#4a5568]' : 'text-[#94a3b8]'" class="text-[13px]"
-              >Mengandung Huruf Kapital (A-Z)</span
+
+            <span
+              :class="reqCapital ? 'rule-text-valid' : 'rule-text-muted'"
+              class="text-[0.93rem]"
             >
+              Mengandung Huruf Kapital (A-Z)
+            </span>
           </div>
 
           <div class="flex items-center gap-2 transition-colors duration-300">
             <svg
-              width="24"
-              height="24"
+              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -171,8 +215,8 @@
                 cx="12"
                 cy="12"
                 r="10"
-                :fill="reqSymbol ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="reqSymbol ? 'none' : '#CBD5E1'"
+                :fill="reqSymbol ? 'url(#grad4)' : 'var(--app-card-border)'"
+                :stroke="reqSymbol ? 'none' : 'var(--app-border)'"
                 stroke-width="1.5"
               />
               <path
@@ -183,10 +227,28 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
+
+              <defs v-if="reqSymbol">
+                <linearGradient
+                  id="grad4"
+                  x1="2"
+                  y1="12"
+                  x2="22"
+                  y2="12"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop stop-color="var(--app-accent-2)" />
+                  <stop offset="1" stop-color="var(--app-accent)" />
+                </linearGradient>
+              </defs>
             </svg>
-            <span :class="reqSymbol ? 'text-[#4a5568]' : 'text-[#94a3b8]'" class="text-[13px]"
-              >Mengandung Karakter Unik</span
+
+            <span
+              :class="reqSymbol ? 'rule-text-valid' : 'rule-text-muted'"
+              class="text-[0.93rem]"
             >
+              Mengandung Karakter Unik
+            </span>
           </div>
         </div>
       </div>
@@ -194,7 +256,7 @@
       <VButton
         type="submit"
         variant="primary"
-        class="w-full h-[48px] mt-4"
+        class="w-full h-[3.45rem] mt-4"
         :disabled="isLoading || !isPasswordValid"
       >
         {{ isLoading ? 'Menyimpan...' : 'Simpan Kata Sandi' }}
@@ -202,7 +264,7 @@
     </form>
 
     <div v-else class="w-full flex flex-col items-center gap-4 mt-4">
-      <VButton @click="router.replace('/login')" variant="primary" class="w-full h-[48px]">
+      <VButton @click="router.replace('/login')" variant="primary" class="w-full h-[3.45rem]">
         Lanjut ke Halaman Login
       </VButton>
     </div>
@@ -329,3 +391,57 @@ const handleResetPassword = async () => {
   }
 }
 </script>
+
+<style scoped>
+.set-password-card {
+  background: var(--app-card);
+  color: var(--app-text);
+  border-color: var(--app-border);
+}
+
+.set-password-icon {
+  background: var(--app-soft-card);
+}
+
+.set-password-heading {
+  color: var(--app-heading);
+}
+
+.set-password-description {
+  color: var(--app-muted);
+}
+
+.password-rules-card {
+  background: var(--app-soft-card);
+  border-color: var(--app-border);
+}
+
+.password-rules-title {
+  color: var(--app-heading);
+}
+
+.rule-text-valid {
+  color: var(--app-subtext);
+}
+
+.rule-text-muted {
+  color: var(--app-muted);
+}
+
+:global(html.dark) .set-password-icon {
+  background: var(--app-soft-card);
+}
+
+:global(html.dark) .set-password-icon :deep(svg) {
+  color: var(--app-accent);
+  stroke: var(--app-accent);
+}
+
+:global(html.dark) .rule-text-valid {
+  color: var(--app-subtext);
+}
+
+:global(html.dark) .rule-text-muted {
+  color: var(--app-muted);
+}
+</style>

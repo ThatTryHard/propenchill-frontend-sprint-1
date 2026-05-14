@@ -1,24 +1,32 @@
 <template>
-  <div class="relative w-full font-sans text-[16px]" ref="dropdownRef">
+  <div
+    :class="[
+      'relative w-full font-sans text-[16px]',
+      isOpen ? 'z-[9999]' : 'z-20',
+    ]"
+    ref="dropdownRef"
+  >
     <div
       @click="toggle"
       :class="[
         'w-full rounded-[12px] p-[2px] transition-all duration-200 select-none shadow-sm',
         disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:shadow-md',
-        'bg-[linear-gradient(90.74deg,#3f9760,#d1955f)]',
+        'bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))]',
       ]"
     >
       <div
         :class="[
           'w-full flex items-center justify-between px-[19px] py-[14px] text-[16px] rounded-[10px] font-semibold leading-[150%] transition-colors duration-200',
-          isOpen ? 'bg-transparent text-[#f8fafc]' : 'bg-[#f8fafc] text-[#111827]',
+          isOpen
+            ? 'bg-transparent text-[var(--app-text-inverse)]'
+            : 'bg-[var(--app-input-bg)] text-[var(--app-text)]',
         ]"
       >
         <span class="truncate">{{ selectedLabel }}</span>
         <ChevronDownIcon
           :class="[
             'w-[24px] h-[24px] transition-transform duration-300',
-            isOpen ? 'rotate-180 text-[#f8fafc]' : 'text-[#111827]',
+            isOpen ? 'rotate-180 text-[var(--app-text-inverse)]' : 'text-[var(--app-text)]',
           ]"
         />
       </div>
@@ -34,7 +42,8 @@
     >
       <div
         v-if="isOpen"
-        class="absolute top-[calc(100%+8px)] left-0 w-full bg-[#f8fafc] rounded-[10px] shadow-lg overflow-hidden z-50 border border-gray-200"
+        class="absolute top-[calc(100%+8px)] left-0 w-full rounded-[10px] shadow-lg overflow-hidden z-[10000] border"
+        style="background: var(--app-card); border-color: var(--app-card-border); color: var(--app-text);"
       >
         <ul class="flex flex-col w-full m-0 p-0 list-none">
           <li
@@ -44,8 +53,8 @@
             :class="[
               'w-full flex items-center px-[16px] py-[10px] cursor-pointer transition-colors duration-150',
               modelValue === option.value
-                ? 'bg-[#e2e3e5] font-semibold text-[#111827]'
-                : 'bg-[#fff] text-[#111827] hover:bg-[#e2e3e5]',
+                ? 'bg-[var(--app-soft-card)] font-semibold text-[var(--app-text)]'
+                : 'bg-[var(--app-card)] text-[var(--app-text)] hover:bg-[var(--app-soft-card)]',
             ]"
           >
             {{ option.label }}
@@ -53,7 +62,7 @@
 
           <li
             v-if="options.length === 0"
-            class="px-[16px] py-[10px] text-gray-400 italic bg-[#fff]"
+            class="px-[16px] py-[10px] text-[var(--app-muted)] italic bg-[var(--app-card)]"
           >
             Tidak ada pilihan
           </li>

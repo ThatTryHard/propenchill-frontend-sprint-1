@@ -8,10 +8,10 @@
       <div class="main-content-wrapper">
         <div class="header-section mb-10">
           <div class="title-group">
-            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[#111827]">
+            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[var(--app-heading)]">
               Form Pengajuan Surat Keluar
             </h1>
-            <p class="text-[13px] md:text-[14px] leading-[145%] text-[#858a91] mt-1">
+            <p class="text-[13px] md:text-[14px] leading-[145%] text-[var(--app-muted)] mt-1">
               Lengkapi form di bawah ini untuk mengajukan surat
             </p>
           </div>
@@ -51,9 +51,9 @@
 
           <div
             v-if="dynamicFields.length > 0"
-            class="flex flex-col gap-6 mt-2 border-t pt-6 border-dashed border-[#CBD5E1]"
+            class="flex flex-col gap-6 mt-2 border-t pt-6 border-dashed border-[var(--app-border)]"
           >
-            <h3 class="font-bold text-[#185F3B]">Informasi Tambahan Surat</h3>
+            <h3 class="font-bold text-[var(--app-accent)]">Informasi Tambahan Surat</h3>
             <div v-for="field in dynamicFields" :key="field" class="flex flex-col gap-2">
               <VInputField
                 v-model="dynamicData[field]"
@@ -229,84 +229,92 @@ onMounted(fetchInitialData)
   padding: 40px 60px;
   max-width: 1440px;
 }
+
 .layout-bg {
-  background: var(--Gradient-Primary-Background, linear-gradient(180deg, #fff 0%, #eaf7ef 100%));
+  background: var(--app-bg);
+  color: var(--app-text);
 }
 
 .hifi-label {
   font-weight: 700;
   font-size: 16px;
-  color: #111827;
+  color: var(--app-heading);
 }
+
 .hifi-input-readonly {
   width: 100%;
   border-radius: 12px;
-  background-color: #f8fafc;
-  border: 1.5px solid #cbd5e1;
+  background-color: var(--app-input-disabled-bg);
+  border: 1.5px solid var(--app-input-border);
   padding: 14px 16px;
   font-weight: 600;
-  color: #9b9fa5;
+  color: var(--app-muted);
   cursor: not-allowed;
 }
+
 .hifi-input-white,
 .hifi-select-white {
   width: 100%;
   border-radius: 12px;
-  background-color: white;
-  border: 1.5px solid #cbd5e1;
+  background-color: var(--app-input-bg);
+  border: 1.5px solid var(--app-input-border);
   padding: 14px 16px;
   font-size: 16px;
   font-weight: 600;
+  color: var(--app-text);
   outline: none;
 }
+
 .hifi-input-white:focus {
-  border-color: #185f3b;
+  border-color: var(--app-input-focus-border);
 }
+
 .hifi-select-gradient {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   border-radius: 12px;
-  color: white;
+  color: var(--app-text-inverse);
   font-weight: 700;
   padding: 0 16px;
   appearance: none;
   cursor: pointer;
-  background: var(--gradient-gradient-10, linear-gradient(91deg, #3f9760 0%, #d1955f 100%));
+  background: var(--app-accent);
   z-index: 10;
 }
+
 .hifi-chevron {
   position: absolute;
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280;
+  color: var(--app-muted);
   pointer-events: none;
 }
+
 .hifi-chevron-white {
   position: absolute;
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: white;
+  color: var(--app-text-inverse);
   pointer-events: none;
   z-index: 20;
 }
+
 .hifi-btn-submit {
   width: 100%;
   height: 56px;
   border-radius: 20px;
-  color: white;
+  color: var(--app-text-inverse);
   font-weight: 700;
   border: none;
   cursor: pointer;
-  background: radial-gradient(77.91% 77.91% at 50% 100%, #3f9760 4.91%, #0c4923 100%);
-  box-shadow:
-    0 -2px 0 0 rgba(0, 0, 0, 0.4) inset,
-    0 1px 0 0 rgba(248, 250, 252, 0.4) inset;
+  background: var(--app-accent);
   transition: transform 0.1s;
 }
+
 .hifi-btn-submit:active {
   transform: scale(0.98);
 }

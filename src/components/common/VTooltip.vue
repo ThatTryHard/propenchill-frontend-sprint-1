@@ -15,12 +15,12 @@
         class="absolute top-[calc(100%+8px)] left-0 z-50 flex flex-col items-start drop-shadow-[0_12px_16px_rgba(0,0,0,0.3)]"
       >
         <div
-          class="absolute -top-[5px] left-[20px] w-[14px] h-[14px] bg-[#429760] rotate-45 rounded-[2px] z-0"
+          class="absolute -top-[5px] left-[20px] w-[14px] h-[14px] bg-[var(--app-accent)] rotate-45 rounded-[2px] z-0"
         ></div>
 
         <div
           :class="[
-            'relative z-10 bg-[linear-gradient(90.74deg,#3f9760,#d1955f)] text-[#f8fafc] font-sans rounded-[10px]',
+            'relative z-10 bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] text-[var(--app-text-inverse)] font-sans rounded-[10px]',
             type === 'large' ? 'p-[16px] w-[240px]' : 'px-[24px] py-[6px]',
           ]"
         >

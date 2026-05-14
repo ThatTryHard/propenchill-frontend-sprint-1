@@ -2,8 +2,8 @@
   <div
     @click="toggle"
     :class="[
-      'w-full relative cursor-pointer shadow-[0px_2px_4px_rgba(0,0,0,0.18)] rounded-[14px] text-[#f8fafc] font-sans flex flex-col box-border overflow-hidden',
-      'bg-[linear-gradient(90.74deg,#3f9760_0%,#3f9760_50%,#d1955f_100%)] bg-[length:175%_100%]',
+      'w-full relative cursor-pointer shadow-[0px_2px_4px_rgba(0,0,0,0.18)] rounded-[14px] text-[var(--app-text-inverse)] font-sans flex flex-col box-border overflow-hidden',
+      'bg-[linear-gradient(90.74deg,var(--app-accent)_0%,var(--app-accent)_50%,var(--app-accent-2)_100%)] bg-[length:175%_100%]',
       'transition-all duration-500 ease-in-out select-none',
       'hover:brightness-[0.92]',
       isOpen
