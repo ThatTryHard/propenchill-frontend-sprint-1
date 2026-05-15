@@ -4,7 +4,9 @@
       <SIMPSidebar />
     </template>
 
-    <div class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans">
+    <div
+      class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans"
+    >
       <section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
@@ -14,19 +16,21 @@
             Lihat dan kelola log dan riwayat aktivitas persuratan
           </p>
         </div>
-        <VActionButton variant="secondary" @click="refreshLogs">
-          Refresh
-        </VActionButton>
+        <VActionButton variant="secondary" @click="refreshLogs"> Refresh </VActionButton>
       </section>
 
-      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
+      <div
+        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
+      >
         <div class="flex flex-wrap items-end gap-4 w-full">
           <div class="flex-[1.2] min-w-[180px]">
             <VInputField type="date" v-model="filters.date" label="Tanggal" />
           </div>
 
           <div class="flex-[1.2] min-w-[190px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-text)]">Jenis Surat</label>
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-text)]"
+              >Jenis Surat</label
+            >
             <VDropdown
               v-model="filters.surat_type"
               :options="jenisSuratOptions"
@@ -35,7 +39,9 @@
           </div>
 
           <div class="flex-[1.2] min-w-[200px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-text)]">Status</label>
+            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-text)]"
+              >Status</label
+            >
             <VDropdown
               v-model="filters.status"
               :options="statusOptions"
@@ -44,22 +50,20 @@
           </div>
 
           <div class="flex-[1.6] min-w-[220px]">
-            <VInputField
-              v-model="filters.actor"
-              label="Pengguna"
-              placeholder="Nama pengguna"
-            />
+            <VInputField v-model="filters.actor" label="Pengguna" placeholder="Nama pengguna" />
           </div>
         </div>
       </div>
 
-      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
+      <div
+        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
+      >
         <VInputField v-model="searchQuery" state="search" placeholder="Cari log aktivitas..." />
       </div>
 
       <VTable :columns="tableColumns" :rows="tableRows" :isLoading="logsStore.loading">
-        <template #cell-no="{ row }">
-          <span class="font-semibold text-[var(--app-text)]">{{ row.index }}</span>
+        <template #cell-id="{ row }">
+          <span class="font-semibold text-[var(--app-text)]">{{ row.log.surat_id || row.index }}</span>
         </template>
 
         <template #cell-waktu="{ row }">
@@ -68,7 +72,9 @@
 
         <template #cell-nama="{ row }">
           <div class="flex flex-col">
-            <span class="font-semibold text-[var(--app-text)]">{{ row.log.actor_name || '-' }}</span>
+            <span class="font-semibold text-[var(--app-text)]">{{
+              row.log.actor_name || '-'
+            }}</span>
             <span class="text-[12px] text-[var(--app-muted)]">{{ row.log.actor_role || '-' }}</span>
           </div>
         </template>
@@ -85,10 +91,7 @@
         </template>
 
         <template #cell-status="{ row }">
-          <VChip
-            :label="formatStatus(row.log)"
-            :variant="getStatusVariant(row.log)"
-          />
+          <VChip :label="formatStatus(row.log)" :variant="getStatusVariant(row.log)" />
         </template>
 
         <template #cell-aksi="{ row }">
@@ -100,7 +103,7 @@
         <span>Menampilkan {{ paginatedLogs.length }} dari {{ filteredLogs.length }} data</span>
       </div>
 
-      <div class="flex justify-center">
+      <div v-if="totalPages > 1" class="flex justify-center">
         <VPagination v-model:current-page="currentPage" :total-pages="totalPages" />
       </div>
     </div>
@@ -147,17 +150,16 @@ const jenisSuratOptions = [
 
 const statusOptions = [
   { label: 'Semua Status', value: '' },
-  { label: 'Pending', value: 'Pending' },
-  { label: 'Menunggu Verifikasi Kepsek', value: 'Menunggu Verifikasi Kepsek' },
-  { label: 'Verified', value: 'Verified' },
-  { label: 'Rejected', value: 'Rejected' },
-  { label: 'Dibatalkan', value: 'Dibatalkan' },
   { label: 'Diajukan', value: 'diajukan' },
-  { label: 'Menunggu Verifikasi', value: 'menunggu_verifikasi_kepsek' },
+  { label: 'Menunggu Verifikasi Kepsek', value: 'menunggu_verifikasi_kepsek' },
+  { label: 'Verified', value: 'verified' },
+  { label: 'Rejected', value: 'rejected' },
+  { label: 'Dibatalkan', value: 'dibatalkan' },
+  { label: 'Dihapus', value: 'dihapus' },
 ]
 
 const tableColumns = [
-  { key: 'no', label: 'Nomor' },
+  { key: 'id', label: 'ID Surat' },
   { key: 'waktu', label: 'Waktu' },
   { key: 'nama', label: 'Nama Pengguna' },
   { key: 'jenis', label: 'Jenis Surat' },
@@ -219,15 +221,38 @@ const getActionDetail = (log: ActivityLogItem) => {
   return log.metadata?.catatan ? String(log.metadata.catatan) : '-'
 }
 
+const normalizeStatusValue = (raw?: string) => {
+  if (!raw) return ''
+  const s = String(raw).trim().toLowerCase()
+  if (['diajukan', 'pending', 'diproses'].includes(s)) return 'diajukan'
+  if (['menunggu verifikasi kepsek', 'menunggu_verifikasi_kepsek', 'menunggu verifikasi'].includes(s)) return 'menunggu_verifikasi_kepsek'
+  if (['verified', 'disetujui', 'selesai'].includes(s)) return 'verified'
+  if (['rejected', 'ditolak'].includes(s)) return 'rejected'
+  if (['dibatalkan'].includes(s)) return 'dibatalkan'
+  if (['dihapus', 'deleted'].includes(s)) return 'dihapus'
+  return s
+}
+
 const formatStatus = (log: ActivityLogItem) => {
-  return String(log.status_to || log.status_from || '-').trim() || '-'
+  if (log.action === 'deleted') return 'Dihapus'
+  const raw = String(log.status_to || log.status_from || '')
+  const normalized = normalizeStatusValue(raw)
+  if (!normalized) return '-'
+  // display in title case
+  return normalized
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
 }
 
 const getStatusVariant = (log: ActivityLogItem) => {
-  const status = String(log.status_to || log.status_from || '').toLowerCase()
-  if (['verified', 'disetujui', 'selesai'].includes(status)) return 'deep'
-  if (['rejected', 'ditolak'].includes(status)) return 'secondary'
-  if (['pending', 'diproses'].includes(status)) return 'primary'
+  if (log.action === 'deleted') return 'secondary'
+  const status = normalizeStatusValue(String(log.status_to || log.status_from || ''))
+  if (status === 'diajukan') return 'tertiary'
+  if (status === 'menunggu_verifikasi_kepsek') return 'warning'
+  if (status === 'verified') return 'deep'
+  if (['rejected', 'dibatalkan', 'dihapus'].includes(status)) return 'secondary'
   return 'tertiary'
 }
 
@@ -293,7 +318,8 @@ const filteredLogs = computed(() => {
     const matchDate = !dateFilter || formatDateKey(latest.created_at) === dateFilter
     const matchActor = !actorFilter || latest.actor_name?.toLowerCase().includes(actorFilter)
     const matchType = !typeFilter || latest.surat_type === typeFilter
-    const statusValue = String(latest.status_to || latest.status_from || '').toLowerCase()
+    const statusRaw = latest.action === 'deleted' ? 'dihapus' : String(latest.status_to || latest.status_from || '')
+    const statusValue = normalizeStatusValue(statusRaw)
     const matchStatus = !statusFilter || statusValue === statusFilter
     const matchSearch = !query || matchesSearch(latest, query)
 
