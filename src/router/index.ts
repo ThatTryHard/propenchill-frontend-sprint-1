@@ -90,7 +90,7 @@ const router = createRouter({
     },
     {
       path: '/status',
-      name: 'status',  
+      name: 'status',
       component: StatusView,
     },
     {
