@@ -9,6 +9,7 @@ import VButton from '@/components/common/VButton.vue'
 import VModal from '@/components/common/VModal.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import { useProfileStore } from '@/stores/profile'
+import { useAuthStore } from '@/stores/users/auth'
 import api from '@/plugins/axios'
 import {
   BadgeCheck,
@@ -30,7 +31,7 @@ import {
 
 const router = useRouter()
 const profileStore = useProfileStore()
-
+const authStore = useAuthStore()
 const profile = computed(() => profileStore.profile)
 
 const showEditModal = ref(false)
@@ -256,7 +257,22 @@ const handleUploadAvatar = async () => {
     })
 
     if (response.data?.message || response.status === 200) {
+      // 1. Ambil data profil terbaru untuk komponen halaman ini
       await profileStore.fetchProfile()
+      const newAvatarUrl = response.data?.avatar_url || profile.value?.avatar_url
+
+      if (authStore.user) {
+        authStore.user.avatar_url = newAvatarUrl
+        if ('avatar' in authStore.user) {
+          authStore.user.avatar = newAvatarUrl
+        }
+      }
+      
+      // Jika authStore punya fungsi bawaan buat fetch ulang data user, panggil juga biar double-safe
+      if (typeof authStore.fetchUser === 'function') {
+        await authStore.fetchUser()
+      }
+
       avatarPreview.value = null
       selectedAvatarFile.value = null
     }
@@ -266,7 +282,6 @@ const handleUploadAvatar = async () => {
     isUploadingAvatar.value = false
   }
 }
-
 const cancelAvatarUpload = () => {
   avatarPreview.value = null
   selectedAvatarFile.value = null
@@ -283,15 +298,14 @@ onMounted(() => {
 <template>
   <DashboardLayout>
     <template #sidebar>
-      <SIMPSidebar :userAvatar="profile?.avatar_url" />
+      <SIMPSidebar :key="profile?.avatar_url" :userAvatar="profile?.avatar_url" />
     </template>
 
     <section class="min-h-full bg-[var(--app-bg)] px-5 py-5 text-[var(--app-text)]">
       <div class="mx-auto max-w-4xl">
         <!-- Header -->
         <div
-          class="mb-5 overflow-hidden rounded-[24px] bg-[var(--app-card)] p-5 shadow-sm border border-[var(--app-card-border)]"
-        >
+          class="mb-5 overflow-hidden rounded-[24px] bg-[var(--app-card)] p-5 shadow-sm border border-[var(--app-card-border)]">
           <h1 class="text-2xl font-bold text-[var(--app-heading)]">Profil Pengguna</h1>
           <p class="mt-1 text-[12px] text-[var(--app-muted)]">
             Kelola dan pantau informasi akun Anda.
@@ -310,11 +324,8 @@ onMounted(() => {
               </template>
             </VChip>
 
-            <VChip
-              :label="profile.status_verifikasi"
-              :variant="verificationChipVariant"
-              class="!px-3 !py-2 !text-[13px]"
-            >
+            <VChip :label="profile.status_verifikasi" :variant="verificationChipVariant"
+              class="!px-3 !py-2 !text-[13px]">
               <template #icon>
                 <ShieldCheck class="h-4 w-4 text-[var(--app-accent)]" />
               </template>
@@ -328,10 +339,8 @@ onMounted(() => {
         </VCard>
 
         <!-- Error -->
-        <div
-          v-else-if="profileStore.error"
-          class="rounded-2xl border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-4 text-[12px] text-[var(--app-danger)] shadow-sm"
-        >
+        <div v-else-if="profileStore.error"
+          class="rounded-2xl border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-4 text-[12px] text-[var(--app-danger)] shadow-sm">
           {{ profileStore.error }}
         </div>
 
@@ -342,61 +351,37 @@ onMounted(() => {
             <VCard paddingClass="p-4">
               <div class="flex flex-col items-center text-center">
                 <div
-                  class="relative mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-[var(--app-card)] shadow-inner ring-8 ring-[var(--app-card)]"
-                >
-                  <div
-                    v-if="avatarPreview || profile?.avatar_url"
-                    class="flex h-20 w-20 items-center justify-center rounded-full overflow-hidden"
-                  >
-                    <img
-                      :src="avatarPreview || profile?.avatar_url || undefined"
-                      alt="Avatar"
-                      class="h-full w-full object-cover"
-                    />
+                  class="relative mb-4 flex h-28 w-28 items-center justify-center rounded-full bg-[var(--app-card)] shadow-inner ring-8 ring-[var(--app-card)]">
+                  <div v-if="avatarPreview || profile?.avatar_url"
+                    class="flex h-20 w-20 items-center justify-center rounded-full overflow-hidden">
+                    <img :src="avatarPreview || profile?.avatar_url || undefined" alt="Avatar"
+                      class="h-full w-full object-cover" />
                   </div>
-                  <div
-                    v-else
-                    class="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--app-soft-card)]"
-                  >
+                  <div v-else class="flex h-20 w-20 items-center justify-center rounded-full bg-[var(--app-soft-card)]">
                     <UserRound class="h-12 w-12 text-[var(--app-accent)]" />
                   </div>
 
                   <!-- Upload overlay -->
-                  <button
-                    type="button"
+                  <button type="button"
                     class="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-                    @click="triggerAvatarUpload"
-                    title="Ubah foto profil"
-                  >
+                    @click="triggerAvatarUpload" title="Ubah foto profil">
                     <Camera class="h-6 w-6 text-[var(--app-text-inverse)]" />
                   </button>
                 </div>
 
-                <input
-                  ref="avatarInputRef"
-                  type="file"
-                  accept="image/jpeg,image/png,image/gif,image/webp"
-                  class="hidden"
-                  @change="handleAvatarFileChange"
-                />
+                <input ref="avatarInputRef" type="file" accept="image/jpeg,image/png,image/gif,image/webp"
+                  class="hidden" @change="handleAvatarFileChange" />
 
                 <!-- Avatar upload preview & actions -->
                 <div v-if="avatarPreview" class="mt-3 flex flex-col items-center gap-2">
                   <p class="text-[11px] text-[var(--app-muted)]">Pratinjau foto baru</p>
                   <div class="flex items-center gap-2">
-                    <VButton
-                      variant="primary"
-                      class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
-                      :loading="isUploadingAvatar"
-                      @click="handleUploadAvatar"
-                    >
+                    <VButton variant="primary" class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
+                      :loading="isUploadingAvatar" @click="handleUploadAvatar">
                       Simpan
                     </VButton>
-                    <VButton
-                      variant="secondary"
-                      class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
-                      @click="cancelAvatarUpload"
-                    >
+                    <VButton variant="secondary" class="!rounded-xl !px-3 !py-1.5 !text-[11px]"
+                      @click="cancelAvatarUpload">
                       Batal
                     </VButton>
                   </div>
@@ -416,8 +401,7 @@ onMounted(() => {
                 <div class="flex w-full flex-col gap-3 text-left">
                   <div class="flex items-center gap-3">
                     <div
-                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
-                    >
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]">
                       <Mail class="h-4.5 w-4.5" />
                     </div>
                     <p class="truncate text-[12px] text-[var(--app-muted)]">
@@ -427,8 +411,7 @@ onMounted(() => {
 
                   <div class="flex items-center gap-3">
                     <div
-                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
-                    >
+                      class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]">
                       <Phone class="h-4.5 w-4.5" />
                     </div>
                     <p class="text-[12px] text-[var(--app-muted)]">
@@ -437,12 +420,8 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <VButton
-                  v-if="profile.show_verification_button"
-                  variant="primary"
-                  class="mt-5 !w-full !rounded-xl !px-4 !py-2 !text-[12px]"
-                  @click="handleVerifyNow"
-                >
+                <VButton v-if="profile.show_verification_button" variant="primary"
+                  class="mt-5 !w-full !rounded-xl !px-4 !py-2 !text-[12px]" @click="handleVerifyNow">
                   <template #leftIcon>
                     <BadgeCheck class="h-4 w-4" />
                   </template>
@@ -455,8 +434,7 @@ onMounted(() => {
             <VCard paddingClass="p-4">
               <div class="mb-4 flex items-center gap-2.5">
                 <div
-                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
-                >
+                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]">
                   <ClipboardCheck class="h-4.5 w-4.5" />
                 </div>
                 <h2 class="text-lg font-bold text-[var(--app-accent)]">Informasi Pribadi</h2>
@@ -513,11 +491,7 @@ onMounted(() => {
               </div>
 
               <div class="mt-4 flex justify-end">
-                <VButton
-                  variant="primary"
-                  class="!rounded-xl !px-4 !py-2 !text-[12px]"
-                  @click="handleEditProfile"
-                >
+                <VButton variant="primary" class="!rounded-xl !px-4 !py-2 !text-[12px]" @click="handleEditProfile">
                   <template #rightIcon>
                     <Pencil class="h-3.5 w-3.5" />
                   </template>
@@ -531,8 +505,7 @@ onMounted(() => {
           <VCard paddingClass="p-4" class="mt-4">
             <div class="mb-4 flex items-center gap-2.5">
               <div
-                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
-              >
+                class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]">
                 <BriefcaseBusiness class="h-4.5 w-4.5" />
               </div>
               <h2 class="text-lg font-bold text-[var(--app-accent)]">Ringkasan Akun</h2>
@@ -560,26 +533,18 @@ onMounted(() => {
               </div>
 
               <div class="summary-card">
-                <div
-                  class="summary-icon"
-                  :class="
-                    completenessVariant === 'secondary'
-                      ? '!bg-[var(--app-warning-bg)] !text-[var(--app-warning)]'
-                      : ''
-                  "
-                >
+                <div class="summary-icon" :class="completenessVariant === 'secondary'
+                  ? '!bg-[var(--app-warning-bg)] !text-[var(--app-warning)]'
+                  : ''
+                  ">
                   <ClipboardCheck class="h-5 w-5" />
                 </div>
                 <div>
                   <p class="summary-title">Kelengkapan Data</p>
-                  <p
-                    class="summary-value"
-                    :class="
-                      profile.is_profile_complete
-                        ? 'text-[var(--app-accent)]'
-                        : 'text-[var(--app-warning)]'
-                    "
-                  >
+                  <p class="summary-value" :class="profile.is_profile_complete
+                    ? 'text-[var(--app-accent)]'
+                    : 'text-[var(--app-warning)]'
+                    ">
                     {{ profile.kelengkapan_data }}
                   </p>
                 </div>
@@ -591,21 +556,14 @@ onMounted(() => {
     </section>
 
     <!-- Edit Profile Modal -->
-    <VModal
-      :isOpen="showEditModal"
-      title="Edit Profil"
-      @update:isOpen="showEditModal = $event"
-      maxWidthClass="max-w-[440px]"
-      :buttons="[
+    <VModal :isOpen="showEditModal" title="Edit Profil" @update:isOpen="showEditModal = $event"
+      maxWidthClass="max-w-[440px]" :buttons="[
         { label: 'Batal', variant: 'secondary', action: closeEditModal },
         { label: 'Simpan', variant: 'primary', action: handleSaveProfile },
-      ]"
-    >
+      ]">
       <div class="w-full flex flex-col gap-4 mt-2 text-left">
-        <div
-          v-if="editError"
-          class="text-[12px] text-[var(--app-danger)] bg-[var(--app-danger-bg)] border border-[var(--app-danger-border)] p-3 rounded-lg"
-        >
+        <div v-if="editError"
+          class="text-[12px] text-[var(--app-danger)] bg-[var(--app-danger-bg)] border border-[var(--app-danger-border)] p-3 rounded-lg">
           {{ editError }}
         </div>
 
@@ -617,12 +575,8 @@ onMounted(() => {
 
         <VInputField v-model="editForm.alamat" label="Alamat" placeholder="Masukkan alamat" />
 
-        <VInputField
-          v-model="editForm.nomor_hp"
-          label="Nomor Telepon"
-          type="tel"
-          placeholder="Masukkan nomor telepon"
-        />
+        <VInputField v-model="editForm.nomor_hp" label="Nomor Telepon" type="tel"
+          placeholder="Masukkan nomor telepon" />
       </div>
     </VModal>
   </DashboardLayout>

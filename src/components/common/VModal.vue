@@ -17,10 +17,8 @@
             maxWidthClass,
           ]">
             <div class="w-full flex justify-end mb-[10px]">
-              <button
-                @click="closeModal"
-                class="text-[var(--app-muted)] hover:text-[var(--app-text)] transition-colors"
-              >
+              <button @click="closeModal"
+                class="text-[var(--app-muted)] hover:text-[var(--app-text)] transition-colors">
                 <XIcon class="w-[20px] h-[20px]" />
               </button>
             </div>

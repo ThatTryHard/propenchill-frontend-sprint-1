@@ -210,48 +210,26 @@ onMounted(() => {
             </p>
           </div>
 
-          <VDropdown
-            v-if="isAdmin"
-            v-model="selectedBidang"
-            :options="bidangOptions"
-            placeholder="Pilih Bidang"
-            class="!w-[220px]"
-          />
+          <VDropdown v-if="isAdmin" v-model="selectedBidang" :options="bidangOptions" placeholder="Pilih Bidang"
+            class="!w-[220px]" />
         </div>
 
-        <VAlert
-          v-if="generalError"
-          type="error"
-          title="Gagal"
-          :message="generalError"
-          @close="generalError = ''"
-        />
-        <VAlert
-          v-if="successMessage"
-          type="success"
-          title="Berhasil"
-          :message="successMessage"
-          @close="successMessage = ''"
-        />
+        <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
+        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
+          @close="successMessage = ''" />
       </section>
 
       <section class="mb-4">
-        <VInputField
-          v-model="search"
-          state="search"
-          placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
-          @keydown.enter="handleApplyFilter"
-        />
+        <VInputField v-model="search" state="search"
+          placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..." @keydown.enter="handleApplyFilter" />
       </section>
 
       <section class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-90">
-            <img
-              :src="mailIcon"
-              alt="Mail Icon"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
-            />
+            <img :src="mailIcon" alt="Mail Icon"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[var(--app-heading)]">Total Surat</p>
@@ -259,13 +237,11 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img
-              :src="diprosesIcon"
-              alt="Diproses"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
-            />
+            <img :src="diprosesIcon" alt="Diproses"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[var(--app-heading)]">Diproses</p>
@@ -273,13 +249,11 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img
-              :src="disetujuiIcon"
-              alt="Disetujui"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
-            />
+            <img :src="disetujuiIcon" alt="Disetujui"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[var(--app-heading)]">Disetujui</p>
@@ -287,13 +261,11 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
+        <div
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img
-              :src="ditolakIcon"
-              alt="Ditolak"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
-            />
+            <img :src="ditolakIcon" alt="Ditolak"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
             <p class="text-[28px] font-semibold text-[var(--app-heading)]">Ditolak</p>
@@ -304,53 +276,38 @@ onMounted(() => {
 
       <section class="mb-6">
         <div class="relative flex h-[46px] items-center rounded-full bg-[var(--app-soft-card)] p-1">
-          <button
-            v-for="option in statusFilterOptions"
-            :key="option.value"
-            type="button"
-            :class="[
-              'relative flex-1 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-300',
-              selectedStatusFilter === option.value
-                ? 'bg-[var(--app-accent)] text-[var(--app-text-inverse)] shadow-sm'
-                : 'text-[var(--app-muted)] hover:text-[var(--app-accent)]',
-            ]"
-            @click="handleStatusFilterSelect(option.value)"
-          >
+          <button v-for="option in statusFilterOptions" :key="option.value" type="button" :class="[
+            'relative flex-1 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-300',
+            selectedStatusFilter === option.value
+              ? 'bg-[var(--app-accent)] text-[var(--app-text-inverse)] shadow-sm'
+              : 'text-[var(--app-muted)] hover:text-[var(--app-accent)]',
+          ]" @click="handleStatusFilterSelect(option.value)">
             {{ option.label }}
           </button>
         </div>
       </section>
 
-      <section
-        v-if="store.loading"
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
-      >
+      <section v-if="store.loading"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]">
         Memuat data surat...
       </section>
 
-      <section
-        v-else-if="filteredSuratList.length === 0"
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
-      >
+      <section v-else-if="filteredSuratList.length === 0"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]">
         Belum ada surat yang sesuai filter.
       </section>
 
       <section v-else class="flex flex-col gap-4">
-        <article
-          v-for="item in paginatedSuratList"
-          :key="item.id_surat"
-          class="rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
-        >
+        <article v-for="item in paginatedSuratList" :key="item.id_surat"
+          class="rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
           <div class="flex items-start justify-between gap-4 mb-3">
             <h3 class="text-[18px] font-bold leading-[1.4] text-[var(--app-heading)] flex-1">
               {{ getLetterTitle(item) }}
             </h3>
-            <span
-              :class="[
-                'px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap',
-                getStatusClass(item.status),
-              ]"
-            >
+            <span :class="[
+              'px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap',
+              getStatusClass(item.status),
+            ]">
               {{ item.status }}
             </span>
           </div>
@@ -376,23 +333,17 @@ onMounted(() => {
             </div>
           </div>
 
-          <button
-            type="button"
+          <button type="button"
             class="w-full sm:w-auto bg-[var(--app-soft-card)] hover:bg-[var(--app-bg)] text-[var(--app-heading)] px-8 py-2.5 rounded-[12px] text-[14px] font-semibold transition-all duration-300 hover:-translate-y-0.5 border border-[var(--app-card-border)]"
-            @click="goToDetail(item)"
-          >
+            @click="goToDetail(item)">
             Detail
           </button>
         </article>
       </section>
 
       <section v-if="totalPages > 1" class="mt-6 flex justify-end">
-        <VPagination
-          :currentPage="currentPage"
-          :totalPages="totalPages"
-          :siblingCount="1"
-          @page-change="handlePageChange"
-        />
+        <VPagination :currentPage="currentPage" :totalPages="totalPages" :siblingCount="1"
+          @page-change="handlePageChange" />
       </section>
     </div>
   </DashboardLayout>
