@@ -13,7 +13,10 @@ import {
 import { toast } from 'vue-sonner'
 import VToast from '@/components/common/VToast.vue'
 import { useStudentStore, type Student } from '@/stores/students'
+import { useTeacherStore, type Teacher } from '@/stores/teacher'
+import { useAdminStore } from '@/stores/admin'
 import { useAuthStore } from '@/stores/users/auth'
+import { useProfileStore } from '@/stores/profile'
 
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
@@ -30,12 +33,17 @@ import DeleteConfirmationModal from '@/components/admin/students/DeleteConfirmat
 import ImportStudentModal from '@/components/admin/students/ImportStudentModal.vue'
 import ExportStudentModal from '@/components/admin/students/ExportStudentModal.vue'
 import StudentDetailModal from '@/components/admin/students/StudentDetailModal.vue'
+import CreateTeacherModal from '@/components/admin/teachers/CreateTeacherModal.vue'
+import EditTeacherModal from '@/components/admin/teachers/EditTeacherModal.vue'
+import StaffDetailModal from '@/components/admin/teachers/StaffDetailModal.vue'
 
 import databaseIcon from '@/assets/Database_Logo SVG.svg'
 import studentIcon from '@/assets/Siswa SVG.svg'
 import staffIcon from '@/assets/PC SVG.svg'
 
 const studentStore = useStudentStore()
+const teacherStore = useTeacherStore()
+const adminStore = useAdminStore()
 const authStore = useAuthStore()
 
 const selectedDataType = ref<'Siswa' | 'Staf'>('Siswa')
@@ -46,66 +54,153 @@ const dataTypeOptions = [
 ]
 
 const search = ref('')
-const kelas = ref('')
 const nomorInduk = ref('')
 const namaFilter = ref('')
+const emailFilter = ref('')
 const currentPage = ref(1)
 const limit = ref(10)
 
 const isCreateModalOpen = ref(false)
+const isCreateStaffModalOpen = ref(false)
 const isEditModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
 const isImportModalOpen = ref(false)
 const isExportModalOpen = ref(false)
 const isDetailModalOpen = ref(false)
+const isStaffDetailModalOpen = ref(false)
 
 const selectedStudent = ref<Student | null>(null)
 const selectedStudentId = ref<number | null>(null)
 const selectedStudentName = ref('')
+const selectedTeacher = ref<Teacher | null>(null)
 
 const isAdmin = computed(() => authStore.role === 'ADMIN')
 
-const combinedQuery = computed(() => {
-  return search.value || namaFilter.value || nomorInduk.value
-})
+const combinedQuery = computed(() => search.value)
+
 
 const loadStudents = async () => {
-  if (selectedDataType.value === 'Staf') return
-
   await studentStore.fetchStudents(
     currentPage.value,
     limit.value,
     combinedQuery.value,
-    kelas.value,
+    '',
   )
+}
+
+const loadStaff = async () => {
+  if (teacherStore.error) teacherStore.error = null
+  await teacherStore.fetchTeachers(currentPage.value, combinedQuery.value, '', nomorInduk.value)
 }
 
 const loadSummary = async () => {
   await studentStore.fetchSummary()
 }
 
-const openCreateModal = () => {
-  isCreateModalOpen.value = true
+const loadCurrentDataType = async () => {
+  if (selectedDataType.value === 'Staf') {
+    await loadStaff()
+  } else {
+    await loadStudents()
+  }
 }
 
-const openStaffModal = () => {
-  toast.custom(VToast, {
-    componentProps: {
-      message: 'Manajemen data staf belum tersedia.',
-    },
-  })
-}
+const openCreateModal = () => { isCreateModalOpen.value = true }
+const openStaffModal = () => { isCreateStaffModalOpen.value = true }
 
 const openDetailModal = async (student: Student) => {
   const detail = await studentStore.getStudentDetail(student.id_siswa)
-  selectedStudent.value = detail || student
+  const profileStore = useProfileStore()
+  let profile = null
+
+  if (authStore.user?.email && authStore.user.email === student.email) {
+    profile = profileStore.profile
+    if (!profile) {
+      try {
+        profile = await profileStore.fetchProfile()
+      } catch {
+        profile = null
+      }
+    }
+  }
+
+  selectedStudent.value = ({
+    ...(detail || student),
+    tanggal_lahir: profile?.tanggal_lahir ?? (detail?.tanggal_lahir ?? null),
+    no_hp: profile?.nomor_hp ?? (detail?.no_hp ?? null),
+    alamat: profile?.alamat ?? (detail?.alamat ?? null),
+  } as unknown) as Student
+
   isDetailModalOpen.value = true
+}
+
+const openStaffDetail = async (teacher: Teacher) => {
+  try {
+    const detail = await teacherStore.fetchTeacherById(teacher.id)
+
+    const profileStore = useProfileStore()
+    let profile = null
+
+    if (authStore.user?.email && authStore.user.email === teacher.email) {
+      profile = profileStore.profile
+      if (!profile) {
+        profile = await profileStore.fetchProfile()
+      }
+    }
+
+    selectedTeacher.value = ({
+      ...detail,
+      tanggal_lahir: profile?.tanggal_lahir ?? detail.tanggal_lahir ?? null,
+      nomor_hp: profile?.nomor_hp ?? detail.nomor_hp ?? null,
+      alamat: profile?.alamat ?? detail.alamat ?? null,
+      is_verified: profile?.is_email_verified ?? detail.is_verified ?? false,
+    } as unknown) as Teacher
+  } catch {
+    selectedTeacher.value = teacher
+  }
+
+  isStaffDetailModalOpen.value = true
 }
 
 const openEditModal = async (student: Student) => {
   const detail = await studentStore.getStudentDetail(student.id_siswa)
   selectedStudent.value = detail || student
   isEditModalOpen.value = true
+}
+
+const isEditTeacherModalOpen = ref(false)
+const editTeacherId = ref<number | null>(null)
+
+const openEditTeacherView = (teacher: Teacher) => {
+  editTeacherId.value = teacher.id
+  isEditTeacherModalOpen.value = true
+}
+
+const isDeleteTeacherModalOpen = ref(false)
+const selectedTeacherIdForDelete = ref<number | null>(null)
+const selectedTeacherNameForDelete = ref('')
+const deleteTeacherLoading = ref(false)
+
+const openDeleteTeacher = (teacher: Teacher) => {
+  selectedTeacherIdForDelete.value = teacher.id
+  selectedTeacherNameForDelete.value = teacher.nama
+  isDeleteTeacherModalOpen.value = true
+}
+
+const confirmDeleteTeacher = async () => {
+  if (!selectedTeacherIdForDelete.value) return
+  deleteTeacherLoading.value = true
+  try {
+    await teacherStore.deleteTeacher(selectedTeacherIdForDelete.value)
+    toast.success('Data staf berhasil dihapus.')
+    isDeleteTeacherModalOpen.value = false
+    await loadSummary()
+    if (selectedDataType.value === 'Staf') await loadStaff()
+  } catch {
+    toast.error('Gagal menghapus data staf.')
+  } finally {
+    deleteTeacherLoading.value = false
+  }
 }
 
 const openDeleteModal = (id_siswa: number, name: string) => {
@@ -127,7 +222,6 @@ const handleStudentDeleted = async () => {
   if (studentStore.students.length === 1 && currentPage.value > 1) {
     currentPage.value--
   }
-
   await loadStudents()
   await loadSummary()
 }
@@ -139,26 +233,94 @@ const handleStudentImported = async () => {
   isImportModalOpen.value = false
 }
 
-const resetFilter = async () => {
-  search.value = ''
-  kelas.value = ''
-  nomorInduk.value = ''
-  namaFilter.value = ''
-  currentPage.value = 1
-  await loadStudents()
+const handleStaffCreated = async () => {
+  toast.custom(VToast, {
+    componentProps: {
+      message: 'Data staf berhasil ditambahkan.',
+    },
+  })
+  await loadSummary()
+  if (selectedDataType.value === 'Staf') {
+    await loadStaff()
+  }
 }
 
-const totalData = computed(() => studentStore.summary.total_data)
-const totalSiswa = computed(() => studentStore.summary.total_siswa)
-const totalStaf = computed(() => studentStore.summary.total_staff)
+const downloadTemplate = async () => {
+  try {
+    if (selectedDataType.value === 'Staf') {
+      await adminStore.downloadStaffTemplate()
+    } else {
+      await studentStore.downloadStudentTemplate()
+    }
+    toast.success('Template berhasil diunduh.')
+  } catch (err) {
+    console.error('Download template error:', err)
+    toast.error('Gagal mengunduh template.')
+  }
+}
 
+const handleExportStaff = async () => {
+  try {
+    await adminStore.exportStaff()
+    toast.success('Data staf berhasil diekspor.')
+  } catch {
+    toast.error('Gagal mengekspor data staf.')
+  }
+}
+
+const staffImportRef = ref<HTMLInputElement | null>(null)
+
+const openStaffImport = () => {
+  staffImportRef.value?.click()
+}
+
+const handleStaffImportFile = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    const result = await adminStore.importStaff(file)
+    toast.success(result?.message || 'Data staf berhasil diimpor.')
+    await loadSummary()
+    await loadStaff()
+  } catch (err: unknown) {
+    let msg = 'Gagal mengimpor data staf.'
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const maybe = err?.response?.data || err?.data
+    if (maybe) {
+      msg = maybe.message || maybe.error || msg
+    }
+    toast.error(msg)
+  } finally {
+    if (staffImportRef.value) staffImportRef.value.value = ''
+  }
+}
+
+const resetFilter = async () => {
+  search.value = ''
+  nomorInduk.value = ''
+  namaFilter.value = ''
+  emailFilter.value = ''
+  currentPage.value = 1
+  await loadCurrentDataType()
+}
+
+const totalSiswa = computed(() => studentStore.summary.total_siswa)
+// Use the live teacher pagination count when we have it, otherwise fall back to the summary
+const totalStaf = computed(() =>
+  teacherStore.pagination.totalData > 0
+    ? teacherStore.pagination.totalData
+    : studentStore.summary.total_staff
+)
+const totalData = totalSiswa.value + totalStaf.value
 const tableColumns = computed(() => {
   if (selectedDataType.value === 'Staf') {
     return [
       { key: 'nomor', label: 'Nomor', align: 'center' as const },
       { key: 'nama', label: 'Nama', align: 'center' as const },
+      { key: 'niy', label: 'NIY', align: 'center' as const },
       { key: 'email', label: 'Email', align: 'center' as const },
-      { key: 'kelas', label: 'Kelas', align: 'center' as const },
+      { key: 'role', label: 'Role', align: 'center' as const },
       { key: 'aksi', label: 'Aksi', align: 'center' as const },
     ]
   }
@@ -174,10 +336,66 @@ const tableColumns = computed(() => {
   ]
 })
 
-const tableRows = computed(() => {
-  if (selectedDataType.value === 'Staf') return []
+const filteredStudents = computed(() => {
+  const q = (search.value || '').toLowerCase().trim()
+  return studentStore.students.filter((s: Student) => {
+    if (q) {
+      const matchQ = [s.nama, s.email, s.nis, s.nisn]
+        .filter(Boolean)
+        .some((f) => f.toLowerCase().includes(q))
+      if (!matchQ) return false
+    }
 
-  return studentStore.students.map((student, index) => ({
+    if (namaFilter.value && !s.nama.toLowerCase().includes(namaFilter.value.toLowerCase())) return false
+
+    if (nomorInduk.value) {
+      const n = nomorInduk.value.trim().toLowerCase()
+      if (!(s.nis?.toLowerCase().includes(n) || s.nisn?.toLowerCase().includes(n))) return false
+    }
+
+    if (emailFilter.value && !s.email?.toLowerCase().includes(emailFilter.value.toLowerCase())) return false
+
+    return true
+  })
+})
+
+const filteredTeachers = computed(() => {
+  const q = (search.value || '').toLowerCase().trim()
+  return teacherStore.teachers.filter((t: Teacher) => {
+    if (q) {
+      const matchQ = [t.nama, t.email, t.niy]
+        .filter(Boolean)
+        .some((f) => f.toLowerCase().includes(q))
+      if (!matchQ) return false
+    }
+
+    if (namaFilter.value && !t.nama.toLowerCase().includes(namaFilter.value.toLowerCase())) return false
+
+    if (nomorInduk.value) {
+      const n = nomorInduk.value.trim().toLowerCase()
+      if (!t.niy?.toLowerCase().includes(n)) return false
+    }
+
+    if (emailFilter.value && !t.email?.toLowerCase().includes(emailFilter.value.toLowerCase())) return false
+
+    return true
+  })
+})
+
+const tableRows = computed(() => {
+  if (selectedDataType.value === 'Staf') {
+    return filteredTeachers.value.map((teacher: Teacher, index: number) => ({
+      ...teacher,
+      nomor:
+        ((teacherStore.pagination.currentPage || 1) - 1) *
+          (teacherStore.pagination.limit || 10) +
+        index +
+        1,
+      role: teacher.role ?? teacher.jabatan,
+    }))
+  }
+
+  return filteredStudents.value.map((student, index) => ({
     ...student,
     nomor:
       (studentStore.pagination.halaman_sekarang - 1) *
@@ -187,22 +405,24 @@ const tableRows = computed(() => {
   }))
 })
 
-watch([search, kelas, namaFilter, nomorInduk], async () => {
+// ── Watchers ─────────────────────────────────────────────────────────────────
+
+watch([search, namaFilter, nomorInduk, emailFilter], async () => {
   currentPage.value = 1
-  await loadStudents()
+  await loadCurrentDataType()
 })
 
 watch(currentPage, async () => {
-  await loadStudents()
+  await loadCurrentDataType()
 })
 
 watch(selectedDataType, async () => {
   currentPage.value = 1
-  await loadStudents()
+  await loadCurrentDataType()
 })
 
 onMounted(async () => {
-  await Promise.all([loadStudents(), loadSummary()])
+  await Promise.all([loadStudents(), loadSummary(), loadStaff()])
 })
 </script>
 
@@ -220,6 +440,8 @@ onMounted(async () => {
       "
     >
       <div class="mx-auto flex w-full max-w-[1180px] flex-col gap-4">
+
+        <!-- ── Page header ──────────────────────────────────────────────── -->
         <section
           class="
             flex items-start justify-between gap-6
@@ -242,7 +464,7 @@ onMounted(async () => {
                 leading-[1.2] text-[var(--app-muted)]
               "
             >
-              Lihat dan kelola Siswa dan Staf
+              Lihat dan kelola data Siswa dan Staf
             </p>
           </div>
 
@@ -253,58 +475,34 @@ onMounted(async () => {
               max-[640px]:flex-col max-[640px]:items-stretch
             "
           >
-            <VButton
-              variant="primary"
-              @click="openCreateModal"
-            >
+            <VButton variant="primary" @click="openCreateModal">
               <template #leftIcon>
                 <Plus :size="18" />
               </template>
-
               Tambah Data Siswa
             </VButton>
 
-            <VButton
-              variant="secondary"
-              @click="openStaffModal"
-            >
+            <VButton variant="secondary" @click="openStaffModal">
               <template #leftIcon>
                 <Plus :size="18" />
               </template>
-
               Tambah Data Staf
             </VButton>
           </div>
         </section>
 
+        <!-- ── Summary stat cards ─────────────────────────────────────── -->
         <section class="grid grid-cols-3 gap-4 max-[768px]:grid-cols-1">
-          <StatCard
-            title="Total Data"
-            :value="totalData"
-            :icon-src="databaseIcon"
-            icon-alt="Database Icon"
-          />
-
-          <StatCard
-            title="Siswa"
-            :value="totalSiswa"
-            :icon-src="studentIcon"
-            icon-alt="Student Icon"
-          />
-
-          <StatCard
-            title="Staf"
-            :value="totalStaf"
-            :icon-src="staffIcon"
-            icon-alt="Staff Icon"
-          />
+          <StatCard title="Total Data" :value="totalData" :icon-src="databaseIcon" icon-alt="Database Icon" />
+          <StatCard title="Siswa" :value="totalSiswa" :icon-src="studentIcon" icon-alt="Student Icon" />
+          <StatCard title="Staf" :value="totalStaf" :icon-src="staffIcon" icon-alt="Staff Icon" />
         </section>
 
-        <VCard
-          padding-class="p-3"
-          class="w-full"
-        >
-          <div class="flex w-full flex-col gap-3">
+        <!-- ── Filter card ─────────────────────────────────────────────── -->
+        <VCard padding-class="p-4" overflow-class="overflow-visible" class="w-full">
+          <div class="flex w-full flex-col gap-4">
+
+            <!-- Filter header row -->
             <div
               class="
                 flex items-center justify-between gap-4
@@ -312,8 +510,7 @@ onMounted(async () => {
               "
             >
               <div class="flex items-center gap-2">
-                <Filter class="h-6 w-6 text-[var(--app-heading)]" />
-
+                <Filter class="h-5 w-5 text-[var(--app-heading)]" />
                 <b
                   class="
                     text-[length:var(--app-card-title-font)]
@@ -324,28 +521,26 @@ onMounted(async () => {
                 </b>
               </div>
 
-              <VButton
-                variant="tertiary"
-                size="sm"
-                @click="resetFilter"
-              >
+              <VButton variant="tertiary" size="sm" @click="resetFilter">
                 <template #leftIcon>
                   <RotateCcw :size="16" />
                 </template>
-
                 Reset
               </VButton>
             </div>
 
+            <!-- Filter inputs grid (adaptive: 2-col → 1-col on small screens) -->
             <div
               class="
                 grid grid-cols-2 gap-x-5 gap-y-3
                 max-[900px]:grid-cols-1
               "
             >
+              <!-- Nama -->
               <div
                 class="
-                  grid grid-cols-[80px_280px] items-center gap-3
+                  grid items-center gap-3
+                  grid-cols-[80px_1fr]
                   max-[900px]:grid-cols-[92px_1fr]
                 "
               >
@@ -357,16 +552,17 @@ onMounted(async () => {
                 >
                   Nama
                 </label>
-
                 <VInputField
                   v-model="namaFilter"
                   placeholder="Masukkan nama"
                 />
               </div>
 
+              <!-- Nomor Induk — label adapts to current data type -->
               <div
                 class="
-                  grid grid-cols-[110px_280px] items-center gap-3
+                  grid items-center gap-3
+                  grid-cols-[110px_1fr]
                   max-[900px]:grid-cols-[120px_1fr]
                 "
               >
@@ -378,16 +574,17 @@ onMounted(async () => {
                 >
                   Nomor Induk
                 </label>
-
                 <VInputField
                   v-model="nomorInduk"
-                  placeholder="NIS / NISN"
+                  :placeholder="selectedDataType === 'Staf' ? 'Masukkan NIY' : 'Masukkan NIS / NISN'"
                 />
               </div>
 
+              <!-- Email -->
               <div
                 class="
-                  grid grid-cols-[80px_280px] items-center gap-3
+                  grid items-center gap-3
+                  grid-cols-[80px_1fr]
                   max-[900px]:grid-cols-[92px_1fr]
                 "
               >
@@ -397,18 +594,19 @@ onMounted(async () => {
                     font-semibold leading-[1.2] text-[var(--app-heading)]
                   "
                 >
-                  Kelas
+                  Email
                 </label>
-
                 <VInputField
-                  v-model="kelas"
-                  placeholder="Masukkan kelas"
+                  v-model="emailFilter"
+                  placeholder="Masukkan email"
                 />
               </div>
 
+              <!-- Tipe Data -->
               <div
                 class="
-                  grid grid-cols-[110px_280px] items-center gap-3
+                  grid items-center gap-3
+                  grid-cols-[110px_1fr]
                   max-[900px]:grid-cols-[120px_1fr]
                 "
               >
@@ -420,7 +618,6 @@ onMounted(async () => {
                 >
                   Tipe Data
                 </label>
-
                 <VDropdown
                   v-model="selectedDataType"
                   :options="dataTypeOptions"
@@ -431,12 +628,7 @@ onMounted(async () => {
           </div>
         </VCard>
 
-        <VInputField
-          v-model="search"
-          state="search"
-          placeholder="Cari data siswa"
-        />
-
+        <!-- ── Error states ─────────────────────────────────────────────── -->
         <div
           v-if="studentStore.error && !studentStore.loading && selectedDataType === 'Siswa'"
           class="
@@ -450,157 +642,174 @@ onMounted(async () => {
         </div>
 
         <div
-          v-if="selectedDataType === 'Staf'"
+          v-if="teacherStore.error && !teacherStore.loading && selectedDataType === 'Staf'"
           class="
-            rounded-[14px] border border-[var(--app-card-border)]
-            bg-[var(--app-card)] px-[26px] py-[22px]
+            rounded-[14px] border border-[var(--app-danger-border)]
+            bg-[var(--app-danger-bg)] px-[26px] py-[22px]
             text-[length:var(--app-font-sm)] font-semibold
-            text-[var(--app-heading)]
+            text-[var(--app-danger)]
           "
         >
-          Data staf belum tersedia.
+          {{ teacherStore.error }}
         </div>
 
-        <div
-          v-else
-          class="flex flex-col gap-4"
-        >
+        <!-- ── Data table ───────────────────────────────────────────────── -->
+        <div class="flex flex-col gap-4">
           <VTable
             :columns="tableColumns"
             :rows="tableRows"
-            :is-loading="studentStore.loading"
+            :is-loading="selectedDataType === 'Staf' ? teacherStore.loading : studentStore.loading"
           >
             <template #cell-nomor="{ value }">
-              <span class="text-inherit">
-                {{ value }}
-              </span>
+              <span class="text-inherit">{{ value }}</span>
             </template>
 
             <template #cell-nama="{ value }">
-              <span class="font-medium text-inherit">
-                {{ value }}
-              </span>
+              <span class="font-medium text-inherit">{{ value }}</span>
             </template>
 
+            <!-- Student-only columns -->
             <template #cell-nisn="{ value }">
-              <span class="text-inherit">
-                {{ value }}
-              </span>
+              <span class="text-inherit">{{ value }}</span>
             </template>
 
             <template #cell-nis="{ value }">
-              <span class="text-inherit">
-                {{ value }}
-              </span>
-            </template>
-
-            <template #cell-email="{ value }">
-              <span class="break-all text-inherit">
-                {{ value }}
-              </span>
+              <span class="text-inherit">{{ value }}</span>
             </template>
 
             <template #cell-kelas="{ value }">
-              <span class="text-inherit">
-                {{ value }}
-              </span>
+              <span class="text-inherit">{{ value ?? '-' }}</span>
             </template>
 
-            <template #cell-jenis_kelamin_label="{ value }">
-              <span class="text-inherit">
-                {{ value }}
-              </span>
+            <!-- Staff-only columns -->
+            <template #cell-niy="{ value }">
+              <span class="text-inherit">{{ value ?? '-' }}</span>
             </template>
 
+            <template #cell-role="{ value }">
+              <span class="text-inherit">{{ value ?? '-' }}</span>
+            </template>
+
+            <!-- Shared columns -->
+            <template #cell-email="{ value }">
+              <span class="break-all text-inherit">{{ value }}</span>
+            </template>
+
+            <!-- Action column — routes by selectedDataType -->
             <template #cell-aksi="{ row }">
-              <div class="flex justify-center gap-2">
+              <div class="flex items-center justify-center gap-2">
                 <VButton
                   variant="tertiary"
                   size="sm"
-                  @click="openDetailModal(row)"
+                  @click="selectedDataType === 'Staf' ? openStaffDetail(row) : openDetailModal(row)"
                 >
                   <template #leftIcon>
                     <Eye :size="14" />
                   </template>
-
                   Detail
                 </VButton>
 
                 <VButton
                   variant="secondary"
                   size="sm"
-                  @click="openEditModal(row)"
+                  @click="selectedDataType === 'Staf' ? openEditTeacherView(row) : openEditModal(row)"
                 >
                   <template #leftIcon>
                     <Pencil :size="14" />
                   </template>
-
                   Edit
                 </VButton>
 
                 <VButton
                   variant="primary"
                   size="sm"
-                  @click="openDeleteModal(row.id_siswa, row.nama)"
+                  @click="selectedDataType === 'Staf' ? openDeleteTeacher(row) : openDeleteModal(row.id_siswa, row.nama)"
                 >
                   <template #leftIcon>
                     <Trash2 :size="14" />
                   </template>
-
                   Hapus
                 </VButton>
               </div>
             </template>
           </VTable>
 
-          <div class="flex flex-col gap-4">
-            <div class="flex items-center justify-between">
-              <div
-                class="
-                  text-[length:var(--app-font-sm)]
-                  font-semibold text-[var(--app-muted)]
-                "
-              >
-                Show All
-              </div>
+          <!-- ── Pagination ─────────────────────────────────────────────── -->
+          <div class="flex items-center justify-end">
+            <VPagination
+              v-model:currentPage="currentPage"
+              :totalPages="
+                selectedDataType === 'Staf'
+                  ? teacherStore.pagination.totalPages
+                  : studentStore.pagination.total_halaman
+              "
+              @page-change="loadCurrentDataType"
+            />
+          </div>
 
-              <VPagination
-                v-model:currentPage="currentPage"
-                :totalPages="studentStore.pagination.total_halaman"
-                @page-change="loadStudents"
-              />
-            </div>
+          <!-- ── Bottom actions (admin only) ─────────────────────────── -->
+          <div
+            v-if="isAdmin && selectedDataType === 'Siswa'"
+            class="flex items-center justify-end gap-3 max-[640px]:flex-col max-[640px]:items-stretch"
+          >
+            <VButton variant="tertiary" @click="downloadTemplate">
+              <template #leftIcon>
+                <Download :size="18" />
+              </template>
+              Download Template
+            </VButton>
 
-            <div
-              v-if="isAdmin"
-              class="flex items-center justify-between gap-4 max-[640px]:flex-col"
+            <!-- Siswa: Import modal | Staf: hidden file input -->
+            <VButton
+              v-if="selectedDataType === 'Siswa'"
+              variant="secondary"
+              @click="isImportModalOpen = true"
             >
-              <VButton
-                variant="secondary"
-                @click="isImportModalOpen = true"
-              >
-                <template #leftIcon>
-                  <Upload :size="18" />
-                </template>
+              <template #leftIcon>
+                <Upload :size="18" />
+              </template>
+              Import
+            </VButton>
 
-                Import
-              </VButton>
+            <VButton
+              v-else
+              variant="secondary"
+              @click="openStaffImport"
+            >
+              <template #leftIcon>
+                <Upload :size="18" />
+              </template>
+              Import Staf
+            </VButton>
 
-              <VButton
-                variant="primary"
-                @click="isExportModalOpen = true"
-              >
-                <template #leftIcon>
-                  <Download :size="18" />
-                </template>
+            <!-- Siswa: Export modal | Staf: direct download -->
+            <VButton
+              v-if="selectedDataType === 'Siswa'"
+              variant="primary"
+              @click="isExportModalOpen = true"
+            >
+              <template #leftIcon>
+                <Download :size="18" />
+              </template>
+              Export
+            </VButton>
 
-                Export
-              </VButton>
-            </div>
+            <VButton
+              v-else
+              variant="primary"
+              @click="handleExportStaff"
+            >
+              <template #leftIcon>
+                <Download :size="18" />
+              </template>
+              Export Staf
+            </VButton>
           </div>
         </div>
       </div>
     </main>
+
+    <!-- ── Modals ─────────────────────────────────────────────────────────── -->
 
     <CreateStudentModal
       :isOpen="isCreateModalOpen"
@@ -608,10 +817,22 @@ onMounted(async () => {
       @created="handleStudentCreated"
     />
 
+    <CreateTeacherModal
+      :isOpen="isCreateStaffModalOpen"
+      @update:isOpen="isCreateStaffModalOpen = $event"
+      @created="handleStaffCreated"
+    />
+
     <StudentDetailModal
       :isOpen="isDetailModalOpen"
       :student="selectedStudent"
       @update:isOpen="isDetailModalOpen = $event"
+    />
+
+    <StaffDetailModal
+      :isOpen="isStaffDetailModalOpen"
+      :teacher="selectedTeacher"
+      @update:isOpen="isStaffDetailModalOpen = $event"
     />
 
     <EditStudentModal
@@ -621,12 +842,28 @@ onMounted(async () => {
       @updated="handleStudentUpdated"
     />
 
+    <EditTeacherModal
+      :isOpen="isEditTeacherModalOpen"
+      :teacherId="editTeacherId"
+      @update:isOpen="isEditTeacherModalOpen = $event"
+      @updated="async () => { await loadStaff(); toast.success('Data staf berhasil diperbarui.') }"
+    />
+
     <DeleteConfirmationModal
       :isOpen="isDeleteModalOpen"
       :studentId="selectedStudentId"
       :studentName="selectedStudentName"
       @update:isOpen="isDeleteModalOpen = $event"
       @confirmed="handleStudentDeleted"
+    />
+
+    <DeleteConfirmationModal
+      :isOpen="isDeleteTeacherModalOpen"
+      :title="'Hapus Data Staf'"
+      :studentName="selectedTeacherNameForDelete"
+      :loading="deleteTeacherLoading"
+      @update:isOpen="isDeleteTeacherModalOpen = $event"
+      @confirmed="confirmDeleteTeacher"
     />
 
     <ImportStudentModal
@@ -638,6 +875,15 @@ onMounted(async () => {
     <ExportStudentModal
       :isOpen="isExportModalOpen"
       @update:isOpen="isExportModalOpen = $event"
+    />
+
+    <!-- Hidden file input for staff import (no modal needed — direct upload) -->
+    <input
+      ref="staffImportRef"
+      type="file"
+      accept=".xlsx"
+      class="hidden"
+      @change="handleStaffImportFile"
     />
   </DashboardLayout>
 </template>

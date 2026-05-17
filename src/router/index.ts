@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AdminManagementView from '../views/management/AdminManagementView.vue'
+// AdminManagementView was previously a separate page; now redirected to StudentManagementView (/admin/students)
 import StatusView from '@/views/StatusView.vue'
 import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/users/LoginView.vue'
@@ -98,22 +98,13 @@ const router = createRouter({
     },
     {
       path: '/status',
-      name: 'status',  
+      name: 'status',
       component: StatusView,
     },
-    {
-      path: '/admin/management',
-      name: 'admin-management',
-      component: AdminManagementView,
-      meta: { requiresAuth: true, roleAccess: ['ADMIN'] },
-    },
-    { path: '/admin/management/create', redirect: '/admin/management' },
-
-    {
-      path: '/admin/management/edit/:id',
-      name: 'admin-edit',
-      redirect: '/admin/management',
-    },
+    // Redirect legacy admin management to the combined student/staff page
+    { path: '/admin/management', redirect: '/admin/students' },
+    { path: '/admin/management/create', redirect: '/admin/students' },
+    { path: '/admin/management/edit/:id', redirect: '/admin/students' },
 
     // Admin routes
     {

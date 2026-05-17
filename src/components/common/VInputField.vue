@@ -39,6 +39,7 @@ const emit = defineEmits<{
 const isPassword = computed(() => props.type === 'password')
 const showPassword = ref(false)
 const isFocused = ref(false)
+const inputRef = ref<HTMLInputElement | null>(null)
 
 const togglePassword = () => {
   showPassword.value = !showPassword.value
@@ -64,6 +65,18 @@ const handleInput = (event: Event) => {
   emit('update:modelValue', (event.target as HTMLInputElement).value)
 }
 
+const openDatePicker = () => {
+  const el = inputRef.value
+  if (!el) return
+  const picker = el as HTMLInputElement & { showPicker?: () => void }
+  if (typeof picker.showPicker === 'function') {
+    picker.showPicker()
+  } else {
+    el.focus()
+    el.click()
+  }
+}
+
 const actualState = computed(() => {
   if (props.disabled) return 'disabled'
   if (props.state === 'search') return 'search'
@@ -84,6 +97,7 @@ const shouldShowLabel = computed(() => {
 const shouldShowRightIcon = computed(() => {
   return (
     isPassword.value ||
+    computedType.value === 'date' ||
     actualState.value === 'error' ||
     actualState.value === 'success' ||
     props.disabled
@@ -247,6 +261,7 @@ const messageClass = computed(() => {
       </div>
 
       <input
+        ref="inputRef"
         :type="computedType"
         :value="modelValue ?? ''"
         :placeholder="placeholder"
@@ -274,6 +289,30 @@ const messageClass = computed(() => {
           />
         </button>
 
+        <button
+          v-else-if="computedType === 'date' && !disabled"
+          type="button"
+          :class="iconButtonClass"
+          aria-label="Buka penanggalan"
+          @click="openDatePicker"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            :class="iconClass"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" h2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </button>
+
         <XCircleIcon
           v-else-if="actualState === 'error'"
           class="v-input-icon v-input-icon-error h-[var(--app-input-icon-size)] w-[var(--app-input-icon-size)] text-[var(--app-danger)]"
@@ -299,3 +338,12 @@ const messageClass = computed(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+input[type='date']::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+  opacity: 0;
+  pointer-events: none;
+}
+</style>

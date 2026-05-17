@@ -11,11 +11,11 @@
           class="flex items-center gap-2 text-[var(--app-muted)] hover:text-[var(--app-text)] transition-colors"
         >
           <ArrowLeft :size="18" />
-          <span class="text-sm">Kembali</span>
+          <span class="text-[length:var(--app-font-sm)]">Kembali</span>
         </button>
         <div>
-          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Tambah Wali Murid</h1>
-          <p class="text-[var(--app-muted)] text-sm mt-1">Buat akun baru untuk wali murid</p>
+          <h1 class="text-[length:var(--app-page-title-font)] font-bold text-[var(--app-heading)]">Tambah Wali Murid</h1>
+          <p class="mt-1 text-[length:var(--app-page-subtitle-font)] text-[var(--app-muted)]">Buat akun baru untuk wali murid</p>
         </div>
       </div>
 

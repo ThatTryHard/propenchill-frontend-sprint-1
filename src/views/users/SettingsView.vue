@@ -90,15 +90,15 @@ const isDirty = computed(() => {
 const isDarkPreview = computed(() => form.theme === 'DARK')
 
 const textPreviewClass = computed(() => {
-  if (form.text_size === 'SMALL') return 'text-[0.78rem]'
-  if (form.text_size === 'LARGE') return 'text-[1rem]'
-  return 'text-[0.9rem]'
+  if (form.text_size === 'SMALL') return 'text-[length:var(--app-font-xs)]'
+  if (form.text_size === 'LARGE') return 'text-[length:var(--app-font-md)]'
+  return 'text-[length:var(--app-font-base)]'
 })
 
 const headingPreviewClass = computed(() => {
-  if (form.text_size === 'SMALL') return 'text-[1rem]'
-  if (form.text_size === 'LARGE') return 'text-[1.35rem]'
-  return 'text-[1.15rem]'
+  if (form.text_size === 'SMALL') return 'text-[length:var(--app-font-md)]'
+  if (form.text_size === 'LARGE') return 'text-[length:var(--app-font-xl)]'
+  return 'text-[length:var(--app-font-lg)]'
 })
 
 const syncThemeMode = () => {
@@ -177,7 +177,7 @@ onBeforeUnmount(() => {
 
 const formatTimeAgo = (dateStr: string) => {
   const diff = Date.now() - new Date(dateStr).getTime()
-  
+
   // Jika karena suatu hal perbedaan waktunya minus (misal beda zona waktu server), anggap baru saja
   if (diff < 0) return 'baru saja'
 
@@ -356,8 +356,8 @@ const handleChangePassword = () => {
       <div class="mx-auto max-w-5xl">
         <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h1 class="settings-heading text-[1.7rem] font-bold">Settings</h1>
-            <p class="settings-subtitle mt-1 text-[0.95rem] font-medium">
+            <h1 class="settings-heading text-[length:var(--app-page-title-font)] font-bold">Settings</h1>
+            <p class="settings-subtitle mt-1 text-[length:var(--app-page-subtitle-font)] font-medium">
               Pengaturan Sistem
             </p>
           </div>
@@ -369,8 +369,8 @@ const handleChangePassword = () => {
             </div>
 
             <div>
-              <p class="text-[0.78rem] font-bold">Perubahan belum disimpan</p>
-              <p class="mt-0.5 text-[0.72rem]">
+              <p class="text-[length:var(--app-font-xs)] font-bold">Perubahan belum disimpan</p>
+              <p class="mt-0.5 text-[length:var(--app-font-caption)]">
                 Simpan perubahan agar pengaturan diterapkan.
               </p>
             </div>
@@ -385,11 +385,11 @@ const handleChangePassword = () => {
         </div>
 
         <VCard v-if="settingsStore.loading" paddingClass="p-4">
-          <p class="settings-subtitle text-[0.85rem]">Memuat settings preference...</p>
+          <p class="settings-subtitle text-[length:var(--app-font-sm)]">Memuat settings preference...</p>
         </VCard>
 
         <div v-else-if="settingsStore.error"
-          class="rounded-2xl border border-red-200 bg-red-50 p-4 text-[0.85rem] text-red-700 shadow-sm">
+          class="rounded-2xl border border-red-200 bg-red-50 p-4 text-[length:var(--app-font-sm)] text-red-700 shadow-sm">
           {{ settingsStore.error }}
         </div>
 
@@ -403,10 +403,10 @@ const handleChangePassword = () => {
                   </div>
 
                   <div>
-                    <h2 class="card-title text-[1rem] font-bold">
+                    <h2 class="card-title text-[length:var(--app-card-title-font)] font-bold">
                       Preferensi Tampilan dan Navigasi
                     </h2>
-                    <p class="card-desc mt-0.5 text-[0.78rem]">
+                    <p class="card-desc mt-0.5 text-[length:var(--app-card-desc-font)]">
                       Atur tampilan antarmuka dan perilaku navigasi sesuai kebutuhan.
                     </p>
                   </div>
@@ -424,8 +424,8 @@ const handleChangePassword = () => {
                       </div>
 
                       <div>
-                        <p class="theme-label text-[0.85rem] font-bold">Light Mode</p>
-                        <p class="theme-desc mt-0.5 text-[0.75rem]">Tampilan terang</p>
+                        <p class="theme-label text-[length:var(--app-font-sm)] font-bold">Light Mode</p>
+                        <p class="theme-desc mt-0.5 text-[length:var(--app-font-caption)]">Tampilan terang</p>
                       </div>
                     </button>
 
@@ -436,8 +436,8 @@ const handleChangePassword = () => {
                       </div>
 
                       <div>
-                        <p class="theme-label text-[0.85rem] font-bold">Dark Mode</p>
-                        <p class="theme-desc mt-0.5 text-[0.75rem]">Tampilan gelap</p>
+                        <p class="theme-label text-[length:var(--app-font-sm)] font-bold">Dark Mode</p>
+                        <p class="theme-desc mt-0.5 text-[length:var(--app-font-caption)]">Tampilan gelap</p>
                       </div>
                     </button>
                   </div>
@@ -470,8 +470,8 @@ const handleChangePassword = () => {
                   </div>
 
                   <div>
-                    <h2 class="card-title text-[1rem] font-bold">Preferensi Notifikasi</h2>
-                    <p class="card-desc mt-0.5 text-[0.78rem]">
+                    <h2 class="card-title text-[length:var(--app-card-title-font)] font-bold">Preferensi Notifikasi</h2>
+                    <p class="card-desc mt-0.5 text-[length:var(--app-card-desc-font)]">
                       Kelola jenis notifikasi yang ingin Anda terima.
                     </p>
                   </div>
@@ -523,8 +523,8 @@ const handleChangePassword = () => {
                 </div>
 
                 <div>
-                  <h2 class="card-title text-[1rem] font-bold">Preview Tampilan</h2>
-                  <p class="card-desc mt-0.5 text-[0.78rem]">
+                  <h2 class="card-title text-[length:var(--app-card-title-font)] font-bold">Preview Tampilan</h2>
+                  <p class="card-desc mt-0.5 text-[length:var(--app-card-desc-font)]">
                     Pratinjau contoh tampilan sesuai pengaturan saat ini.
                   </p>
                 </div>
@@ -533,7 +533,7 @@ const handleChangePassword = () => {
               <div class="grid gap-3 lg:grid-cols-[1fr_1.2fr]">
                 <div class="preview-box rounded-2xl border p-3"
                   :class="isDarkPreview ? 'preview-box-dark' : 'preview-box-light'">
-                  <p class="preview-label mb-2 text-[0.78rem] font-semibold">
+                  <p class="preview-label mb-2 text-[length:var(--app-font-xs)] font-semibold">
                     Preview Antarmuka
                   </p>
 
@@ -542,26 +542,26 @@ const handleChangePassword = () => {
                     : 'border-[#D4E8DA] bg-[#F3FBF6]'
                     ">
                     <div class="mb-3">
-                      <p class="text-[0.85rem] font-bold text-[#3F9760]">SIMP</p>
+                      <p class="text-[length:var(--app-font-sm)] font-bold text-[#3F9760]">SIMP</p>
                     </div>
 
                     <div class="grid grid-cols-3 gap-2">
                       <div class="rounded-[10px] p-2"
                         :class="isDarkPreview ? 'bg-[#EDF7F0] text-[#021409]' : 'bg-white text-[#021409]'">
-                        <p class="text-[1rem] font-bold text-[#3F9760]">32</p>
-                        <p class="text-[0.65rem]">Aktif</p>
+                        <p class="text-[length:var(--app-font-md)] font-bold text-[#3F9760]">32</p>
+                        <p class="text-[length:var(--app-font-caption)]">Aktif</p>
                       </div>
 
                       <div class="rounded-[10px] p-2"
                         :class="isDarkPreview ? 'bg-[#EDF7F0] text-[#021409]' : 'bg-white text-[#021409]'">
-                        <p class="text-[1rem] font-bold text-[#D1955F]">12</p>
-                        <p class="text-[0.65rem]">Menunggu</p>
+                        <p class="text-[length:var(--app-font-md)] font-bold text-[#D1955F]">12</p>
+                        <p class="text-[length:var(--app-font-caption)]">Menunggu</p>
                       </div>
 
                       <div class="rounded-[10px] p-2"
                         :class="isDarkPreview ? 'bg-[#EDF7F0] text-[#021409]' : 'bg-white text-[#021409]'">
-                        <p class="text-[1rem] font-bold text-[#0EA5A4]">8</p>
-                        <p class="text-[0.65rem]">Selesai</p>
+                        <p class="text-[length:var(--app-font-md)] font-bold text-[#0EA5A4]">8</p>
+                        <p class="text-[length:var(--app-font-caption)]">Selesai</p>
                       </div>
                     </div>
                   </div>
@@ -569,7 +569,7 @@ const handleChangePassword = () => {
 
                 <div class="preview-box rounded-2xl border p-3"
                   :class="isDarkPreview ? 'preview-box-dark' : 'preview-box-light'">
-                  <p class="preview-label mb-2 text-[0.78rem] font-semibold">Preview Teks</p>
+                  <p class="preview-label mb-2 text-[length:var(--app-font-xs)] font-semibold">Preview Teks</p>
 
                   <h3 class="font-bold" :class="headingPreviewClass">
                     Ini adalah contoh teks judul
@@ -580,7 +580,7 @@ const handleChangePassword = () => {
                   </p>
 
                   <div class="mt-4">
-                    <VButton variant="primary" class="!rounded-xl !px-3.5 !py-2 !text-[0.75rem]">
+                    <VButton variant="primary" class="!rounded-xl !px-3.5 !py-2 !text-[length:var(--app-button-sm-font)]">
                       Contoh Tombol
                     </VButton>
                   </div>
@@ -590,7 +590,7 @@ const handleChangePassword = () => {
 
             <div
               class="settings-actions mt-4 flex flex-col gap-3 border-t pt-4 md:flex-row md:items-center md:justify-between">
-              <VButton variant="tertiary" class="!rounded-xl !px-4 !py-2 !text-[0.8rem]" @click="handleResetDefault">
+              <VButton variant="tertiary" class="!rounded-xl !px-4 !py-2 !text-[length:var(--app-button-lg-font)]" @click="handleResetDefault">
                 <template #leftIcon>
                   <RotateCcw class="h-3.5 w-3.5" />
                 </template>
@@ -599,12 +599,12 @@ const handleChangePassword = () => {
               </VButton>
 
               <div class="flex flex-col gap-2 sm:flex-row">
-                <VButton variant="secondary" class="!rounded-xl !px-7 !py-2 !text-[0.8rem]"
+                <VButton variant="secondary" class="!rounded-xl !px-7 !py-2 !text-[length:var(--app-button-lg-font)]"
                   :disabled="!isDirty || settingsStore.saving" @click="handleCancel">
                   Batal
                 </VButton>
 
-                <VButton variant="primary" class="!rounded-xl !px-7 !py-2 !text-[0.8rem]"
+                <VButton variant="primary" class="!rounded-xl !px-7 !py-2 !text-[length:var(--app-button-lg-font)]"
                   :disabled="!isDirty || settingsStore.saving" @click="handleSave">
                   <template #leftIcon>
                     <Save class="h-3.5 w-3.5" />
@@ -716,10 +716,10 @@ const handleChangePassword = () => {
 
             <!-- Actions -->
             <div class="settings-actions mt-4 flex justify-end gap-3 border-t pt-4">
-              <VButton variant="secondary" class="!rounded-xl !px-7 !py-2 !text-[0.85rem]" @click="handleCancel">
+              <VButton variant="secondary" class="!rounded-xl !px-7 !py-2 !text-[length:var(--app-font-sm)]" @click="handleCancel">
                 Batal
               </VButton>
-              <VButton variant="primary" class="!rounded-xl !px-7 !py-2 !text-[0.85rem]" @click="handleSave">
+              <VButton variant="primary" class="!rounded-xl !px-7 !py-2 !text-[length:var(--app-font-sm)]" @click="handleSave">
                 Simpan Perubahan
               </VButton>
             </div>
@@ -1120,7 +1120,7 @@ const handleChangePassword = () => {
 }
 
 .settings-page.is-dark-mode .status-active {
-  color: #ffffff; 
+  color: #ffffff;
 }
 
 .settings-page.is-dark-mode .logout-inline-btn {

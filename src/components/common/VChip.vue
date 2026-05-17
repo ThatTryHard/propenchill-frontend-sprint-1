@@ -11,23 +11,31 @@ type ChipVariant =
 
 const props = withDefaults(
   defineProps<{
-    label: string
+    label?: string
     variant?: ChipVariant
+    removable?: boolean
   }>(),
   {
+    label: '',
     variant: 'primary',
+    removable: false,
   },
 )
 
+const emit = defineEmits<{
+  (e: 'remove'): void
+}>()
+
 const baseClass = computed(() => {
   return [
-    'relative box-border inline-flex items-center justify-center overflow-hidden',
+    'relative box-border inline-flex items-center justify-center overflow-hidden gap-[4px]',
     'rounded-[17px] border px-[14px] py-1',
     'font-[var(--font-sans)] text-[length:var(--app-chip-font)] font-semibold leading-[1.2]',
     'text-center whitespace-nowrap backdrop-blur-[10px]',
     'shadow-[0_2px_4px_rgba(255,255,255,0.4)_inset,0_-2px_4px_rgba(0,0,0,0.2)_inset]',
     'transition-[transform,filter,background-color,color,border-color] duration-200 ease-in-out',
     'hover:-translate-y-px hover:brightness-105',
+    props.removable && 'pr-[8px]'
   ]
 })
 
@@ -93,8 +101,18 @@ const chipClass = computed(() => [
       <slot name="icon"></slot>
     </span>
 
-    <span class="relative leading-[1.2]">
+    <span v-if="label" class="relative leading-[1.2]">
       {{ label }}
     </span>
+    <slot v-else></slot>
+
+    <button
+      v-if="removable"
+      type="button"
+      class="ml-[4px] flex items-center justify-center w-[20px] h-[20px] rounded-full text-current hover:opacity-70 transition-opacity"
+      @click="emit('remove')"
+    >
+      <span class="text-[18px] leading-none">×</span>
+    </button>
   </div>
 </template>

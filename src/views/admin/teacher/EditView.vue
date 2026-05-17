@@ -7,12 +7,12 @@
     <div class="p-8 flex flex-col gap-6 max-w-[800px]">
       <button
         @click="$router.push('/admin/teachers')"
-        class="flex items-center gap-1 text-sm text-[var(--app-muted)] mb-4 hover:text-[var(--app-accent)] transition-colors"
+        class="mb-4 flex items-center gap-1 text-[length:var(--app-font-sm)] text-[var(--app-muted)] transition-colors hover:text-[var(--app-accent)]"
       >
         <ArrowLeft :size="16" /> Kembali
       </button>
 
-      <h1 class="text-2xl font-bold text-[var(--app-heading)]">Edit Data Guru</h1>
+      <h1 class="text-[length:var(--app-page-title-font)] font-bold text-[var(--app-heading)]">Edit Data Guru</h1>
 
       <div v-if="isFetching" class="py-12 text-center text-[var(--app-muted)]">Memuat data...</div>
 
@@ -40,13 +40,13 @@
           />
 
           <div class="flex flex-col gap-1.5">
-            <label class="text-sm font-medium text-[var(--app-text-soft)]">Jabatan</label>
+            <label class="text-[length:var(--app-input-label-font)] font-medium text-[var(--app-text-soft)]">Jabatan</label>
             <VDropdown
               v-model="form.jabatan"
               :options="jabatanOptions"
               placeholder="Pilih Jabatan"
             />
-            <span v-if="errors.jabatan" class="text-xs text-[var(--app-danger)] mt-1">{{
+            <span v-if="errors.jabatan" class="mt-1 text-[length:var(--app-font-xs)] text-[var(--app-danger)]">{{
               errors.jabatan
             }}</span>
           </div>

@@ -14,6 +14,11 @@ export interface Teacher {
   jabatan: string;
   role: string;
   is_active: boolean;
+  tanggal_lahir?: string | null;
+  nomor_hp?: string | null;
+  alamat?: string | null;
+  is_verified?: boolean | null;
+  is_email_verified?: boolean | null;
 }
 
 export interface Pagination {
@@ -25,9 +30,9 @@ export interface Pagination {
 
 function authHeaders() {
   const auth = useAuthStore()
-  return { 
-    Authorization: `Bearer ${auth.accessToken}`, 
-    'Content-Type': 'application/json' 
+  return {
+    Authorization: `Bearer ${auth.accessToken}`,
+    'Content-Type': 'application/json'
   }
 }
 
@@ -66,21 +71,23 @@ export function validateTeacherForm(form: { nama: string; email: string; niy: st
 export const useTeacherStore = defineStore('teacher', () => {
   const teachers = ref<Teacher[]>([])
   const isLoading = ref(false)
+  const error = ref<string | null>(null)
   const pagination = reactive<Pagination>({ currentPage: 1, totalPages: 1, totalData: 0, limit: 10 })
 
-  async function fetchTeachers(page = 1, query = '', jabatan = '') {
+  async function fetchTeachers(page = 1, query = '', jabatan = '', nomor = '') {
     isLoading.value = true
     try {
-      const params = new URLSearchParams({ 
-        page: String(page), 
-        limit: String(pagination.limit) 
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(pagination.limit)
       })
-      
+
       if (query.trim()) params.set('search', query.trim())
       if (jabatan) params.set('jabatan', jabatan)
+      if (nomor?.trim()) params.set('nomor', nomor.trim())
 
       const res = await fetch(`${VITE_API_URL}/api/guru/?${params}`, { headers: authHeaders() })
-      
+
       if (!res.ok) {
         teachers.value = []
         return
@@ -94,32 +101,35 @@ export const useTeacherStore = defineStore('teacher', () => {
         pagination.totalPages = result.pagination.total_halaman || 1
         pagination.totalData = result.pagination.total_data || 0
       }
-    } catch (error) {
-      console.error("Error fetching teachers:", error)
-      teachers.value = [] 
-    } finally { 
-      isLoading.value = false 
+    } catch (err) {
+      console.error("Error fetching teachers:", err)
+      error.value = 'Gagal memuat data staf.'
+      teachers.value = []
+    } finally {
+      isLoading.value = false
     }
   }
 
   async function fetchTeacherById(id: string | number): Promise<Teacher> {
     const res = await fetch(`${VITE_API_URL}/api/guru/${id}/`, { headers: authHeaders() })
     if (!res.ok) throw new Error('Gagal memuat data guru.')
-    return await res.json()
+    const result = await res.json()
+    // Backend wraps the object in { data: {...} } — unwrap it
+    return result.data ?? result
   }
 
   async function createTeacher(body: Record<string, string>) {
     const res = await fetch(`${VITE_API_URL}/api/guru/`, {
-      method: 'POST', 
-      headers: authHeaders(), 
+      method: 'POST',
+      headers: authHeaders(),
       body: JSON.stringify(body)
     })
-    
+
     const data = await res.json()
-    
+
     if (!res.ok) {
       const error: any = new Error('Gagal menyimpan data guru.')
-      error.details = data 
+      error.details = data
       throw error
     }
     return data
@@ -127,15 +137,15 @@ export const useTeacherStore = defineStore('teacher', () => {
 
   async function updateTeacher(id: string | number, body: Record<string, string>) {
     const res = await fetch(`${VITE_API_URL}/api/guru/${id}/`, {
-      method: 'PATCH', 
-      headers: authHeaders(), 
+      method: 'PATCH',
+      headers: authHeaders(),
       body: JSON.stringify(body)
     })
-    
+
     const data = await res.json()
-    
+
     if (!res.ok) {
-      const error: any = new Error('') 
+      const error: any = new Error('')
       error.details = data
       throw error
     }
@@ -143,21 +153,24 @@ export const useTeacherStore = defineStore('teacher', () => {
   }
 
   async function deleteTeacher(id: string | number) {
-    const res = await fetch(`${VITE_API_URL}/api/guru/${id}/`, { 
-      method: 'DELETE', 
-      headers: authHeaders() 
+    const res = await fetch(`${VITE_API_URL}/api/guru/${id}/`, {
+      method: 'DELETE',
+      headers: authHeaders()
     })
     if (!res.ok) throw new Error('Gagal menghapus data guru.')
   }
 
-  return { 
-    teachers, 
-    isLoading, 
-    pagination, 
-    fetchTeachers, 
-    fetchTeacherById, 
-    createTeacher, 
-    updateTeacher, 
-    deleteTeacher 
+  return {
+    teachers,
+    isLoading,
+    // alias so templates can use either teacherStore.loading or teacherStore.isLoading
+    get loading() { return isLoading.value },
+    error,
+    pagination,
+    fetchTeachers,
+    fetchTeacherById,
+    createTeacher,
+    updateTeacher,
+    deleteTeacher
   }
 })

@@ -169,7 +169,13 @@ const handleBottomItemClick = (item: BottomNavItem) => {
       <img :src="sidebarLogo" :key="sidebarLogo" alt="SIMP" class="h-[96px] object-contain" />
     </div>
 
-    <nav class="flex flex-1 flex-col gap-1 overflow-visible min-h-0">
+    <nav class="
+        flex flex-1 flex-col gap-1
+        min-h-0 overflow-y-auto
+        [&::-webkit-scrollbar]:w-0
+        [&::-webkit-scrollbar-track]:bg-transparent
+        [&::-webkit-scrollbar-thumb]:bg-transparent
+      ">
       <router-link
         v-for="item in navItems"
         :key="item.name"

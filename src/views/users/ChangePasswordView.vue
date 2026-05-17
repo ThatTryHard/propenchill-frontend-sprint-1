@@ -197,8 +197,8 @@ onBeforeUnmount(() => {
         <!-- Header -->
         <div class="mb-4 flex items-center gap-3">
           <div>
-            <h1 class="page-heading text-[1.7rem] font-bold">Ganti Kata Sandi</h1>
-            <p class="page-subtitle mt-1 text-[0.95rem] font-medium">
+            <h1 class="page-heading text-[length:var(--app-page-title-font)] font-bold">Ganti Kata Sandi</h1>
+            <p class="page-subtitle mt-1 text-[length:var(--app-page-subtitle-font)] font-medium">
               Perbarui kata sandi akun Anda
             </p>
           </div>
@@ -287,12 +287,12 @@ onBeforeUnmount(() => {
 
             <!-- Actions -->
             <div class="form-actions">
-              <VButton type="button" variant="secondary" class="!rounded-xl !px-6 !py-2.5 !text-[0.9rem]"
+              <VButton type="button" variant="secondary" class="!rounded-xl !px-6 !py-2.5 !text-[length:var(--app-font-base)]"
                 @click="handleGoBack">
                 Batal
               </VButton>
 
-              <VButton type="submit" variant="primary" class="!rounded-xl !px-6 !py-2.5 !text-[0.9rem]"
+              <VButton type="submit" variant="primary" class="!rounded-xl !px-6 !py-2.5 !text-[length:var(--app-font-base)]"
                 :disabled="isSubmitting">
                 <template v-if="isSubmitting" #leftIcon>
                   <span class="loading-spinner"></span>
