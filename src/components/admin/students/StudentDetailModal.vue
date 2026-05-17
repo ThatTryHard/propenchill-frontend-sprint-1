@@ -103,6 +103,7 @@ const detailItems = computed(() => {
       label: 'Nomor HP',
       value: formatValue(student?.no_hp),
       copyable: true,
+      wide: true,
     },
     {
       key: 'alamat',
@@ -226,7 +227,7 @@ const detailItems = computed(() => {
                   <div class="mt-1 flex items-center justify-between gap-3">
                     <p
                       class="
-                        m-0 text-[length:var(--app-font-lg)]
+                      m-0 text-[length:var(--app-font-sm)]
                         font-bold leading-[1.3] text-[var(--app-modal-text)]
                       "
                     >

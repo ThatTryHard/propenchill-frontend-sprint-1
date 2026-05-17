@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/plugins/axios'
@@ -11,6 +11,8 @@ import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VActionButton from '@/components/common/VActionButton.vue'
 import VCard from '@/components/common/VCard.vue'
 import VChip from '@/components/common/VChip.vue'
+
+type ChipVariant = 'primary' | 'secondary' | 'tertiary' | 'warning' | 'danger' | 'deleted'
 
 const route = useRoute()
 const router = useRouter()
@@ -41,7 +43,7 @@ const statusIncludes = (status: string, keywords: string[]) => {
   return keywords.some((keyword) => status.includes(keyword))
 }
 
-const getChipVariantByStatus = (statusValue: string) => {
+const getChipVariantByStatus = (statusValue: string): ChipVariant => {
   const status = normalizeStatus(statusValue)
 
   if (
@@ -53,7 +55,7 @@ const getChipVariantByStatus = (statusValue: string) => {
       'rejected',
     ])
   ) {
-    return 'danger' as const
+    return 'danger'
   }
 
   if (
@@ -63,7 +65,7 @@ const getChipVariantByStatus = (statusValue: string) => {
       'deleted',
     ])
   ) {
-    return 'deleted' as const
+    return 'deleted'
   }
 
   if (
@@ -75,7 +77,7 @@ const getChipVariantByStatus = (statusValue: string) => {
       'selesai',
     ])
   ) {
-    return 'deep' as const
+    return 'secondary'
   }
 
   if (
@@ -86,7 +88,7 @@ const getChipVariantByStatus = (statusValue: string) => {
       'verifikasi',
     ])
   ) {
-    return 'warning' as const
+    return 'warning'
   }
 
   if (
@@ -95,10 +97,10 @@ const getChipVariantByStatus = (statusValue: string) => {
       'submitted',
     ])
   ) {
-    return 'tertiary' as const
+    return 'tertiary'
   }
 
-  return 'tertiary' as const
+  return 'tertiary'
 }
 
 const statusChipVariant = computed(() => {
@@ -115,7 +117,6 @@ const summary = computed(() => {
   if (items.length > 1) {
     const start = new Date(items[0]?.created_at || 0).getTime()
     const end = new Date(items[items.length - 1]?.created_at || 0).getTime()
-
     if (!Number.isNaN(start) && !Number.isNaN(end) && end >= start) {
       duration = formatDuration(end - start)
     }
@@ -209,9 +210,9 @@ const formatStatus = (log: ActivityLogItem) => {
   return String(log.status_to || log.status_from || '-').trim() || '-'
 }
 
-const getStatusVariant = (log: ActivityLogItem) => {
+const getStatusVariant = (log: ActivityLogItem): ChipVariant => {
   if (log.action === 'deleted') {
-    return 'deleted' as const
+    return 'deleted'
   }
 
   return getChipVariantByStatus(formatStatus(log))
@@ -250,7 +251,8 @@ const noteText = (log: ActivityLogItem) => {
   return ''
 }
 
-const buildSuratInfo = (payload: Record<string, any>, type: SuratType) => {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const buildSuratInfo = (payload: any, type: SuratType) => {
   if (type === 'surat_masuk') {
     suratInfo.value = {
       id: String(payload.id_surat_masuk || suratId.value || '-'),
@@ -284,6 +286,7 @@ const buildSuratInfo = (payload: Record<string, any>, type: SuratType) => {
     ],
   }
 }
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 const formatDate = (value?: string) => {
   if (!value) return '-'
@@ -339,7 +342,7 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
 
     buildSuratInfo(payload, type)
   } catch (error) {
-    const status = (error as any)?.response?.status
+    const status = (error as unknown as { response?: { status?: number } })?.response?.status
 
     if (status === 404) {
       if (applyTimelineHeader(type, id)) {
@@ -351,18 +354,18 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
           await logsStore.fetchTimeline(type, id)
         }
 
-        let foundPayload: Record<string, any> | null = null
+        let foundPayload: Record<string, unknown> | null = null
 
         for (const entry of logsStore.timeline) {
           const metadata = entry.metadata || {}
 
-          if (metadata.snapshot && typeof metadata.snapshot === 'object') {
-            foundPayload = metadata.snapshot as Record<string, any>
+            if (metadata.snapshot && typeof metadata.snapshot === 'object') {
+            foundPayload = metadata.snapshot as Record<string, unknown>
             break
           }
 
           if (metadata.payload && typeof metadata.payload === 'object') {
-            foundPayload = metadata.payload as Record<string, any>
+            foundPayload = metadata.payload as Record<string, unknown>
             break
           }
 
@@ -374,7 +377,7 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
               keys.includes('nomor_surat') ||
               keys.includes('id_surat_masuk')
             ) {
-              foundPayload = metadata as Record<string, any>
+              foundPayload = metadata as Record<string, unknown>
               break
             }
           }
@@ -385,7 +388,6 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
           return
         }
       } catch {
-        // fallback ke sentinel dokumen dihapus
       }
 
       suratInfo.value = {
@@ -450,36 +452,93 @@ onMounted(loadDetail)
       <SIMPSidebar />
     </template>
 
-    <main class="activity-detail-page">
-      <section class="activity-detail-header">
+    <!-- Page shell -->
+    <main
+      class="
+        flex w-full min-h-screen flex-col gap-6
+        bg-[var(--app-bg)] text-[var(--app-text)] font-[var(--font-sans)]
+        px-8 py-8
+        max-[900px]:px-6 max-[900px]:py-6
+        max-[640px]:gap-[18px] max-[640px]:px-[18px] max-[640px]:py-[18px]
+      "
+    >
+
+      <!-- â”€â”€ Header row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <section
+        class="
+          flex items-center gap-3
+          max-[640px]:flex-col max-[640px]:items-start
+        "
+      >
         <VActionButton variant="secondary" @click="goBack">
           Kembali
         </VActionButton>
 
-        <div class="activity-detail-heading-group">
-          <h1 class="activity-detail-title">
+        <div class="flex flex-col gap-1">
+          <h1
+            class="
+              m-0 text-[length:var(--app-page-title-font)]
+              font-extrabold leading-[1.2] text-[var(--app-heading)]
+            "
+          >
             Detail Informasi Surat
           </h1>
 
-          <p class="activity-detail-subtitle">
+          <p
+            class="
+              m-0 text-[length:var(--app-page-subtitle-font)]
+              leading-[1.4] text-[var(--app-subtext)]
+            "
+          >
             Berikut detail informasi surat dan riwayat aktivitasnya.
           </p>
         </div>
       </section>
 
-      <VCard class="activity-detail-card">
-        <div class="letter-overview">
-          <div class="letter-main-info">
-            <div class="letter-avatar">
+      <!-- â”€â”€ Letter overview card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <VCard
+        class="
+          border-[var(--app-card-border)] bg-[var(--app-card)]
+          text-[var(--app-text)] shadow-[var(--app-card-shadow)]
+        "
+      >
+        <!-- Avatar + title row -->
+        <div
+          class="
+            flex items-start justify-between gap-4
+            max-[640px]:flex-col max-[640px]:items-start
+          "
+        >
+          <div class="flex min-w-0 items-center gap-3">
+            <!-- Gradient avatar badge -->
+            <div
+              class="
+                flex h-12 w-12 shrink-0 items-center justify-center
+                rounded-[12px]
+                bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)]
+                text-[length:var(--app-font-sm)] font-bold leading-[1.2]
+                text-[var(--app-text-inverse)]
+              "
+            >
               {{ suratAvatarText }}
             </div>
 
-            <div class="letter-title-group">
-              <h2 class="letter-title">
+            <div class="min-w-0">
+              <h2
+                class="
+                  m-0 text-[length:var(--app-section-title-font)]
+                  font-bold leading-[1.25] text-[var(--app-heading)]
+                "
+              >
                 {{ suratInfo.title }}
               </h2>
 
-              <p class="letter-id">
+              <p
+                class="
+                  m-0 mt-0.5 text-[length:var(--app-font-sm)]
+                  leading-[1.4] text-[var(--app-subtext)]
+                "
+              >
                 ID: {{ suratInfo.id }}
               </p>
             </div>
@@ -491,55 +550,115 @@ onMounted(loadDetail)
           />
         </div>
 
-        <div class="letter-field-grid">
+        <!-- Field grid -->
+        <div
+          class="
+            mt-6 grid grid-cols-3 gap-4
+            max-[900px]:grid-cols-1
+          "
+        >
           <div
             v-for="field in suratInfo.fields"
             :key="field.label"
-            class="letter-field-item"
+            class="min-w-0"
           >
-            <p class="letter-field-label">
+            <p
+              class="
+                m-0 text-[length:var(--app-font-sm)]
+                font-semibold leading-[1.4] text-[var(--app-muted)]
+              "
+            >
               {{ field.label }}
             </p>
 
-            <p class="letter-field-value">
+            <p
+              class="
+                m-0 mt-0.5 text-[length:var(--app-font-base)]
+                font-semibold leading-[1.45] text-[var(--app-heading)]
+                [overflow-wrap:anywhere]
+              "
+            >
               {{ field.value }}
             </p>
           </div>
         </div>
       </VCard>
 
-      <VCard class="activity-detail-card">
-        <h3 class="activity-section-title">
+      <!-- â”€â”€ Summary card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <VCard
+        class="
+          border-[var(--app-card-border)] bg-[var(--app-card)]
+          text-[var(--app-text)] shadow-[var(--app-card-shadow)]
+        "
+      >
+        <h3
+          class="
+            m-0 text-[length:var(--app-section-title-font)]
+            font-bold leading-[1.25] text-[var(--app-heading)]
+          "
+        >
           Ringkasan Log
         </h3>
 
-        <div class="summary-grid">
-          <div class="summary-item">
-            <p class="summary-label">
+        <div
+          class="
+            mt-4 grid grid-cols-3 gap-6
+            max-[900px]:grid-cols-1
+          "
+        >
+          <div class="min-w-0">
+            <p
+              class="
+                m-0 text-[length:var(--app-font-sm)]
+                font-semibold leading-[1.4] text-[var(--app-muted)]
+              "
+            >
               Total Aktivitas
             </p>
-
-            <p class="summary-value">
+            <p
+              class="
+                m-0 mt-1 text-[length:var(--app-font-xl)]
+                font-extrabold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
               {{ summary.total }}
             </p>
           </div>
 
-          <div class="summary-item">
-            <p class="summary-label">
+          <div class="min-w-0">
+            <p
+              class="
+                m-0 text-[length:var(--app-font-sm)]
+                font-semibold leading-[1.4] text-[var(--app-muted)]
+              "
+            >
               Durasi Proses
             </p>
-
-            <p class="summary-value">
+            <p
+              class="
+                m-0 mt-1 text-[length:var(--app-font-xl)]
+                font-extrabold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
               {{ summary.duration }}
             </p>
           </div>
 
-          <div class="summary-item">
-            <p class="summary-label">
+          <div class="min-w-0">
+            <p
+              class="
+                m-0 text-[length:var(--app-font-sm)]
+                font-semibold leading-[1.4] text-[var(--app-muted)]
+              "
+            >
               Pengguna Terlibat
             </p>
-
-            <p class="summary-value">
+            <p
+              class="
+                m-0 mt-1 text-[length:var(--app-font-xl)]
+                font-extrabold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
               {{ summary.uniqueUsers }}
             </p>
           </div>
@@ -547,63 +666,126 @@ onMounted(loadDetail)
 
         <p
           v-if="summary.longestStage"
-          class="summary-note"
+          class="
+            m-0 mt-4 text-[length:var(--app-font-sm)]
+            leading-[1.5] text-[var(--app-subtext)]
+          "
         >
           Tahap paling lama:
-          <strong>{{ summary.longestStage }}</strong>
+          <strong class="font-bold text-[var(--app-heading)]">
+            {{ summary.longestStage }}
+          </strong>
         </p>
       </VCard>
 
-      <VCard class="activity-detail-card">
-        <div class="timeline-header">
-          <h3 class="activity-section-title">
+      <!-- â”€â”€ Timeline card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <VCard
+        class="
+          border-[var(--app-card-border)] bg-[var(--app-card)]
+          text-[var(--app-text)] shadow-[var(--app-card-shadow)]
+        "
+      >
+        <!-- Timeline section title -->
+        <div class="flex items-center justify-between">
+          <h3
+            class="
+              m-0 text-[length:var(--app-section-title-font)]
+              font-bold leading-[1.25] text-[var(--app-heading)]
+            "
+          >
             Timeline Aktivitas Real-Time
           </h3>
         </div>
 
+        <!-- Loading state -->
         <div
           v-if="logsStore.detailLoading"
-          class="timeline-state"
+          class="
+            py-10 text-center
+            text-[length:var(--app-font-sm)] leading-[1.5] text-[var(--app-subtext)]
+          "
         >
           Memuat timeline...
         </div>
 
+        <!-- Empty state -->
         <div
           v-else-if="timelineItems.length === 0"
-          class="timeline-state"
+          class="
+            py-10 text-center
+            text-[length:var(--app-font-sm)] leading-[1.5] text-[var(--app-subtext)]
+          "
         >
           Belum ada aktivitas yang tercatat.
         </div>
 
+        <!-- Timeline list -->
         <div
           v-else
-          class="timeline-list"
+          class="mt-6 flex flex-col gap-6"
         >
           <div
             v-for="(item, index) in timelineItems"
             :key="item.id"
-            class="timeline-item"
+            class="flex gap-6 max-[640px]:gap-[14px]"
           >
-            <div class="timeline-marker-column">
-              <div class="timeline-marker">
+            <!-- Numbered marker column -->
+            <div class="flex shrink-0 flex-col items-center">
+              <div
+                class="
+                  flex h-12 w-12 items-center justify-center
+                  rounded-full border-2 border-[var(--app-accent)]
+                  bg-[var(--app-soft-card)]
+                  text-[length:var(--app-font-sm)] font-bold leading-[1.2] text-[var(--app-accent)]
+                  max-[640px]:h-10 max-[640px]:w-10
+                "
+              >
                 {{ index + 1 }}
               </div>
 
+              <!-- Connector line -->
               <div
                 v-if="index < timelineItems.length - 1"
-                class="timeline-line"
-              ></div>
+                class="
+                  mt-2 w-1.5 flex-1 min-h-8 rounded-full
+                  bg-gradient-to-b from-[var(--app-accent)] to-[var(--app-accent-2)]
+                  max-[640px]:w-1
+                "
+              />
             </div>
 
-            <VCard class="timeline-content-card">
-              <div class="timeline-content">
-                <div class="timeline-top">
-                  <div class="timeline-title-group">
-                    <h4 class="timeline-title">
+            <!-- Event card -->
+            <VCard
+              class="
+                min-w-0 flex-1
+                border-[var(--app-card-border)] bg-[var(--app-card)]
+              "
+            >
+              <div class="flex flex-col gap-3">
+
+                <!-- Top: title + status chip -->
+                <div
+                  class="
+                    flex items-start justify-between gap-4
+                    max-[640px]:flex-col max-[640px]:items-start
+                  "
+                >
+                  <div class="min-w-0">
+                    <h4
+                      class="
+                        m-0 text-[length:var(--app-card-title-font)]
+                        font-bold leading-[1.3] text-[var(--app-heading)]
+                      "
+                    >
                       {{ item.title || getActionLabel(item) }}
                     </h4>
 
-                    <p class="timeline-time">
+                    <p
+                      class="
+                        m-0 mt-0.5
+                        text-[length:var(--app-font-xs)] leading-[1.4] text-[var(--app-muted)]
+                      "
+                    >
                       {{ formatDateTime(item.created_at) }}
                     </p>
                   </div>
@@ -614,38 +796,73 @@ onMounted(loadDetail)
                   />
                 </div>
 
-                <div class="timeline-actor">
-                  <div class="timeline-actor-avatar">
+                <!-- Actor row -->
+                <div class="flex items-center gap-3 text-[var(--app-subtext)]">
+                  <div
+                    class="
+                      flex h-8 w-8 shrink-0 items-center justify-center
+                      rounded-full bg-[var(--app-soft-card)]
+                      text-[length:var(--app-font-xs)] font-bold leading-[1.2] text-[var(--app-heading)]
+                    "
+                  >
                     {{ getInitials(item.actor_name) }}
                   </div>
 
-                  <div class="timeline-actor-info">
-                    <p class="timeline-actor-name">
+                  <div>
+                    <p
+                      class="
+                        m-0 text-[length:var(--app-font-sm)]
+                        font-semibold leading-[1.35] text-[var(--app-heading)]
+                      "
+                    >
                       {{ item.actor_name || 'Sistem' }}
                     </p>
 
-                    <p class="timeline-actor-role">
+                    <p
+                      class="
+                        m-0 text-[length:var(--app-font-xs)]
+                        leading-[1.35] text-[var(--app-muted)]
+                      "
+                    >
                       {{ item.actor_role || '-' }}
                     </p>
                   </div>
                 </div>
 
-                <p class="timeline-description">
+                <!-- Description -->
+                <p
+                  class="
+                    m-0 text-[length:var(--app-font-sm)]
+                    leading-[1.55] text-[var(--app-subtext)]
+                  "
+                >
                   {{ item.description || getActionDetail(item) }}
                 </p>
 
+                <!-- Note block -->
                 <div
                   v-if="noteText(item)"
-                  class="timeline-note"
+                  class="rounded-[16px] bg-[var(--app-input-muted-bg)] p-4"
                 >
-                  <p class="timeline-note-label">
+                  <p
+                    class="
+                      m-0 text-[length:var(--app-font-xs)]
+                      font-bold leading-[1.35] text-[var(--app-muted)]
+                    "
+                  >
                     Catatan:
                   </p>
 
-                  <p class="timeline-note-text">
+                  <p
+                    class="
+                      m-0 mt-1 text-[length:var(--app-font-sm)]
+                      leading-[1.5] text-[var(--app-subtext)]
+                    "
+                  >
                     {{ noteText(item) }}
                   </p>
                 </div>
+
               </div>
             </VCard>
           </div>
@@ -654,386 +871,3 @@ onMounted(loadDetail)
     </main>
   </DashboardLayout>
 </template>
-
-<style scoped>
-.activity-detail-page {
-  display: flex;
-  width: 100%;
-  min-height: 100vh;
-  flex-direction: column;
-  gap: 24px;
-  background: var(--app-bg);
-  color: var(--app-text);
-  font-family: var(--font-sans);
-  padding: 32px;
-}
-
-.activity-detail-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.activity-detail-heading-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.activity-detail-title {
-  margin: 0;
-  color: var(--app-heading);
-  font-size: var(--app-page-title-font);
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.activity-detail-subtitle {
-  margin: 0;
-  color: var(--app-subtext);
-  font-size: var(--app-page-subtitle-font);
-  line-height: 1.4;
-}
-
-.activity-detail-card {
-  border-color: var(--app-card-border);
-  background: var(--app-card);
-  color: var(--app-text);
-  box-shadow: var(--app-card-shadow);
-}
-
-.letter-overview {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.letter-main-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.letter-avatar {
-  display: flex;
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background: linear-gradient(90.74deg, var(--app-accent), var(--app-accent-2));
-  color: var(--app-text-inverse);
-  font-size: var(--app-font-sm);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.letter-title-group {
-  min-width: 0;
-}
-
-.letter-title {
-  margin: 0;
-  color: var(--app-heading);
-  font-size: var(--app-section-title-font);
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.letter-id {
-  margin: 2px 0 0;
-  color: var(--app-subtext);
-  font-size: var(--app-font-sm);
-  line-height: 1.4;
-}
-
-.letter-field-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.letter-field-item {
-  min-width: 0;
-}
-
-.letter-field-label,
-.letter-field-value,
-.summary-label,
-.summary-value,
-.summary-note,
-.timeline-time,
-.timeline-actor-name,
-.timeline-actor-role,
-.timeline-description,
-.timeline-note-label,
-.timeline-note-text {
-  margin: 0;
-}
-
-.letter-field-label {
-  color: var(--app-muted);
-  font-size: var(--app-font-sm);
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.letter-field-value {
-  margin-top: 2px;
-  color: var(--app-heading);
-  font-size: var(--app-font-base);
-  font-weight: 600;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-
-.activity-section-title {
-  margin: 0;
-  color: var(--app-heading);
-  font-size: var(--app-section-title-font);
-  font-weight: 700;
-  line-height: 1.25;
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  margin-top: 16px;
-}
-
-.summary-item {
-  min-width: 0;
-}
-
-.summary-label {
-  color: var(--app-muted);
-  font-size: var(--app-font-sm);
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.summary-value {
-  margin-top: 4px;
-  color: var(--app-heading);
-  font-size: var(--app-font-xl);
-  font-weight: 800;
-  line-height: 1.2;
-}
-
-.summary-note {
-  margin-top: 16px;
-  color: var(--app-subtext);
-  font-size: var(--app-font-sm);
-  line-height: 1.5;
-}
-
-.summary-note strong {
-  color: var(--app-heading);
-  font-weight: 700;
-}
-
-.timeline-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.timeline-state {
-  padding: 40px 16px;
-  color: var(--app-subtext);
-  font-size: var(--app-font-sm);
-  line-height: 1.5;
-  text-align: center;
-}
-
-.timeline-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.timeline-item {
-  display: flex;
-  gap: 24px;
-}
-
-.timeline-marker-column {
-  display: flex;
-  flex-shrink: 0;
-  flex-direction: column;
-  align-items: center;
-}
-
-.timeline-marker {
-  display: flex;
-  width: 48px;
-  height: 48px;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--app-accent);
-  border-radius: 999px;
-  background: var(--app-soft-card);
-  color: var(--app-accent);
-  font-size: var(--app-font-sm);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.timeline-line {
-  width: 6px;
-  flex: 1;
-  min-height: 32px;
-  margin-top: 8px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--app-accent), var(--app-accent-2));
-}
-
-.timeline-content-card {
-  flex: 1;
-  min-width: 0;
-  border-color: var(--app-card-border);
-  background: var(--app-card);
-}
-
-.timeline-content {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.timeline-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.timeline-title-group {
-  min-width: 0;
-}
-
-.timeline-title {
-  margin: 0;
-  color: var(--app-heading);
-  font-size: var(--app-card-title-font);
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.timeline-time {
-  margin-top: 2px;
-  color: var(--app-muted);
-  font-size: var(--app-font-xs);
-  line-height: 1.4;
-}
-
-.timeline-actor {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--app-subtext);
-}
-
-.timeline-actor-avatar {
-  display: flex;
-  width: 32px;
-  height: 32px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: var(--app-soft-card);
-  color: var(--app-heading);
-  font-size: var(--app-font-xs);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.timeline-actor-name {
-  color: var(--app-heading);
-  font-size: var(--app-font-sm);
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.timeline-actor-role {
-  color: var(--app-muted);
-  font-size: var(--app-font-xs);
-  line-height: 1.35;
-}
-
-.timeline-description {
-  color: var(--app-subtext);
-  font-size: var(--app-font-sm);
-  line-height: 1.55;
-}
-
-.timeline-note {
-  border-radius: 16px;
-  background: var(--app-input-muted-bg);
-  color: var(--app-subtext);
-  padding: 16px;
-}
-
-.timeline-note-label {
-  color: var(--app-muted);
-  font-size: var(--app-font-xs);
-  font-weight: 700;
-  line-height: 1.35;
-}
-
-.timeline-note-text {
-  margin-top: 4px;
-  color: var(--app-subtext);
-  font-size: var(--app-font-sm);
-  line-height: 1.5;
-}
-
-@media (max-width: 900px) {
-  .activity-detail-page {
-    padding: 24px;
-  }
-
-  .letter-field-grid,
-  .summary-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .activity-detail-page {
-    gap: 18px;
-    padding: 18px;
-  }
-
-  .activity-detail-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .letter-overview,
-  .timeline-top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .timeline-item {
-    gap: 14px;
-  }
-
-  .timeline-marker {
-    width: 40px;
-    height: 40px;
-  }
-
-  .timeline-line {
-    width: 4px;
-  }
-}
-</style>

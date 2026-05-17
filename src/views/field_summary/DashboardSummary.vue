@@ -3,33 +3,33 @@
     <div class="space-y-6 pb-10">
 
       <div>
-        <h1 class="text-[26px] font-bold text-[var(--app-heading)]">Ringkasan Surat Bidang {{ formattedKategori }}</h1>
-        <p class="text-[15px] text-[var(--app-muted)] mt-1">Lihat dan kelola pengajuan surat yang telah dibuat</p>
+        <h1 class="text-[length:var(--app-page-title-font)] font-bold text-[var(--app-heading)]">Ringkasan Surat Bidang {{ formattedKategori }}</h1>
+        <p class="mt-1 text-[length:var(--app-page-subtitle-font)] text-[var(--app-muted)]">Lihat dan kelola pengajuan surat yang telah dibuat</p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
         <div class="bg-[var(--app-success-light)] rounded-xl p-5 text-center border border-[var(--app-success-lighter)] shadow-sm flex flex-col justify-center items-center h-[120px]">
-          <h3 class="text-[var(--app-heading)] font-bold text-[15px] leading-tight mb-2">Total Surat<br>Masuk</h3>
-          <p class="text-3xl font-extrabold text-[var(--app-success-dark)] mb-1">{{ summaryData.total_masuk }}</p>
-          <p class="text-[10px] text-[var(--app-muted)] font-medium">{{ summaryData.masuk_bulan_ini }} surat di bulan ini</p>
+          <h3 class="mb-2 text-[length:var(--app-font-base)] font-bold leading-tight text-[var(--app-heading)]">Total Surat<br>Masuk</h3>
+          <p class="mb-1 text-[length:var(--app-font-display)] font-extrabold text-[var(--app-success-dark)]">{{ summaryData.total_masuk }}</p>
+          <p class="text-[length:var(--app-font-caption)] font-medium text-[var(--app-muted)]">{{ summaryData.masuk_bulan_ini }} surat di bulan ini</p>
         </div>
 
         <div class="bg-[var(--app-success-light)] rounded-xl p-5 text-center border border-[var(--app-success-lighter)] shadow-sm flex flex-col justify-center items-center h-[120px]">
-          <h3 class="text-[var(--app-heading)] font-bold text-[15px] leading-tight mb-2">Total Surat<br>Keluar</h3>
-          <p class="text-3xl font-extrabold text-[var(--app-success-dark)] mb-1">{{ summaryData.total_keluar }}</p>
-          <p class="text-[10px] text-[var(--app-muted)] font-medium">{{ summaryData.keluar_bulan_ini }} surat di bulan ini</p>
+          <h3 class="mb-2 text-[length:var(--app-font-base)] font-bold leading-tight text-[var(--app-heading)]">Total Surat<br>Keluar</h3>
+          <p class="mb-1 text-[length:var(--app-font-display)] font-extrabold text-[var(--app-success-dark)]">{{ summaryData.total_keluar }}</p>
+          <p class="text-[length:var(--app-font-caption)] font-medium text-[var(--app-muted)]">{{ summaryData.keluar_bulan_ini }} surat di bulan ini</p>
         </div>
 
         <div class="bg-[var(--app-success-light)] rounded-xl p-5 text-center border border-[var(--app-success-lighter)] shadow-sm flex flex-col justify-center items-center h-[120px]">
-          <h3 class="text-[var(--app-heading)] font-bold text-[15px] leading-tight mb-2">Menunggu<br>Verifikasi</h3>
-          <p class="text-3xl font-extrabold text-[var(--app-success-dark)] mb-1">{{ summaryData.pending }}</p>
-          <p class="text-[10px] text-[var(--app-muted)] font-medium">{{ summaryData.pending }} sedang diproses</p>
+          <h3 class="mb-2 text-[length:var(--app-font-base)] font-bold leading-tight text-[var(--app-heading)]">Menunggu<br>Verifikasi</h3>
+          <p class="mb-1 text-[length:var(--app-font-display)] font-extrabold text-[var(--app-success-dark)]">{{ summaryData.pending }}</p>
+          <p class="text-[length:var(--app-font-caption)] font-medium text-[var(--app-muted)]">{{ summaryData.pending }} sedang diproses</p>
         </div>
 
         <div class="bg-[var(--app-success-light)] rounded-xl p-5 text-center border border-[var(--app-success-lighter)] shadow-sm flex flex-col justify-center items-center h-[120px]">
-          <h3 class="text-[var(--app-heading)] font-bold text-[15px] leading-tight mb-2">Surat<br>Ditolak</h3>
-          <p class="text-3xl font-extrabold text-[var(--app-success-dark)] mb-1">{{ summaryData.ditolak }}</p>
-          <p class="text-[10px] text-[var(--app-muted)] font-medium px-2">{{ summaryData.pesanDitolak }}</p>
+          <h3 class="mb-2 text-[length:var(--app-font-base)] font-bold leading-tight text-[var(--app-heading)]">Surat<br>Ditolak</h3>
+          <p class="mb-1 text-[length:var(--app-font-display)] font-extrabold text-[var(--app-success-dark)]">{{ summaryData.ditolak }}</p>
+          <p class="px-2 text-[length:var(--app-font-caption)] font-medium text-[var(--app-muted)]">{{ summaryData.pesanDitolak }}</p>
         </div>
       </div>
 
@@ -39,26 +39,26 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="28" height="26" viewBox="0 0 37 34" fill="none" class="text-[var(--app-heading)]">
             <path d="M35 1.66675L1.66669 1.66675L15 17.4334V28.3334L21.6667 31.6667V17.4334L35 1.66675Z" stroke="currentColor" stroke-width="3.33333" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <span class="text-[17px] font-bold text-[var(--app-heading)]">Filter Data</span>
+          <span class="text-[length:var(--app-font-lg)] font-bold text-[var(--app-heading)]">Filter Data</span>
         </div>
 
         <div class="flex flex-1 items-center gap-5">
 
           <div class="flex items-center gap-3">
-            <label class="text-[16px] font-bold text-[var(--app-heading)] whitespace-nowrap">Tanggal</label>
+            <label class="whitespace-nowrap text-[length:var(--app-font-md)] font-bold text-[var(--app-heading)]">Tanggal</label>
             <div class="w-[180px] rounded-[12px] p-[2px] shadow-sm bg-[linear-gradient(90.74deg,var(--app-success),var(--app-warning))] transition-all duration-200 hover:shadow-md">
               <div class="bg-[var(--app-bg)] rounded-[10px] overflow-hidden border-none h-[52px] flex items-center px-[16px]">
                 <input
                   type="date"
                   v-model="filters.tanggal"
-                  class="w-full text-[16px] font-semibold text-[var(--app-text)] bg-transparent outline-none border-none ring-0 cursor-pointer appearance-none flex-row-reverse gap-2 m-0 p-0"
+                  class="m-0 w-full cursor-pointer appearance-none gap-2 border-none bg-transparent p-0 text-[length:var(--app-font-md)] font-semibold text-[var(--app-text)] outline-none ring-0 flex-row-reverse"
                 />
               </div>
             </div>
           </div>
 
           <div class="flex items-center gap-3">
-            <label class="text-[16px] font-bold text-[var(--app-heading)] whitespace-nowrap">Status</label>
+            <label class="whitespace-nowrap text-[length:var(--app-font-md)] font-bold text-[var(--app-heading)]">Status</label>
             <VDropdown
               :options="statusOptions"
               :items="statusOptions"
@@ -69,7 +69,7 @@
           </div>
 
           <div class="flex items-center gap-3">
-            <label class="text-[16px] font-bold text-[var(--app-heading)] whitespace-nowrap">Klasifikasi</label>
+            <label class="whitespace-nowrap text-[length:var(--app-font-md)] font-bold text-[var(--app-heading)]">Klasifikasi</label>
             <VDropdown
               :options="klasifikasiOptions"
               :items="klasifikasiOptions"
@@ -105,7 +105,7 @@
               <input
                 type="text"
                 v-model="searchQuery"
-                class="w-full bg-transparent border-none outline-none text-[#9CA3AF] placeholder-[#9CA3AF] text-sm font-medium focus:ring-0"
+                class="w-full bg-transparent border-none outline-none text-[length:var(--app-font-sm)] font-medium text-[#9CA3AF] placeholder-[#9CA3AF] focus:ring-0"
                 placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
               >
             </div>
@@ -114,14 +114,14 @@
         <div class="custom-table w-full">
           <VTable :columns="tableHeaders" :rows="tableData">
             <template #cell-klasifikasi="{ row }">
-              <span class="text-[13px] text-[#374151]">{{ row.klasifikasi || 'Surat Masuk' }}</span>
+              <span class="text-[length:var(--app-font-xs)] text-[#374151]">{{ row.klasifikasi || 'Surat Masuk' }}</span>
             </template>
 
             <template #cell-status="{ value }">
               <span v-if="!value || value === '-'" class="font-bold text-gray-500">-</span>
               <div
                 v-else
-                class="px-4 py-1.5 rounded-[20px] text-white text-[11px] font-bold inline-block text-center min-w-[80px]"
+                class="inline-block min-w-[80px] rounded-[20px] px-4 py-1.5 text-center text-[length:var(--app-font-caption)] font-bold text-white"
                 :style="getStatusStyle(value)"
               >
                 {{ value }}
@@ -132,7 +132,7 @@
               <div class="flex items-center gap-3">
                 <button
                   @click="goToDetail(row)"
-                  class="text-[#858A91] font-medium text-[14px] underline decoration-1 underline-offset-4 hover:text-[#374151] transition-colors"
+                  class="text-[length:var(--app-font-sm)] font-medium text-[#858A91] underline decoration-1 underline-offset-4 transition-colors hover:text-[#374151]"
                 >
                   Detail
                 </button>
@@ -165,7 +165,7 @@
         </div>
 
         </div> <div class="px-5 py-4 border-t border-[#E5E7EB] flex justify-between items-center bg-[#F8FBF9]">
-          <span class="text-[13px] font-medium text-[#6B7280]">Show All</span>
+          <span class="text-[length:var(--app-font-xs)] font-medium text-[#6B7280]">Show All</span>
           <VPagination
             :current-page="currentPage"
             :total-pages="totalPages"

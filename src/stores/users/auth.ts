@@ -96,6 +96,8 @@ export const useAuthStore = defineStore('auth', {
       password: string
       confirm_password: string
       no_hp: string
+      nisn?: string
+      kode_validasi?: string
     }) {
       const response = await fetch(VITE_API_URL + '/api/auth/register/', {
         method: 'POST',

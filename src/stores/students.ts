@@ -36,7 +36,7 @@ export interface StudentPayload {
   alamat?: string | null
 }
 
-// payload update 
+// payload update
 export interface StudentUpdatePayload {
   nisn?: string
   nis?: string
@@ -95,7 +95,7 @@ export const useStudentStore = defineStore('students', {
       }
     },
 
-    // reset state ke default 
+    // reset state ke default
     resetState() {
       this.students = []
       this.pagination = {
@@ -215,6 +215,28 @@ export const useStudentStore = defineStore('students', {
       }
     },
 
+    // assign or unassign wali murid to a student
+    async assignParent(id_siswa: number, parentId: number | null) {
+      this.loading = true
+      this.error = ''
+
+      try {
+        const payload: any = { id_wali_murid: parentId }
+        const response = await axios.put(
+          `${VITE_API_URL}/api/siswa/${id_siswa}/`,
+          payload,
+          this.getAuthHeader()
+        )
+
+        return response.data
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal memperbarui relasi wali.'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
     // soft delete siswa
     async deleteStudent(id_siswa: number) {
       this.loading = true
@@ -269,6 +291,27 @@ export const useStudentStore = defineStore('students', {
       const link = document.createElement('a')
       link.href = url
       link.setAttribute('download', 'data_siswa.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    },
+
+    // download import template for students
+    async downloadStudentTemplate() {
+      const response = await axios.get(`${VITE_API_URL}/api/siswa/template/`, {
+        ...this.getAuthHeader(),
+        responseType: 'blob',
+      })
+
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      })
+
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', 'Student_Import_Template.xlsx')
       document.body.appendChild(link)
       link.click()
       link.remove()

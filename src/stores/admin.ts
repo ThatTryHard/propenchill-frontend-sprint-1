@@ -55,6 +55,55 @@ export const useAdminStore = defineStore('admin', () => {
     return data
   }
 
+  async function exportStaff() {
+    // download staff export as Excel
+    const tokenHeader = authHeaders()
+    const url = `${VITE_API_URL}/api/users/staff/export/`
+    const res = await fetch(url, { headers: tokenHeader })
+    if (!res.ok) throw new Error('Gagal mengekspor data staf')
+    const blob = await res.blob()
+    const dlUrl = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = dlUrl
+    a.download = 'Staff_Export.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    window.URL.revokeObjectURL(dlUrl)
+    return
+  }
+
+  async function downloadStaffTemplate() {
+    const tokenHeader = authHeaders()
+    const url = `${VITE_API_URL}/api/users/staff/template/`
+    const res = await fetch(url, { headers: tokenHeader })
+    if (!res.ok) throw new Error('Gagal mengunduh template')
+    const blob = await res.blob()
+    const dlUrl = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = dlUrl
+    a.download = 'Staff_Import_Template.xlsx'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    window.URL.revokeObjectURL(dlUrl)
+    return
+  }
+
+  async function importStaff(file: File) {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(`${VITE_API_URL}/api/users/staff/import/`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: form,
+    })
+    const data = await res.json()
+    if (!res.ok) throw { status: res.status, data }
+    await fetchAdmins()
+    return data
+  }
+
   async function updateAdmin(id: number, body: Record<string, string>) {
     const res = await fetch(`${VITE_API_URL}/api/admin/${id}/`, {
       method: 'PUT',
@@ -97,5 +146,5 @@ export const useAdminStore = defineStore('admin', () => {
     return admin
   }
 
-  return { admins, isLoading, fetchAdmins, fetchAdminById, addAdmin, updateAdmin, deleteAdmin }
+  return { admins, isLoading, fetchAdmins, fetchAdminById, addAdmin, updateAdmin, deleteAdmin, exportStaff, downloadStaffTemplate, importStaff }
 })
