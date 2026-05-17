@@ -324,8 +324,10 @@ const cancelAvatarUpload = () => {
 }
 
 onMounted(async () => {
-  await profileStore.fetchProfile()
-  await fetchLinkedChildren()
+  await profileStore.fetchProfile()  
+  if (profile.value?.role === 'WALI_MURID') {
+    await fetchLinkedChildren()
+  }
 })
 </script>
 

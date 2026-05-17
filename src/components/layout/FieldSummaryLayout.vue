@@ -1,10 +1,10 @@
 <template>
-  <div class="flex min-h-screen w-full overflow-x-hidden bg-[#F9FAFB]">
+  <div class="flex h-screen w-full overflow-x-hidden bg-[var(--app-bg)]">
     <aside class="sticky top-0 h-screen shrink-0 self-start">
       <SIMPSidebar />
     </aside>
 
-    <div class="flex min-w-0 flex-1 flex-col">
+    <div class="flex min-w-0 flex-1 flex-col overflow-y-auto">
       <main class="flex-1 p-6">
         <slot />
       </main>
