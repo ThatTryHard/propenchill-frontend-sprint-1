@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
 import { useGlobalAlert } from '@/composables/useGlobalAlert'
@@ -8,12 +8,19 @@ import { useSuratMasukStore, type DisposisiPayload } from '@/stores/surat-masuk'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import DisposisiModal from '@/components/department_teachers/DisposisiModal.vue'
-
-// REUSABLE COMPONENTS
-import VCard from '@/components/common/VCard.vue'
+import VActionButton from '@/components/common/VActionButton.vue'
 import VButton from '@/components/common/VButton.vue'
+import VCard from '@/components/common/VCard.vue'
 import VChip from '@/components/common/VChip.vue'
-import { ArrowLeftIcon, FileTextIcon, SendIcon } from 'lucide-vue-next'
+
+import {
+  ArrowLeftIcon,
+  Building2Icon,
+  FileTextIcon,
+  LoaderCircleIcon,
+  SendIcon,
+  UserRoundIcon,
+} from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,14 +29,16 @@ const suratMasukStore = useSuratMasukStore()
 const { showAlert } = useGlobalAlert()
 
 const idSurat = route.params.id as string
-
 const isDisposisiModalOpen = ref(false)
+
+const suratDetail = computed(() => suratMasukStore.suratDetail)
 
 const canDisposisi = computed(() => {
   const role = authStore.role || ''
   const detail = suratMasukStore.suratDetail
   const status = detail?.status
   const isBidang = ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(role)
+
   const localUser = JSON.parse(localStorage.getItem('user') || 'null') as { id?: number } | null
   const currentUserId = typeof localUser?.id === 'number' ? localUser.id : null
   const currentUserName = (authStore.user?.nama || '').trim().toLowerCase()
@@ -53,11 +62,38 @@ const fetchDetail = async () => {
 
 const formatDate = (dateString: string | undefined) => {
   if (!dateString) return '-'
+
   return new Date(dateString).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   })
+}
+
+const formatStatus = (status?: string) => {
+  if (!status) return '-'
+
+  return status.replace(/_/g, ' ')
+}
+
+const getStatusVariant = (status?: string) => {
+  const normalizedStatus = String(status || '').toLowerCase()
+
+  if (['diajukan', 'pending'].includes(normalizedStatus)) return 'tertiary' as const
+  if (['didisposisikan', 'disposisi', 'diproses'].includes(normalizedStatus)) return 'warning' as const
+  if (['selesai', 'verified', 'disetujui'].includes(normalizedStatus)) return 'deep' as const
+  if (['ditolak', 'rejected', 'dibatalkan'].includes(normalizedStatus)) return 'danger' as const
+
+  return 'primary' as const
+}
+
+const getSifatVariant = (sifat?: string) => {
+  const normalizedSifat = String(sifat || '').toLowerCase()
+
+  if (normalizedSifat === 'penting') return 'warning' as const
+  if (normalizedSifat === 'rahasia') return 'danger' as const
+
+  return 'deep' as const
 }
 
 const openFile = () => {
@@ -90,299 +126,248 @@ onMounted(() => {
       <SIMPSidebar />
     </template>
 
-    <div class="w-full min-h-screen bg-[var(--app-bg)]">
-      <div class="w-full max-w-[1120px] mx-auto px-8 py-8 max-[768px]:px-4 flex flex-col gap-6">
-        <button
-          @click="router.back()"
-          class="flex items-center gap-2 text-[var(--app-subtext)] hover:text-[var(--app-accent)] transition-colors w-fit font-semibold"
+    <main class="surat-detail-page">
+      <VActionButton
+        variant="secondary"
+        @click="router.back()"
+      >
+        <ArrowLeftIcon :size="16" />
+        <span>Kembali ke Daftar Surat</span>
+      </VActionButton>
+
+      <section
+        v-if="suratMasukStore.loadingDetail"
+        class="surat-detail-loading"
+      >
+        <LoaderCircleIcon
+          class="surat-detail-loading-icon"
+          :size="32"
+        />
+
+        <p class="surat-detail-loading-text">
+          Memuat Detail Surat...
+        </p>
+      </section>
+
+      <template v-else-if="suratDetail">
+        <section class="surat-detail-header">
+          <h1 class="surat-detail-title">
+            Detail Surat Masuk
+          </h1>
+
+          <p class="surat-detail-subtitle">
+            Informasi lengkap mengenai pencatatan, disposisi, dan pengirim surat.
+          </p>
+        </section>
+
+        <VCard
+          class="surat-detail-card"
+          paddingClass="p-6"
+          overflowClass="overflow-visible"
         >
-          <ArrowLeftIcon :size="20" />
-          <span class="text-[15px]">Kembali ke Daftar Surat</span>
-        </button>
+          <div class="surat-detail-card-content">
+            <header class="surat-detail-section-header">
+              <div class="surat-detail-section-heading">
+                <div class="surat-detail-section-icon">
+                  <UserRoundIcon :size="30" />
+                </div>
 
-        <div v-if="suratMasukStore.loadingDetail" class="flex justify-center items-center py-20">
-          <div class="flex flex-col items-center gap-3">
-            <div
-              class="w-8 h-8 border-4 border-[var(--app-accent)] border-t-transparent rounded-full animate-spin"
-            ></div>
-            <p class="text-[var(--app-subtext)] font-medium">Memuat Detail Surat...</p>
-          </div>
-        </div>
-
-        <div v-else-if="suratMasukStore.suratDetail" class="flex flex-col gap-6">
-          <div class="mb-2">
-            <h1 class="m-0 text-[32px] leading-[120%] font-bold text-[var(--app-heading)] tracking-tight">
-              Detail Surat Masuk
-            </h1>
-            <p class="mt-2 mb-0 text-[16px] text-[var(--app-subtext)]">
-              Informasi lengkap mengenai pencatatan, disposisi, dan pengirim surat.
-            </p>
-          </div>
-
-          <VCard
-            paddingClass="p-8"
-            class="bg-[var(--app-card)] border border-[var(--app-card-border)] shadow-sm rounded-[24px]"
-          >
-            <div class="flex flex-col gap-8">
-              <div
-                class="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--app-card-border)] pb-6"
-              >
-                <div class="flex items-center gap-5">
-                  <div class="flex-shrink-0">
-                    <svg
-                      width="61"
-                      height="61"
-                      viewBox="0 0 61 61"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <rect width="61" height="61" rx="16" fill="url(#paint0_linear_1_4344)" />
-                      <path
-                        d="M42 46.5C42 43.3174 40.7357 40.2652 38.4853 38.0147C36.2348 35.7643 33.1826 34.5 30 34.5M30 34.5C26.8174 34.5 23.7652 35.7643 21.5147 38.0147C19.2643 40.2652 18 43.3174 18 46.5M30 34.5C34.4183 34.5 38 30.9183 38 26.5C38 22.0817 34.4183 18.5 30 18.5C25.5817 18.5 22 22.0817 22 26.5C22 30.9183 25.5817 34.5 30 34.5ZM50 30.5C50 41.5457 41.0457 50.5 30 50.5C18.9543 50.5 10 41.5457 10 30.5C10 19.4543 18.9543 10.5 30 10.5C41.0457 10.5 50 19.4543 50 30.5Z"
-                        stroke="var(--app-text-inverse)"
-                        stroke-width="3"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                      <defs>
-                        <linearGradient
-                          id="paint0_linear_1_4344"
-                          x1="0"
-                          y1="0"
-                          x2="61.7742"
-                          y2="0.794418"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop stop-color="var(--app-accent)" />
-                          <stop offset="1" stop-color="var(--app-accent-2)" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  </div>
-                  <div class="flex flex-col gap-1.5">
-                    <p
-                      class="text-[14px] font-semibold text-[var(--app-subtext)] tracking-wider uppercase m-0"
-                    >
-                      Informasi Pencatatan
-                    </p>
-                    <h2 class="text-[22px] font-bold text-[var(--app-heading)] leading-none m-0">
-                      Sistem Admin
-                    </h2>
-                  </div>
-                </div>
-                <VChip
-                  :label="`Pencatat: ${suratMasukStore.suratDetail.pencatat_nama || '-'}`"
-                  variant="primary"
-                  class="!bg-[var(--app-success-bg)] !text-[var(--app-success-dark)] !border !border-[var(--app-success-border)] !text-[16px] !px-4 !py-4 !font-bold"
-                />
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-12">
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Nomor Agenda</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">{{
-                    suratMasukStore.suratDetail.nomor_agenda
-                  }}</span>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Ditujukan Kepada</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">Kepala Sekolah</span>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Status Surat</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)] capitalize">{{
-                    suratMasukStore.suratDetail.status.replace(/_/g, ' ')
-                  }}</span>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Tanggal Surat</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">{{
-                    formatDate(suratMasukStore.suratDetail.tanggal_surat)
-                  }}</span>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Tanggal Diterima</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">{{
-                    formatDate(suratMasukStore.suratDetail.tanggal_terima)
-                  }}</span>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Jenis Surat</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">{{
-                    suratMasukStore.suratDetail.jenis_surat || '-'
-                  }}</span>
-                </div>
-                <div class="flex flex-col gap-1.5 md:col-span-2 lg:col-span-3">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Perihal</span>
-                  <span class="text-[18px] font-medium text-[var(--app-heading)] leading-relaxed">{{
-                    suratMasukStore.suratDetail.perihal
-                  }}</span>
-                </div>
-              </div>
-
-              <div class="pt-6 border-t border-[var(--app-card-border)] flex flex-wrap items-center gap-4">
-                <VButton
-                  v-if="suratMasukStore.suratDetail.file_lampiran"
-                  variant="secondary"
-                  class="!bg-[var(--app-card)] !border-[var(--app-card-border)] hover:!bg-[var(--app-soft-card)] !text-[var(--app-subtext)] !rounded-[12px] !h-[44px]"
-                  @click="openFile"
-                >
-                  <template #leftIcon>
-                    <FileTextIcon :size="18" />
-                  </template>
-                  Lihat Dokumen Fisik
-                </VButton>
-
-                <VButton
-                  v-if="canDisposisi"
-                  variant="primary"
-                  class="!bg-gradient-to-r !from-[var(--app-accent)] !to-[var(--app-accent-2)] !border-none !rounded-[12px] !h-[44px] shadow-[0_4px_12px_rgba(63,151,96,0.25)] hover:shadow-[0_6px_16px_rgba(63,151,96,0.35)] transition-all"
-                  @click="isDisposisiModalOpen = true"
-                >
-                  <template #leftIcon>
-                    <SendIcon :size="18" class="text-[var(--app-text-inverse)]" />
-                  </template>
-                  <span class="font-semibold text-[var(--app-text-inverse)]">Disposisi Surat</span>
-                </VButton>
-              </div>
-            </div>
-          </VCard>
-          <VCard
-            paddingClass="p-8"
-            class="bg-[var(--app-card)] border border-[var(--app-card-border)] shadow-sm rounded-[24px]"
-          >
-            <div class="flex flex-col gap-8">
-              <div class="flex items-center gap-5 border-b border-[var(--app-card-border)] pb-6">
-                <div class="flex-shrink-0">
-                  <svg
-                    width="61"
-                    height="61"
-                    viewBox="0 0 61 61"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect width="61" height="61" rx="16" fill="url(#paint0_linear_1_4311)" />
-                    <path
-                      d="M33.3337 13.8334H20.0003C19.1163 13.8334 18.2684 14.1846 17.6433 14.8097C17.0182 15.4348 16.667 16.2827 16.667 17.1667V43.8334C16.667 44.7174 17.0182 45.5653 17.6433 46.1904C18.2684 46.8155 19.1163 47.1667 20.0003 47.1667H40.0003C40.8844 47.1667 41.7322 46.8155 42.3573 46.1904C42.9825 45.5653 43.3337 44.7174 43.3337 43.8334V23.8334M33.3337 13.8334C33.8612 13.8325 34.3838 13.936 34.8712 14.138C35.3586 14.3399 35.8013 14.6363 36.1737 15.01L42.1537 20.99C42.5284 21.3626 42.8256 21.8056 43.0281 22.2936C43.2307 22.7817 43.3345 23.305 43.3337 23.8334M33.3337 13.8334V22.1667C33.3337 22.6087 33.5093 23.0327 33.8218 23.3452C34.1344 23.6578 34.5583 23.8334 35.0003 23.8334L43.3337 23.8334M26.667 25.5H23.3337M36.667 32.1667H23.3337M36.667 38.8334H23.3337"
-                      stroke="var(--app-text-inverse)"
-                      stroke-width="3"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <defs>
-                      <linearGradient
-                        id="paint0_linear_1_4311"
-                        x1="0"
-                        y1="0"
-                        x2="61.7742"
-                        y2="0.794418"
-                        gradientUnits="userSpaceOnUse"
-                      >
-                        <stop stop-color="var(--app-accent)" />
-                        <stop offset="1" stop-color="var(--app-accent-2)" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <p class="text-[14px] font-semibold text-[var(--app-subtext)] tracking-wider uppercase m-0">
-                    Pengirim Dokumen
+                <div class="surat-detail-section-copy">
+                  <p class="surat-detail-section-eyebrow">
+                    Informasi Pencatatan
                   </p>
-                  <h2 class="text-[22px] font-bold text-[var(--app-heading)] leading-none m-0">
-                    Informasi Instansi
+
+                  <h2 class="surat-detail-section-title">
+                    Sistem Admin
                   </h2>
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-8 gap-x-12">
-                <div class="flex flex-col gap-1.5">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]"
-                    >Nama Instansi / Pengirim</span
-                  >
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">{{
-                    suratMasukStore.suratDetail.pengirim?.nama_instansi || '-'
-                  }}</span>
-                </div>
-                <div class="flex flex-col gap-1.5 md:col-span-2 lg:col-span-2">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Alamat Pengirim</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">{{
-                    suratMasukStore.suratDetail.pengirim?.alamat || '-'
-                  }}</span>
-                </div>
-                <div class="flex flex-col gap-1.5 md:col-span-2 lg:col-span-3">
-                  <span class="text-[14px] font-medium text-[var(--app-subtext)]">Kontak Pengirim</span>
-                  <span class="text-[18px] font-semibold text-[var(--app-heading)]">{{
-                    suratMasukStore.suratDetail.pengirim?.kontak || '-'
-                  }}</span>
-                </div>
+              <VChip
+                :label="`Pencatat: ${suratDetail.pencatat_nama || '-'}`"
+                variant="primary"
+              />
+            </header>
+
+            <div class="surat-detail-grid">
+              <div class="surat-detail-info-item">
+                <span class="surat-detail-info-label">Nomor Agenda</span>
+                <span class="surat-detail-info-value">
+                  {{ suratDetail.nomor_agenda }}
+                </span>
+              </div>
+
+              <div class="surat-detail-info-item">
+                <span class="surat-detail-info-label">Ditujukan Kepada</span>
+                <span class="surat-detail-info-value">
+                  Kepala Sekolah
+                </span>
+              </div>
+
+              <div class="surat-detail-info-item">
+                <span class="surat-detail-info-label">Status Surat</span>
+
+                <VChip
+                  :label="formatStatus(suratDetail.status)"
+                  :variant="getStatusVariant(suratDetail.status)"
+                />
+              </div>
+
+              <div class="surat-detail-info-item">
+                <span class="surat-detail-info-label">Tanggal Surat</span>
+                <span class="surat-detail-info-value">
+                  {{ formatDate(suratDetail.tanggal_surat) }}
+                </span>
+              </div>
+
+              <div class="surat-detail-info-item">
+                <span class="surat-detail-info-label">Tanggal Diterima</span>
+                <span class="surat-detail-info-value">
+                  {{ formatDate(suratDetail.tanggal_terima) }}
+                </span>
+              </div>
+
+              <div class="surat-detail-info-item">
+                <span class="surat-detail-info-label">Jenis Surat</span>
+                <span class="surat-detail-info-value">
+                  {{ suratDetail.jenis_surat || '-' }}
+                </span>
+              </div>
+
+              <div class="surat-detail-info-item surat-detail-info-item--full">
+                <span class="surat-detail-info-label">Perihal</span>
+                <span class="surat-detail-info-value surat-detail-info-value--paragraph">
+                  {{ suratDetail.perihal }}
+                </span>
               </div>
             </div>
-          </VCard>
-          <div
-            v-if="suratMasukStore.suratDetail.disposisi_terakhir"
-            class="relative overflow-hidden bg-gradient-to-br from-[var(--app-warning-bg)] to-[var(--app-card)] border border-[var(--app-warning-border)] shadow-[0_4px_20px_rgba(245,158,11,0.05)] rounded-[24px] p-8"
-          >
-            <div
-              class="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[var(--app-warning)] to-[var(--app-accent-2)]"
-            ></div>
 
-            <div class="flex flex-col gap-6">
-              <div
-                class="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--app-warning-border)] pb-5"
+            <div class="surat-detail-actions">
+              <VButton
+                v-if="suratDetail.file_lampiran"
+                variant="secondary"
+                @click="openFile"
               >
-                <div class="flex items-center gap-4">
-                  <div
-                    class="w-12 h-12 rounded-full bg-[var(--app-warning-bg)] flex items-center justify-center text-[var(--app-warning)] shadow-inner"
-                  >
-                    <SendIcon :size="22" stroke-width="2.5" />
-                  </div>
-                  <div class="flex flex-col">
-                    <h2 class="text-[20px] font-bold text-[var(--app-warning)] leading-none m-0">
-                      Lembar Disposisi
-                    </h2>
-                    <p class="text-[14px] text-[var(--app-warning)] font-medium mt-1.5 m-0">
-                      Diteruskan oleh:
-                      {{ suratMasukStore.suratDetail.disposisi_terakhir.from_user_nama }}
-                    </p>
-                  </div>
-                </div>
-                <div
-                  class="flex items-center gap-2 px-4 py-1.5 bg-[var(--app-card)] border border-[var(--app-warning-border)] rounded-full shadow-sm"
-                >
-                  <div
-                    class="w-2 h-2 rounded-full"
-                    :class="
-                      suratMasukStore.suratDetail.disposisi_terakhir.sifat === 'Penting'
-                        ? 'bg-[var(--app-danger)] animate-pulse'
-                        : 'bg-[var(--app-success)]'
-                    "
-                  ></div>
-                  <span class="text-[13px] font-bold text-[var(--app-warning)] uppercase tracking-wider">{{
-                    suratMasukStore.suratDetail.disposisi_terakhir.sifat
-                  }}</span>
-                </div>
-              </div>
+                <template #leftIcon>
+                  <FileTextIcon :size="18" />
+                </template>
 
-              <div
-                class="bg-[var(--app-card)] p-6 rounded-[16px] border border-[var(--app-warning-border)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)]"
+                Lihat Dokumen Fisik
+              </VButton>
+
+              <VButton
+                v-if="canDisposisi"
+                variant="primary"
+                @click="isDisposisiModalOpen = true"
               >
-                <span class="text-[12px] font-bold text-[var(--app-warning)] uppercase tracking-widest"
-                  >Instruksi / Catatan Telaah:</span
-                >
-                <p class="mt-3 text-[16px] text-[var(--app-subtext)] leading-relaxed italic font-medium">
-                  "{{ suratMasukStore.suratDetail.disposisi_terakhir.instruksi }}"
-                </p>
-              </div>
+                <template #leftIcon>
+                  <SendIcon :size="18" />
+                </template>
 
-              <p class="text-[12px] font-medium text-[var(--app-warning)] text-right m-0">
-                Dikirim pada:
-                {{ formatDate(suratMasukStore.suratDetail.disposisi_terakhir.created_at) }}
-              </p>
+                Disposisi Surat
+              </VButton>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </VCard>
+
+        <VCard
+          class="surat-detail-card"
+          paddingClass="p-6"
+          overflowClass="overflow-visible"
+        >
+          <div class="surat-detail-card-content">
+            <header class="surat-detail-section-header">
+              <div class="surat-detail-section-heading">
+                <div class="surat-detail-section-icon">
+                  <FileTextIcon :size="30" />
+                </div>
+
+                <div class="surat-detail-section-copy">
+                  <p class="surat-detail-section-eyebrow">
+                    Pengirim Dokumen
+                  </p>
+
+                  <h2 class="surat-detail-section-title">
+                    Informasi Instansi
+                  </h2>
+                </div>
+              </div>
+            </header>
+
+            <div class="surat-detail-grid">
+              <div class="surat-detail-info-item">
+                <span class="surat-detail-info-label">Nama Instansi / Pengirim</span>
+                <span class="surat-detail-info-value">
+                  {{ suratDetail.pengirim?.nama_instansi || '-' }}
+                </span>
+              </div>
+
+              <div class="surat-detail-info-item surat-detail-info-item--wide">
+                <span class="surat-detail-info-label">Alamat Pengirim</span>
+                <span class="surat-detail-info-value">
+                  {{ suratDetail.pengirim?.alamat || '-' }}
+                </span>
+              </div>
+
+              <div class="surat-detail-info-item surat-detail-info-item--full">
+                <span class="surat-detail-info-label">Kontak Pengirim</span>
+                <span class="surat-detail-info-value">
+                  {{ suratDetail.pengirim?.kontak || '-' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </VCard>
+
+        <VCard
+          v-if="suratDetail.disposisi_terakhir"
+          class="surat-detail-disposition-card"
+          paddingClass="p-6"
+          overflowClass="overflow-visible"
+        >
+          <div class="surat-detail-disposition-content">
+            <header class="surat-detail-disposition-header">
+              <div class="surat-detail-disposition-heading">
+                <div class="surat-detail-disposition-icon">
+                  <SendIcon :size="24" />
+                </div>
+
+                <div>
+                  <h2 class="surat-detail-disposition-title">
+                    Lembar Disposisi
+                  </h2>
+
+                  <p class="surat-detail-disposition-meta">
+                    Diteruskan oleh:
+                    {{ suratDetail.disposisi_terakhir.from_user_nama }}
+                  </p>
+                </div>
+              </div>
+
+              <VChip
+                :label="suratDetail.disposisi_terakhir.sifat"
+                :variant="getSifatVariant(suratDetail.disposisi_terakhir.sifat)"
+              />
+            </header>
+
+            <section class="surat-detail-disposition-note">
+              <span class="surat-detail-disposition-note-label">
+                Instruksi / Catatan Telaah:
+              </span>
+
+              <p class="surat-detail-disposition-note-text">
+                “{{ suratDetail.disposisi_terakhir.instruksi }}”
+              </p>
+            </section>
+
+            <p class="surat-detail-disposition-date">
+              Dikirim pada:
+              {{ formatDate(suratDetail.disposisi_terakhir.created_at) }}
+            </p>
+          </div>
+        </VCard>
+      </template>
+    </main>
 
     <DisposisiModal
       :isOpen="isDisposisiModalOpen"
@@ -392,3 +377,277 @@ onMounted(() => {
     />
   </DashboardLayout>
 </template>
+
+<style scoped>
+.surat-detail-page {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  max-width: 1120px;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-family: var(--font-sans);
+  padding: 32px;
+}
+
+.surat-detail-loading {
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.surat-detail-loading-icon {
+  color: var(--app-accent);
+  animation: surat-detail-spin 0.8s linear infinite;
+}
+
+.surat-detail-loading-text {
+  margin: 0;
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.surat-detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.surat-detail-title {
+  margin: 0;
+  color: var(--app-heading);
+  font-size: var(--app-page-title-font);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.surat-detail-subtitle {
+  margin: 0;
+  color: var(--app-subtext);
+  font-size: var(--app-page-subtitle-font);
+  line-height: 1.4;
+}
+
+.surat-detail-card,
+.surat-detail-disposition-card {
+  width: 100%;
+  border-color: var(--app-card-border);
+  background: var(--app-card);
+  color: var(--app-text);
+  box-shadow: var(--app-card-shadow);
+}
+
+.surat-detail-card-content,
+.surat-detail-disposition-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.surat-detail-section-header,
+.surat-detail-disposition-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--app-card-border);
+  padding-bottom: 18px;
+}
+
+.surat-detail-section-heading,
+.surat-detail-disposition-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+}
+
+.surat-detail-section-icon,
+.surat-detail-disposition-icon {
+  display: flex;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: var(--gradient-brand);
+  color: var(--app-text-inverse);
+}
+
+.surat-detail-section-copy {
+  min-width: 0;
+}
+
+.surat-detail-section-eyebrow {
+  margin: 0;
+  color: var(--app-subtext);
+  font-size: var(--app-font-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.surat-detail-section-title,
+.surat-detail-disposition-title {
+  margin: 0;
+  color: var(--app-heading);
+  font-size: var(--app-section-title-font);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.surat-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 40px;
+  row-gap: 24px;
+}
+
+.surat-detail-info-item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.surat-detail-info-item--wide {
+  grid-column: span 2;
+}
+
+.surat-detail-info-item--full {
+  grid-column: 1 / -1;
+}
+
+.surat-detail-info-label {
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.surat-detail-info-value {
+  color: var(--app-heading);
+  font-size: var(--app-font-md);
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.surat-detail-info-value--paragraph {
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.surat-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  border-top: 1px solid var(--app-card-border);
+  padding-top: 18px;
+}
+
+.surat-detail-disposition-card {
+  position: relative;
+}
+
+.surat-detail-disposition-card::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  border-radius: 999px 0 0 999px;
+  background: var(--app-warning);
+  content: '';
+}
+
+.surat-detail-disposition-meta {
+  margin: 6px 0 0;
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.surat-detail-disposition-note {
+  border: 1px solid var(--app-warning-border);
+  border-radius: 16px;
+  background: var(--app-warning-bg);
+  padding: 18px;
+}
+
+.surat-detail-disposition-note-label {
+  color: var(--app-warning);
+  font-size: var(--app-font-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.surat-detail-disposition-note-text {
+  margin: 10px 0 0;
+  color: var(--app-subtext);
+  font-size: var(--app-font-base);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.surat-detail-disposition-date {
+  margin: 0;
+  color: var(--app-subtext);
+  font-size: var(--app-font-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: right;
+}
+
+@keyframes surat-detail-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .surat-detail-page {
+    padding: 24px;
+  }
+
+  .surat-detail-section-header,
+  .surat-detail-disposition-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .surat-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .surat-detail-info-item--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .surat-detail-page {
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .surat-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .surat-detail-actions {
+    flex-direction: column;
+  }
+}
+</style>

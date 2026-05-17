@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Toaster } from 'vue-sonner'
 import VAlert from '@/components/common/VAlert.vue'
@@ -15,16 +15,49 @@ const suratKeluarStore = useSuratKeluarStore()
 const settingsPreferenceStore = useSettingsPreferenceStore()
 const authStore = useAuthStore()
 
+const lastFetchedToken = ref<string | null>(null)
+
+const publicDefaultRouteNames = [
+  'home',
+  'login',
+  'register',
+  'password-reset',
+  'verify-otp',
+  'set-new-password',
+  'verify-email',
+]
+
+const isPublicDefaultRoute = () => {
+  return (
+    route.meta.publicDefault === true ||
+    publicDefaultRouteNames.includes(String(route.name || ''))
+  )
+}
+
 const applyPreferenceByAuthStatus = async () => {
+  if (isPublicDefaultRoute()) {
+    settingsPreferenceStore.applyPublicDefaultPreference()
+    return
+  }
+
   if (!authStore.accessToken) {
     settingsPreferenceStore.applyPublicDefaultPreference()
+    lastFetchedToken.value = null
     return
   }
 
   settingsPreferenceStore.applySavedPreference()
 
+  if (
+    lastFetchedToken.value === authStore.accessToken &&
+    settingsPreferenceStore.preference
+  ) {
+    return
+  }
+
   try {
     await settingsPreferenceStore.fetchPreference()
+    lastFetchedToken.value = authStore.accessToken
   } catch (error) {
     console.error('Gagal mengambil preference dari database:', error)
   }
@@ -35,15 +68,22 @@ onMounted(() => {
 })
 
 watch(
-  () => route.fullPath,
+  () => [route.fullPath, authStore.accessToken],
   () => {
     applyPreferenceByAuthStatus()
-  }
+  },
 )
 </script>
 
 <template>
-  <div class="app-shell min-h-screen w-full font-sans">
+  <div
+    class="
+      min-h-screen w-full
+      bg-[var(--app-bg)] text-[var(--app-text)]
+      font-[var(--font-sans)] text-[length:var(--app-font-base)]
+      transition-[background-color,color,font-size] duration-200 ease-in-out
+    "
+  >
     <Toaster
       position="top-center"
       :toastOptions="{
@@ -60,7 +100,7 @@ watch(
 
     <VAlert
       v-if="alertState.show"
-      :type="alertState.type"
+      :type="alertState.type as any"
       :title="alertState.title"
       :message="alertState.message"
       @close="closeAlert"
@@ -68,7 +108,7 @@ watch(
 
     <VAlert
       v-if="suratKeluarStore.alertState.show"
-      :type="suratKeluarStore.alertState.type"
+      :type="suratKeluarStore.alertState.type as any"
       :title="suratKeluarStore.alertState.title"
       :message="suratKeluarStore.alertState.message"
       @close="suratKeluarStore.closeAlert"
@@ -77,28 +117,3 @@ watch(
     <router-view />
   </div>
 </template>
-
-<style>
-html,
-body,
-#app {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  width: 100%;
-}
-
-body {
-  overflow-y: auto;
-}
-
-.app-shell {
-  min-height: 100vh;
-  background: var(--app-bg);
-  color: var(--app-text);
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    font-size 0.2s ease;
-}
-</style>

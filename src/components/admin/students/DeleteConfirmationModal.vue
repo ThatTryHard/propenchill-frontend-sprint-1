@@ -53,7 +53,10 @@ const confirmText = computed(() => {
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+        class="
+          fixed inset-0 z-[100] flex items-center justify-center
+          bg-black/40 p-4 backdrop-blur-sm
+        "
         @click.self="closeModal"
       >
         <transition
@@ -64,10 +67,31 @@ const confirmText = computed(() => {
           leave-from-class="opacity-100 scale-100 translate-y-0"
           leave-to-class="opacity-0 scale-95 translate-y-4"
         >
-          <div v-if="isOpen" class="delete-modal-panel relative w-full max-w-[520px]">
+          <div
+            v-if="isOpen"
+            class="
+              relative w-full max-w-[480px] overflow-visible
+              rounded-[24px] border-[0.5px] border-[var(--app-modal-border)]
+              bg-[var(--app-modal-bg)] px-8 py-7
+              font-[var(--font-sans)] text-[var(--app-modal-text)]
+              shadow-[0_-2px_4px_rgba(0,0,0,0.2),0_2px_4px_rgba(255,255,255,0.4)]
+              backdrop-blur-[10px]
+              max-[640px]:max-w-[calc(100vw-32px)]
+              max-[640px]:px-5 max-[640px]:py-6
+            "
+          >
             <button
               type="button"
-              class="delete-modal-close absolute right-8 top-7"
+              aria-label="Tutup modal"
+              class="
+                absolute right-8 top-7 inline-flex items-center justify-center
+                text-[var(--app-modal-text)]
+                transition-opacity duration-200 ease-in-out
+                hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-50
+                focus:outline-none focus-visible:outline focus-visible:outline-2
+                focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                max-[640px]:right-5 max-[640px]:top-5
+              "
               :disabled="loading"
               @click="closeModal"
             >
@@ -76,27 +100,44 @@ const confirmText = computed(() => {
 
             <div class="flex flex-col items-center text-center">
               <div
-                class="delete-icon-wrapper mt-8 flex h-[4.3rem] w-[4.3rem] items-center justify-center rounded-full"
+                class="
+                  mt-8 flex h-[68px] w-[68px] items-center justify-center
+                  rounded-full bg-[var(--app-danger-bg)]
+                  text-[var(--app-danger)]
+                "
               >
-                <Trash2 class="h-[2rem] w-[2rem]" />
+                <Trash2 class="h-8 w-8" />
               </div>
 
-              <h2 class="delete-modal-title mt-5 text-[1.7rem] font-bold leading-[120%]">
+              <h2
+                class="
+                  mt-5 mb-0 text-[length:var(--app-section-title-font)]
+                  font-bold leading-[1.2] text-[var(--app-modal-text)]
+                "
+              >
                 {{ title }}
               </h2>
 
-              <p class="delete-modal-message mt-3 max-w-[390px] text-[1rem] leading-[150%]">
+              <p
+                class="
+                  mt-3 mb-0 max-w-[390px]
+                  text-[length:var(--app-font-sm)]
+                  font-medium leading-[1.5] text-[var(--app-muted)]
+                "
+              >
                 Apakah Anda yakin ingin menghapus data
-                <span class="delete-modal-name font-bold">{{ studentName }}</span
-                >?
+                <span class="font-bold text-[var(--app-modal-text)]">
+                  {{ studentName }}
+                </span>
+                ?
                 <br />
                 Tindakan ini tidak dapat dibatalkan.
               </p>
 
-              <div class="mt-6 flex items-center justify-center gap-2">
+              <div class="mt-6 flex items-center justify-center gap-3">
                 <VButton
                   variant="secondary"
-                  class="!w-[132px]"
+                  class="min-w-[104px]"
                   :disabled="loading"
                   @click="closeModal"
                 >
@@ -105,7 +146,7 @@ const confirmText = computed(() => {
 
                 <VButton
                   variant="primary"
-                  class="!w-[132px]"
+                  class="min-w-[104px]"
                   :disabled="loading"
                   @click="handleConfirm"
                 >
@@ -119,41 +160,3 @@ const confirmText = computed(() => {
     </transition>
   </Teleport>
 </template>
-
-<style scoped>
-.delete-modal-panel {
-  overflow: visible;
-  border: 0.5px solid var(--app-modal-border);
-  border-radius: 24px;
-  background: var(--app-modal-bg);
-  color: var(--app-modal-text);
-  padding: 28px 32px;
-  box-shadow:
-    0px -2px 4px rgba(0, 0, 0, 0.2),
-    0px 2px 4px rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-}
-
-.delete-modal-close {
-  color: var(--app-modal-text);
-  transition: opacity 0.2s ease;
-}
-
-.delete-modal-close:hover {
-  opacity: 0.7;
-}
-
-.delete-icon-wrapper {
-  background: var(--app-danger-bg);
-  color: var(--app-danger);
-}
-
-.delete-modal-title,
-.delete-modal-name {
-  color: var(--app-modal-text);
-}
-
-.delete-modal-message {
-  color: var(--app-muted);
-}
-</style>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import VCard from '@/components/common/VCard.vue'
+
 defineProps<{
   title: string
   value: string | number
@@ -8,49 +10,49 @@ defineProps<{
 </script>
 
 <template>
-  <div
+  <VCard
+    padding-class="p-0"
+    overflow-class="overflow-hidden"
     class="
-      relative w-full h-[186px] overflow-hidden flex-shrink-0
-      rounded-[28px] border-[0.5px] border-[var(--app-card-border)]
-      text-center text-[var(--app-text)]
-      bg-[var(--app-soft-card)]
-      shadow-[inset_0_-2px_4px_rgba(0,0,0,0.2),inset_0_2px_4px_rgba(255,255,255,0.4)]
-      backdrop-blur-[10px]
+      relative h-[124px] w-full shrink-0 text-center
+      bg-[var(--app-soft-card)] text-[var(--app-text)]
+      font-[var(--font-sans)]
     "
   >
-    <!-- Content -->
     <div
       class="
-        absolute top-[48px] left-1/2 -translate-x-1/2
-        w-[218px] flex flex-col items-center justify-center
-        gap-[14px] z-[2]
+        absolute left-1/2 top-1/2 z-[2]
+        flex w-[180px] -translate-x-1/2 -translate-y-1/2
+        flex-col items-center justify-center gap-[6px]
       "
     >
-      <b class="w-full text-[32px] leading-[120%]">
+      <b
+        class="
+          w-full text-[length:var(--app-font-xl)]
+          font-bold leading-[1.2] text-[var(--app-heading)]
+        "
+      >
         {{ title }}
       </b>
 
       <b
         class="
-          w-full text-[32px] leading-[120%]
-          bg-[radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))]
-          bg-clip-text text-transparent
+          w-full text-[length:var(--app-font-title)]
+          font-bold leading-[1.2] text-[var(--app-accent)]
         "
       >
         {{ value }}
       </b>
     </div>
 
-    <!-- Icon -->
     <img
       v-if="iconSrc"
       :src="iconSrc"
       :alt="iconAlt || title"
       class="
-        absolute left-[-14px] bottom-[-6px]
-        w-[100px] h-[100px]
-        object-contain z-[1]
+        absolute bottom-[-4px] left-[-8px] z-[1]
+        h-[58px] w-[58px] object-contain
       "
     />
-  </div>
+  </VCard>
 </template>

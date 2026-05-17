@@ -1,28 +1,79 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div
+    class="
+      flex flex-col gap-4
+      font-[var(--font-sans)] text-[var(--app-text)]
+    "
+  >
     <div>
-      <h3 class="text-[14px] font-semibold text-[var(--app-heading)]">
+      <h3
+        class="
+          m-0 text-[length:var(--app-font-sm)]
+          font-semibold leading-[1.3] text-[var(--app-heading)]
+        "
+      >
         {{ title }}
       </h3>
-      <p v-if="subtitle" class="text-[11px] text-[var(--app-muted)]">
+
+      <p
+        v-if="subtitle"
+        class="
+          mt-1 mb-0 text-[length:var(--app-font-xs)]
+          leading-[1.4] text-[var(--app-muted)]
+        "
+      >
         {{ subtitle }}
       </p>
     </div>
 
-    <div v-if="total === 0" class="text-[13px] text-[var(--app-muted)]">
+    <div
+      v-if="total === 0"
+      class="
+        text-[length:var(--app-font-xs)]
+        leading-[1.4] text-[var(--app-muted)]
+      "
+    >
       Tidak ada data untuk ditampilkan.
     </div>
 
-    <div v-else class="flex items-center gap-6">
+    <div
+      v-else
+      class="
+        flex items-center gap-6
+        max-[640px]:flex-col max-[640px]:items-start
+      "
+    >
       <div :style="{ height: `${resolvedSize}px`, width: `${resolvedSize}px` }">
-        <Pie :data="chartData" :options="chartOptions" />
+        <Pie
+          :data="chartData"
+          :options="chartOptions"
+        />
       </div>
 
-      <div class="flex flex-col gap-2 text-[12px] text-[var(--app-muted)]">
-        <div v-for="item in data" :key="item.label" class="flex items-center gap-2">
-          <span class="h-2.5 w-2.5 rounded-full" :style="{ backgroundColor: item.color }"></span>
-          <span class="font-semibold text-[var(--app-text)]">{{ item.label }}</span>
-          <span class="text-[var(--app-muted)]">{{ item.value }}</span>
+      <div
+        class="
+          flex flex-col gap-2
+          text-[length:var(--app-font-xs)]
+          leading-[1.4] text-[var(--app-muted)]
+        "
+      >
+        <div
+          v-for="item in data"
+          :key="item.label"
+          class="flex items-center gap-2"
+        >
+          <span
+            class="h-2.5 w-2.5 shrink-0 rounded-full"
+            :style="{ backgroundColor: item.color }"
+          ></span>
+
+          <span class="font-semibold text-[var(--app-text)]">
+            {{ item.label }}
+          </span>
+
+          <span class="text-[var(--app-muted)]">
+            {{ item.value }}
+          </span>
         </div>
       </div>
     </div>
@@ -32,7 +83,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Pie } from 'vue-chartjs'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  type ChartOptions,
+} from 'chart.js'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -66,12 +123,16 @@ const chartData = computed(() => ({
   ],
 }))
 
-const chartOptions = computed(() => ({
+const chartOptions = computed<ChartOptions<'pie'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { display: false },
-    tooltip: { enabled: true },
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      enabled: true,
+    },
   },
 }))
 </script>

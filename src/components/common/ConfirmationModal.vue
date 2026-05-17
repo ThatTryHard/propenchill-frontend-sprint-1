@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { X, Trash2 } from 'lucide-vue-next'
+import { LogOut, Trash2 } from 'lucide-vue-next'
+
+import VModal from '@/components/common/VModal.vue'
 import VButton from '@/components/common/VButton.vue'
+import VAlert from '@/components/common/VAlert.vue'
+
+type ConfirmationIcon = 'trash' | 'logout'
 
 const props = withDefaults(
   defineProps<{
@@ -12,12 +17,14 @@ const props = withDefaults(
     cancelText?: string
     loading?: boolean
     errorMessage?: string
+    icon?: ConfirmationIcon
   }>(),
   {
     confirmText: 'Hapus',
     cancelText: 'Batal',
     loading: false,
     errorMessage: '',
+    icon: 'trash',
   },
 )
 
@@ -26,95 +33,88 @@ const emit = defineEmits<{
   (e: 'confirm'): void
 }>()
 
+const isSubmitDisabled = computed(() => props.loading)
+
+const iconComponent = computed(() => {
+  return props.icon === 'logout' ? LogOut : Trash2
+})
+
 const closeModal = () => {
   emit('update:isOpen', false)
 }
-
-const isSubmitDisabled = computed(() => props.loading)
 
 const handleConfirm = () => {
   if (props.loading) return
   emit('confirm')
 }
+
+const handleModalVisibilityChange = (value: boolean) => {
+  emit('update:isOpen', value)
+}
 </script>
 
 <template>
-  <Teleport to="body">
-    <transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
+  <VModal
+    :is-open="isOpen"
+    :title="title"
+    :description="description"
+    max-width-class="max-w-[420px]"
+    :buttons="[]"
+    @update:is-open="handleModalVisibilityChange"
+  >
+    <template #icon>
       <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-        @click.self="closeModal"
+        class="
+          flex h-14 w-14 items-center justify-center rounded-full px-3
+          bg-[var(--app-danger-bg)]
+        "
       >
-        <transition
-          enter-active-class="transition duration-300 ease-out"
-          enter-from-class="opacity-0 scale-95 translate-y-4"
-          enter-to-class="opacity-100 scale-100 translate-y-0"
-          leave-active-class="transition duration-200 ease-in"
-          leave-from-class="opacity-100 scale-100 translate-y-0"
-          leave-to-class="opacity-0 scale-95 translate-y-4"
-        >
-          <div
-            v-if="isOpen"
-            class="relative w-full max-w-[500px] rounded-[24px] border-[0.5px] border-[var(--app-modal-border)] overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[var(--app-modal-text)] bg-[var(--app-modal-bg)] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-          >
-            <div class="flex flex-col gap-5">
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="text-[var(--app-modal-text)] hover:opacity-70 transition"
-                >
-                  <X class="w-5 h-5" />
-                </button>
-              </div>
-
-              <div class="flex flex-col items-center gap-3">
-                <div
-                  class="flex items-center justify-center w-[56px] h-[56px] rounded-full bg-[var(--app-danger-bg)]"
-                >
-                  <Trash2 class="w-8 h-8 text-[var(--app-danger)]" />
-                </div>
-                <b class="text-[24px] leading-[120%]">{{ title }}</b>
-                <p class="text-center text-[14px] leading-[150%] text-[var(--app-subtext)]">
-                  {{ description }}
-                </p>
-              </div>
-
-              <p v-if="errorMessage" class="text-[13px] text-[var(--app-danger)] font-medium">
-                {{ errorMessage }}
-              </p>
-
-              <div class="flex items-center justify-end gap-2">
-                <VButton
-                  variant="secondary"
-                  class="!w-[132px]"
-                  :disabled="loading"
-                  @click="closeModal"
-                >
-                  {{ cancelText }}
-                </VButton>
-
-                <VButton
-                  variant="primary"
-                  class="!w-[132px]"
-                  :disabled="isSubmitDisabled"
-                  @click="handleConfirm"
-                >
-                  {{ loading ? 'Memproses...' : confirmText }}
-                </VButton>
-              </div>
-            </div>
-          </div>
-        </transition>
+        <component
+          :is="iconComponent"
+          class="h-8 w-8 text-[var(--app-danger)]"
+        />
       </div>
-    </transition>
-  </Teleport>
+    </template>
+
+    <div class="flex w-full flex-col gap-6 pt-2">
+      <VAlert
+        v-if="errorMessage"
+        :visible="Boolean(errorMessage)"
+        type="error"
+        title="Gagal"
+        :message="errorMessage"
+      />
+
+      <div
+        class="
+          flex w-full justify-end gap-3 pr-6
+          max-[480px]:flex-col-reverse max-[480px]:pr-0
+        "
+      >
+        <div class="w-[132px] shrink-0 max-[480px]:w-full">
+          <VButton
+            type="button"
+            variant="secondary"
+            class="w-full"
+            :disabled="loading"
+            @click="closeModal"
+          >
+            {{ cancelText }}
+          </VButton>
+        </div>
+
+        <div class="w-[132px] shrink-0 max-[480px]:w-full">
+          <VButton
+            type="button"
+            variant="primary"
+            class="w-full"
+            :disabled="isSubmitDisabled"
+            @click="handleConfirm"
+          >
+            {{ loading ? 'Memproses...' : confirmText }}
+          </VButton>
+        </div>
+      </div>
+    </div>
+  </VModal>
 </template>

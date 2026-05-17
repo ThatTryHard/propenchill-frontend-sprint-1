@@ -4,16 +4,21 @@ import { useRouter } from 'vue-router'
 import { Folder, User, Calendar } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/users/auth'
 import { useSuratAntreanStore, type SuratAntrean } from '@/stores/surat_antrean'
+
 import mailIcon from '@/assets/mail.png'
 import diprosesIcon from '@/assets/diproses.png'
 import disetujuiIcon from '@/assets/disetujui.png'
 import ditolakIcon from '@/assets/ditolak.png'
+
+import DashboardLayout from '@/components/common/DashboardLayout.vue'
+import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
 import VAlert from '@/components/common/VAlert.vue'
 import VPagination from '@/components/common/VPagination.vue'
-import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
+import VCard from '@/components/common/VCard.vue'
+import VButton from '@/components/common/VButton.vue'
+import VChip from '@/components/common/VChip.vue'
 
 const router = useRouter()
 const store = useSuratAntreanStore()
@@ -49,12 +54,43 @@ const successMessage = ref('')
 const suratList = computed(() => store.suratList)
 const stats = computed(() => store.stats)
 
-// --- MENGHITUNG DATA YANG SUDAH DIFILTER ---
+const statCards = computed(() => [
+  {
+    label: 'Total Surat',
+    value: stats.value.total,
+    icon: mailIcon,
+    alt: 'Mail Icon',
+    opacityClass: 'opacity-90',
+  },
+  {
+    label: 'Diproses',
+    value: stats.value.diproses,
+    icon: diprosesIcon,
+    alt: 'Diproses',
+    opacityClass: 'opacity-70',
+  },
+  {
+    label: 'Disetujui',
+    value: stats.value.disetujui,
+    icon: disetujuiIcon,
+    alt: 'Disetujui',
+    opacityClass: 'opacity-70',
+  },
+  {
+    label: 'Ditolak',
+    value: stats.value.ditolak,
+    icon: ditolakIcon,
+    alt: 'Ditolak',
+    opacityClass: 'opacity-70',
+  },
+])
+
 const filteredSuratList = computed(() => {
   const withChronologicalOrder = (items: SuratAntrean[]) => {
     return [...items].sort((a, b) => {
       const dateA = new Date(a.tanggal_pengajuan || a.created_at || '').getTime()
       const dateB = new Date(b.tanggal_pengajuan || b.created_at || '').getTime()
+
       return dateA - dateB
     })
   }
@@ -71,11 +107,13 @@ const filteredSuratList = computed(() => {
 
   if (search.value.trim()) {
     const query = search.value.toLowerCase()
+
     result = result.filter((s) => {
       const title = getLetterTitle(s).toLowerCase()
       const description = getLetterDescription(s).toLowerCase()
       const pengaju = String(s.nama_pengaju || '').toLowerCase()
       const kategori = String(s.kategori || '').toLowerCase()
+
       return (
         title.includes(query) ||
         description.includes(query) ||
@@ -91,7 +129,9 @@ const filteredSuratList = computed(() => {
       BIDANG_AKADEMIK: 'AKADEMIK',
       BIDANG_KESISWAAN: 'KESISWAAN',
     }
+
     const targetJenis = bidangMap[selectedBidang.value]
+
     if (targetJenis) {
       result = result.filter((s) => s.template_jenis === targetJenis || s.kategori === targetJenis)
     }
@@ -100,7 +140,6 @@ const filteredSuratList = computed(() => {
   return result
 })
 
-// --- MEMBUAT LOGIKA PAGINATION DI FRONTEND ---
 const totalPages = computed(() => {
   return Math.ceil(filteredSuratList.value.length / limit.value) || 1
 })
@@ -108,6 +147,7 @@ const totalPages = computed(() => {
 const paginatedSuratList = computed(() => {
   const start = (currentPage.value - 1) * limit.value
   const end = start + limit.value
+
   return filteredSuratList.value.slice(start, end)
 })
 
@@ -119,23 +159,17 @@ function getLetterDescription(item: SuratAntrean): string {
   return item.description || item.deskripsi || 'Tidak ada deskripsi surat.'
 }
 
-function getStatusClass(status: string): string {
-  switch (status) {
-    case 'Disetujui':
-      return 'bg-[var(--app-success)] text-[var(--app-text-inverse)]'
-    case 'Menunggu Verifikasi Kepsek':
-      return 'bg-[var(--app-warning)] text-[var(--app-text-inverse)]'
-    case 'Diproses':
-      return 'bg-[var(--app-info)] text-[var(--app-text-inverse)]'
-    case 'Ditolak':
-      return 'bg-[var(--app-danger)] text-[var(--app-text-inverse)]'
-    default:
-      return 'bg-[var(--app-muted)] text-[var(--app-text-inverse)]'
-  }
+function getStatusVariant(status: string) {
+  if (status === 'Disetujui') return 'primary'
+  if (status === 'Diproses') return 'secondary'
+  if (status === 'Ditolak') return 'tertiary'
+
+  return 'tertiary'
 }
 
 function formatDate(value: string) {
   if (!value) return '-'
+
   return new Date(value).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -175,7 +209,7 @@ async function fetchData() {
 }
 
 function handleApplyFilter() {
-  currentPage.value = 1 // Reset halaman ke 1 setiap filter berubah
+  currentPage.value = 1
 }
 
 function handleStatusFilterSelect(value: string) {
@@ -198,153 +232,188 @@ onMounted(() => {
       <SIMPSidebar />
     </template>
 
-    <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans'] bg-[var(--app-bg)] text-[var(--app-text)]">
-      <section class="mb-6 flex flex-col gap-2">
-        <div class="flex items-center justify-between gap-3">
+    <main
+      class="flex h-full flex-col gap-6 bg-[var(--app-bg)] p-8 font-[var(--font-sans)] text-[var(--app-text)]"
+    >
+      <section class="mb-2 flex flex-col gap-3">
+        <div
+          class="flex items-center justify-between gap-3 max-[768px]:flex-col max-[768px]:items-stretch"
+        >
           <div>
-            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[var(--app-heading)]">
+            <h1
+              class="m-0 text-[length:var(--app-page-title-font)] font-bold leading-[1.2] text-[var(--app-heading)]"
+            >
               Verifikasi dan Persetujuan Berjenjang
             </h1>
-            <p class="text-[13px] md:text-[14px] leading-[145%] text-[var(--app-muted)]">
+
+            <p
+              class="mt-1 mb-0 text-[length:var(--app-page-subtitle-font)] leading-[1.45] text-[var(--app-muted)]"
+            >
               Verifikasi Surat
             </p>
           </div>
 
-          <VDropdown v-if="isAdmin" v-model="selectedBidang" :options="bidangOptions" placeholder="Pilih Bidang"
-            class="!w-[220px]" />
+          <div v-if="isAdmin" class="w-[220px] max-[768px]:w-full">
+            <VDropdown
+              v-model="selectedBidang"
+              :options="bidangOptions"
+              placeholder="Pilih Bidang"
+            />
+          </div>
         </div>
 
-        <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
-        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
-          @close="successMessage = ''" />
+        <VAlert
+          v-if="generalError"
+          type="error"
+          title="Gagal"
+          :message="generalError"
+          @close="generalError = ''"
+        />
+
+        <VAlert
+          v-if="successMessage"
+          type="success"
+          title="Berhasil"
+          :message="successMessage"
+          @close="successMessage = ''"
+        />
       </section>
 
-      <section class="mb-4">
-        <VInputField v-model="search" state="search"
-          placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..." @keydown.enter="handleApplyFilter" />
+      <section>
+        <VInputField
+          v-model="search"
+          state="search"
+          placeholder="Cari surat berdasarkan nama, deskripsi, atau kategori..."
+          @keydown.enter="handleApplyFilter"
+        />
       </section>
 
-      <section class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
-          <div class="absolute bottom-0 left-0 opacity-90">
-            <img :src="mailIcon" alt="Mail Icon"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+      <section class="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <VCard
+          v-for="card in statCards"
+          :key="card.label"
+          padding-class="p-0"
+          class="relative h-[128px] overflow-hidden"
+        >
+          <div :class="['absolute bottom-0 left-0', card.opacityClass]">
+            <img
+              :src="card.icon"
+              :alt="card.alt"
+              class="h-[78px] w-[78px] translate-x-[-10px] translate-y-[10px] object-contain"
+            />
           </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-            <p class="text-[28px] font-semibold text-[var(--app-heading)]">Total Surat</p>
-            <h2 class="mt-4 text-[35px] font-bold text-[var(--app-heading)]">{{ stats.total }}</h2>
-          </div>
-        </div>
 
-        <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
-          <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="diprosesIcon" alt="Diproses"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
-          </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-            <p class="text-[28px] font-semibold text-[var(--app-heading)]">Diproses</p>
-            <h2 class="mt-4 text-[35px] font-bold text-[var(--app-heading)]">{{ stats.diproses }}</h2>
-          </div>
-        </div>
+          <div
+            class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center"
+          >
+            <p
+              class="m-0 text-[length:var(--app-font-xl)] font-semibold leading-[1.2] text-[var(--app-heading)]"
+            >
+              {{ card.label }}
+            </p>
 
-        <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
-          <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="disetujuiIcon" alt="Disetujui"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
+            <h2
+              class="mt-4 mb-0 text-[length:var(--app-font-display)] font-bold leading-[1.2] text-[var(--app-heading)]"
+            >
+              {{ card.value }}
+            </h2>
           </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-            <p class="text-[28px] font-semibold text-[var(--app-heading)]">Disetujui</p>
-            <h2 class="mt-4 text-[35px] font-bold text-[var(--app-heading)]">{{ stats.disetujui }}</h2>
-          </div>
-        </div>
-
-        <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
-          <div class="absolute bottom-0 left-0 opacity-70">
-            <img :src="ditolakIcon" alt="Ditolak"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
-          </div>
-          <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
-            <p class="text-[28px] font-semibold text-[var(--app-heading)]">Ditolak</p>
-            <h2 class="mt-4 text-[35px] font-bold text-[var(--app-heading)]">{{ stats.ditolak }}</h2>
-          </div>
-        </div>
+        </VCard>
       </section>
 
-      <section class="mb-6">
-        <div class="relative flex h-[46px] items-center rounded-full bg-[var(--app-soft-card)] p-1">
-          <button v-for="option in statusFilterOptions" :key="option.value" type="button" :class="[
-            'relative flex-1 rounded-full px-4 py-2 text-[14px] font-semibold transition-all duration-300',
-            selectedStatusFilter === option.value
-              ? 'bg-[var(--app-accent)] text-[var(--app-text-inverse)] shadow-sm'
-              : 'text-[var(--app-muted)] hover:text-[var(--app-accent)]',
-          ]" @click="handleStatusFilterSelect(option.value)">
+      <section>
+        <div class="flex flex-wrap items-center gap-2 rounded-full bg-[var(--app-soft-card)] p-1">
+          <VButton
+            v-for="option in statusFilterOptions"
+            :key="option.value"
+            :variant="selectedStatusFilter === option.value ? 'primary' : 'tertiary'"
+            size="sm"
+            class="flex-1"
+            @click="handleStatusFilterSelect(option.value)"
+          >
             {{ option.label }}
-          </button>
+          </VButton>
         </div>
       </section>
 
-      <section v-if="store.loading"
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]">
-        Memuat data surat...
+      <section v-if="store.loading">
+        <VCard padding-class="px-6 py-10">
+          <p
+            class="m-0 text-center text-[length:var(--app-table-state-font)] leading-[1.5] text-[var(--app-muted)]"
+          >
+            Memuat data surat...
+          </p>
+        </VCard>
       </section>
 
-      <section v-else-if="filteredSuratList.length === 0"
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]">
-        Belum ada surat yang sesuai filter.
+      <section v-else-if="filteredSuratList.length === 0">
+        <VCard padding-class="px-6 py-10">
+          <p
+            class="m-0 text-center text-[length:var(--app-table-state-font)] leading-[1.5] text-[var(--app-muted)]"
+          >
+            Belum ada surat yang sesuai filter.
+          </p>
+        </VCard>
       </section>
 
       <section v-else class="flex flex-col gap-4">
-        <article v-for="item in paginatedSuratList" :key="item.id_surat"
-          class="rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-6 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
-          <div class="flex items-start justify-between gap-4 mb-3">
-            <h3 class="text-[18px] font-bold leading-[1.4] text-[var(--app-heading)] flex-1">
+        <VCard
+          v-for="item in paginatedSuratList"
+          :key="item.id_surat"
+          padding-class="px-6 py-6"
+          class="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+        >
+          <div class="mb-3 flex items-start justify-between gap-4">
+            <h3
+              class="m-0 flex-1 text-[length:var(--app-card-title-font)] font-bold leading-[1.4] text-[var(--app-heading)]"
+            >
               {{ getLetterTitle(item) }}
             </h3>
-            <span :class="[
-              'px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap',
-              getStatusClass(item.status),
-            ]">
-              {{ item.status }}
-            </span>
+
+            <VChip :label="item.status" :variant="getStatusVariant(item.status)" />
           </div>
 
-          <p class="text-[14px] text-[var(--app-muted)] mb-4 leading-relaxed">
+          <p
+            class="mb-4 mt-0 text-[length:var(--app-font-sm)] leading-relaxed text-[var(--app-muted)]"
+          >
             {{ getLetterDescription(item) }}
           </p>
 
-          <div class="flex flex-wrap items-center gap-5 mb-5">
-            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
-              <Folder class="w-4 h-4 text-[var(--app-muted)]" />
+          <div class="mb-5 flex flex-wrap items-center gap-5">
+            <div
+              class="flex items-center gap-1.5 text-[length:var(--app-font-sm)] leading-[1.4] text-[var(--app-muted)]"
+            >
+              <Folder class="h-4 w-4 text-[var(--app-muted)]" />
               <span>{{ item.kategori || '-' }}</span>
             </div>
 
-            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
-              <User class="w-4 h-4 text-[var(--app-muted)]" />
+            <div
+              class="flex items-center gap-1.5 text-[length:var(--app-font-sm)] leading-[1.4] text-[var(--app-muted)]"
+            >
+              <User class="h-4 w-4 text-[var(--app-muted)]" />
               <span>{{ item.nama_pengaju }}</span>
             </div>
 
-            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
-              <Calendar class="w-4 h-4 text-[var(--app-muted)]" />
+            <div
+              class="flex items-center gap-1.5 text-[length:var(--app-font-sm)] leading-[1.4] text-[var(--app-muted)]"
+            >
+              <Calendar class="h-4 w-4 text-[var(--app-muted)]" />
               <span>{{ formatDate(item.tanggal_pengajuan) }}</span>
             </div>
           </div>
 
-          <button type="button"
-            class="w-full sm:w-auto bg-[var(--app-soft-card)] hover:bg-[var(--app-bg)] text-[var(--app-heading)] px-8 py-2.5 rounded-[12px] text-[14px] font-semibold transition-all duration-300 hover:-translate-y-0.5 border border-[var(--app-card-border)]"
-            @click="goToDetail(item)">
-            Detail
-          </button>
-        </article>
+          <VButton variant="tertiary" @click="goToDetail(item)"> Detail </VButton>
+        </VCard>
       </section>
 
       <section v-if="totalPages > 1" class="mt-6 flex justify-end">
-        <VPagination :currentPage="currentPage" :totalPages="totalPages" :siblingCount="1"
-          @page-change="handlePageChange" />
+        <VPagination
+          :currentPage="currentPage"
+          :totalPages="totalPages"
+          :siblingCount="1"
+          @page-change="handlePageChange"
+        />
       </section>
-    </div>
+    </main>
   </DashboardLayout>
 </template>

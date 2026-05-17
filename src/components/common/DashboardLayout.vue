@@ -1,51 +1,30 @@
 <template>
-  <div class="dashboard-shell flex h-screen w-full overflow-hidden font-sans">
-    <div class="h-full flex-shrink-0 relative z-20 shadow-sm">
+  <div
+    class="
+      flex h-screen h-[100dvh] w-full overflow-hidden
+      bg-[var(--app-bg)] text-[var(--app-text)]
+      font-[var(--font-sans)] text-[length:var(--app-font-base)] leading-[1.5]
+      transition-colors duration-200
+      max-[768px]:min-h-screen max-[768px]:min-h-[100dvh]
+    "
+  >
+    <aside class="relative z-20 h-full shrink-0">
       <slot name="sidebar" />
-    </div>
+    </aside>
 
-    <main class="flex-1 h-full overflow-y-auto overflow-x-hidden relative scroll-smooth">
+    <main
+      class="
+        relative h-full flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain
+        scroll-smooth bg-[var(--app-bg)] text-[var(--app-text)]
+        max-[768px]:w-full
+        [&::-webkit-scrollbar]:w-[4px]
+        [&::-webkit-scrollbar-track]:bg-transparent
+        [&::-webkit-scrollbar-thumb]:rounded-[10px]
+        [&::-webkit-scrollbar-thumb]:bg-[var(--app-border)]
+        [&::-webkit-scrollbar-thumb:hover]:bg-[var(--app-muted)]
+      "
+    >
       <slot />
     </main>
   </div>
-</template>
-
-<style scoped>
-.dashboard-shell {
-  background: var(--app-bg);
-  color: var(--app-text);
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease,
-    font-size 0.2s ease;
-}
-
-:global(html[data-text-size='small']) .dashboard-shell {
-  font-size: 13px;
-}
-
-:global(html[data-text-size='default']) .dashboard-shell {
-  font-size: 14px;
-}
-
-:global(html[data-text-size='large']) .dashboard-shell {
-  font-size: 16px;
-}
-
-main::-webkit-scrollbar {
-  width: 1px;
-}
-
-main::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-main::-webkit-scrollbar-thumb {
-  background-color: var(--app-border);
-  border-radius: 10px;
-}
-
-main::-webkit-scrollbar-thumb:hover {
-  background-color: var(--app-muted);
-}
-</style>
+ </template>

@@ -1,16 +1,39 @@
 <template>
-  <div class="flex flex-col gap-4">
+  <div
+    class="
+      flex flex-col gap-4
+      font-[var(--font-sans)] text-[var(--app-text)]
+    "
+  >
     <div>
-      <h3 class="text-[14px] font-semibold text-[var(--app-heading)]">
+      <h3
+        class="
+          m-0 text-[length:var(--app-font-sm)]
+          font-semibold leading-[1.3] text-[var(--app-heading)]
+        "
+      >
         {{ title }}
       </h3>
-      <p v-if="subtitle" class="text-[11px] text-[var(--app-subtext)]">
+
+      <p
+        v-if="subtitle"
+        class="
+          mt-1 mb-0 text-[length:var(--app-font-xs)]
+          leading-[1.4] text-[var(--app-subtext)]
+        "
+      >
         {{ subtitle }}
       </p>
     </div>
 
-    <div :style="{ height: `${resolvedHeight}px` }">
-      <Bar :data="chartData" :options="chartOptions" />
+    <div
+      class="w-full"
+      :style="{ height: `${resolvedHeight}px` }"
+    >
+      <Bar
+        :data="chartData"
+        :options="chartOptions"
+      />
     </div>
   </div>
 </template>
@@ -48,6 +71,28 @@ const colors = useThemeColors()
 
 const resolvedHeight = computed(() => props.chartHeight ?? 190)
 
+const readCssLengthAsPx = (variableName: string, fallback: number) => {
+  if (typeof window === 'undefined') return fallback
+
+  const rootStyle = getComputedStyle(document.documentElement)
+  const rawValue = rootStyle.getPropertyValue(variableName).trim()
+
+  if (!rawValue) return fallback
+
+  const numericValue = Number.parseFloat(rawValue)
+
+  if (Number.isNaN(numericValue)) return fallback
+
+  if (rawValue.endsWith('rem')) {
+    const rootFontSize = Number.parseFloat(rootStyle.fontSize) || 16
+    return numericValue * rootFontSize
+  }
+
+  return numericValue
+}
+
+const chartTickFontSize = computed(() => readCssLengthAsPx('--app-font-xs', 12))
+
 const chartData = computed(() => ({
   labels: props.data.map((item) => item.label),
   datasets: [
@@ -65,25 +110,39 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { display: false },
-    tooltip: { enabled: true },
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      enabled: true,
+    },
   },
   scales: {
     x: {
       type: 'category',
-      grid: { display: false },
+      grid: {
+        display: false,
+      },
       ticks: {
         color: colors.value.muted,
-        font: { size: 12, weight: 600 },
+        font: {
+          size: chartTickFontSize.value,
+          weight: 600,
+        },
       },
     },
     y: {
       type: 'linear',
       beginAtZero: true,
-      grid: { color: colors.value.border, borderDash: [4, 4] },
+      grid: {
+        color: colors.value.border,
+        borderDash: [4, 4],
+      },
       ticks: {
         color: colors.value.muted,
-        font: { size: 12 },
+        font: {
+          size: chartTickFontSize.value,
+        },
         stepSize: 10,
       },
     },

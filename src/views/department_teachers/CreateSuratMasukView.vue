@@ -7,11 +7,16 @@ import {
   type Pengirim,
   type SuratMasukPayload,
 } from '@/stores/surat-masuk'
+
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
+import VCard from '@/components/common/VCard.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VTextareaField from '@/components/common/VTextareaField.vue'
 import VInputFile from '@/components/common/VInputFile.vue'
+import VButton from '@/components/common/VButton.vue'
+import VAlert from '@/components/common/VAlert.vue'
+
 import { Building2, LoaderCircle } from 'lucide-vue-next'
 
 interface FormState {
@@ -100,6 +105,7 @@ const clearForm = () => {
   form.nama_instansi = ''
   form.alamat = ''
   form.kontak = ''
+
   selectedPengirimId.value = null
   autocompleteOpen.value = false
   lampiranFile.value = null
@@ -169,6 +175,7 @@ const handleSubmit = async () => {
 
   try {
     const result = await suratMasukStore.createSuratMasuk(payload)
+
     showAlert('success', result.message || 'Data Surat Masuk berhasil dibuat.', 'Berhasil')
 
     const createdPengirim = result.data?.pengirim
@@ -197,6 +204,7 @@ const handleSubmit = async () => {
 
     formError.value =
       typeof payload.general === 'string' ? payload.general : 'Gagal menyimpan data Surat Masuk.'
+
     showAlert('error', formError.value, 'Gagal Menyimpan')
   }
 }
@@ -217,19 +225,26 @@ onUnmounted(() => {
       <SIMPSidebar />
     </template>
 
-    <div class="w-full min-h-screen bg-white">
-      <div class="w-full max-w-[1120px] mx-auto px-8 py-8 max-[768px]:px-4">
-        <section class="mb-6">
-          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
+    <main class="surat-masuk-create-page">
+      <section class="surat-masuk-create-header">
+        <h1 class="surat-masuk-create-title">
           Form Pengajuan Surat Masuk
-          </h1>
-          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[var(--app-muted)]">
-          Lengkapi form di bawah ini untuk mengajukan surat masuk
-          </p>
-        </section>
+        </h1>
 
-        <div class="bg-[var(--app-card)] border border-[var(--app-border)] rounded-[28px] p-6 md:p-8">
-        <form class="flex flex-col gap-5" @submit.prevent="handleSubmit">
+        <p class="surat-masuk-create-subtitle">
+          Lengkapi form di bawah ini untuk mengajukan surat masuk.
+        </p>
+      </section>
+
+      <VCard
+        class="surat-masuk-create-card"
+        paddingClass="p-6 md:p-8"
+        overflowClass="overflow-visible"
+      >
+        <form
+          class="surat-masuk-create-form"
+          @submit.prevent="handleSubmit"
+        >
           <VInputField
             :modelValue="form.nomor_surat_pengirim"
             label="Nomor Surat"
@@ -239,7 +254,7 @@ onUnmounted(() => {
             @update:modelValue="form.nomor_surat_pengirim = String($event || '')"
           />
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="surat-masuk-create-grid">
             <VInputField
               :modelValue="form.tanggal_surat"
               type="date"
@@ -276,12 +291,15 @@ onUnmounted(() => {
             @update:modelValue="form.jenis_surat = String($event || '')"
           />
 
-          <div class="flex flex-col gap-2 w-full font-sans" ref="autocompleteRef">
-            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]">
+          <div
+            ref="autocompleteRef"
+            class="pengirim-field"
+          >
+            <label class="pengirim-label">
               Pengirim (Instansi)
             </label>
 
-            <div class="relative">
+            <div class="pengirim-autocomplete">
               <VInputField
                 :modelValue="form.nama_instansi"
                 placeholder="Cari atau masukkan nama instansi"
@@ -293,20 +311,24 @@ onUnmounted(() => {
 
               <div
                 v-if="autocompleteOpen && filteredPengirim.length > 0"
-                class="absolute top-[calc(100%+6px)] left-0 w-full bg-[var(--app-card)] border border-[var(--app-border)] rounded-[12px] shadow-lg z-20 overflow-hidden"
+                class="pengirim-dropdown"
               >
-                <ul class="m-0 p-0 list-none max-h-[240px] overflow-auto">
+                <ul class="pengirim-list">
                   <li
                     v-for="item in filteredPengirim"
                     :key="item.id_pengirim || item.nama_instansi"
-                    class="px-4 py-3 cursor-pointer text-[14px] text-[var(--app-text)] hover:bg-[var(--app-bg)] transition-colors"
+                    class="pengirim-option"
                     @mousedown.prevent="selectPengirim(item)"
                   >
-                    <div class="flex items-center gap-2 font-semibold">
+                    <div class="pengirim-option-title">
                       <Building2 :size="16" />
                       <span>{{ item.nama_instansi }}</span>
                     </div>
-                    <p v-if="item.alamat || item.kontak" class="m-0 mt-1 text-[12px] text-[var(--app-muted)]">
+
+                    <p
+                      v-if="item.alamat || item.kontak"
+                      class="pengirim-option-meta"
+                    >
                       {{ item.alamat || '-' }}
                       <span v-if="item.kontak"> | {{ item.kontak }}</span>
                     </p>
@@ -315,16 +337,28 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <p v-if="suratMasukStore.loadingPengirim" class="m-0 text-[12px] text-[var(--app-muted)]">
+            <p
+              v-if="suratMasukStore.loadingPengirim"
+              class="pengirim-helper"
+            >
               Memuat data pengirim...
             </p>
+
             <p
-              v-else-if="!suratMasukStore.loadingPengirim && !filteredPengirim.length && form.nama_instansi.trim()"
-              class="m-0 text-[12px] text-[var(--app-muted)]"
+              v-else-if="
+                !suratMasukStore.loadingPengirim &&
+                !filteredPengirim.length &&
+                form.nama_instansi.trim()
+              "
+              class="pengirim-helper"
             >
               Instansi belum ditemukan, data baru akan dibuat saat submit.
             </p>
-            <p v-if="selectedPengirimId" class="m-0 text-[12px] text-[var(--app-success)]">
+
+            <p
+              v-if="selectedPengirimId"
+              class="pengirim-success"
+            >
               Instansi terpilih dari data existing.
             </p>
           </div>
@@ -347,10 +381,11 @@ onUnmounted(() => {
             @update:modelValue="form.kontak = String($event || '')"
           />
 
-          <div class="flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]">
+          <div class="lampiran-field">
+            <label class="lampiran-label">
               Lampiran Surat (Opsional)
             </label>
+
             <VInputFile
               accept=".pdf,.doc,.docx"
               file-types-text="PDF, DOC, DOCX"
@@ -359,25 +394,212 @@ onUnmounted(() => {
             />
           </div>
 
-          <p v-if="formError" class="m-0 text-[14px] font-semibold text-[var(--app-danger)]">
-            {{ formError }}
-          </p>
+          <VAlert
+            v-if="formError"
+            :visible="Boolean(formError)"
+            type="error"
+            title="Gagal Menyimpan"
+            :message="formError"
+            @close="formError = ''"
+          />
 
-          <div class="pt-2">
-            <button
+          <div class="surat-masuk-create-actions">
+            <VButton
               type="submit"
-              class="w-full h-[40px] rounded-[20px] bg-[linear-gradient(180deg,var(--app-success)_0%,var(--app-success-dark)_100%)] text-white text-[16px] font-semibold leading-[120%] transition-opacity duration-200 disabled:cursor-not-allowed disabled:opacity-70"
+              variant="primary"
+              class="surat-masuk-create-submit"
               :disabled="suratMasukStore.submitting"
             >
-              <span class="inline-flex items-center gap-2 justify-center">
-                <LoaderCircle v-if="suratMasukStore.submitting" class="animate-spin" :size="18" />
+              <template
+                v-if="suratMasukStore.submitting"
+                #leftIcon
+              >
+                <LoaderCircle
+                  class="surat-masuk-create-loader"
+                  :size="18"
+                />
+              </template>
+
               {{ suratMasukStore.submitting ? 'Mengajukan Surat...' : 'Ajukan Surat' }}
-              </span>
-            </button>
+            </VButton>
           </div>
         </form>
-        </div>
-      </div>
-    </div>
+      </VCard>
+    </main>
   </DashboardLayout>
 </template>
+
+<style scoped>
+.surat-masuk-create-page {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-family: var(--font-sans);
+  padding: 32px;
+}
+
+.surat-masuk-create-header {
+  display: flex;
+  max-width: 1120px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.surat-masuk-create-title {
+  margin: 0;
+  color: var(--app-heading);
+  font-size: var(--app-page-title-font);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.surat-masuk-create-subtitle {
+  margin: 0;
+  color: var(--app-subtext);
+  font-size: var(--app-page-subtitle-font);
+  line-height: 1.4;
+}
+
+.surat-masuk-create-card {
+  width: 100%;
+  max-width: 1120px;
+  border-color: var(--app-card-border);
+  background: var(--app-card);
+  color: var(--app-text);
+  box-shadow: var(--app-card-shadow);
+}
+
+.surat-masuk-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.surat-masuk-create-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.pengirim-field,
+.lampiran-field {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pengirim-label,
+.lampiran-label {
+  color: var(--app-heading);
+  font-family: var(--font-sans);
+  font-size: var(--app-input-label-font);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.pengirim-autocomplete {
+  position: relative;
+  width: 100%;
+}
+
+.pengirim-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 30;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-card);
+  color: var(--app-text);
+  box-shadow: var(--app-card-shadow);
+}
+
+.pengirim-list {
+  max-height: 240px;
+  overflow: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pengirim-option {
+  cursor: pointer;
+  padding: 12px 16px;
+  color: var(--app-text);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.pengirim-option:hover {
+  background: var(--app-table-row-hover);
+}
+
+.pengirim-option-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-heading);
+  font-size: var(--app-font-sm);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.pengirim-option-meta {
+  margin: 4px 0 0;
+  color: var(--app-muted);
+  font-size: var(--app-font-xs);
+  line-height: 1.4;
+}
+
+.pengirim-helper {
+  margin: 0;
+  color: var(--app-muted);
+  font-size: var(--app-input-helper-font);
+  line-height: 1.5;
+}
+
+.pengirim-success {
+  margin: 0;
+  color: var(--app-success);
+  font-size: var(--app-input-helper-font);
+  line-height: 1.5;
+}
+
+.surat-masuk-create-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.surat-masuk-create-submit {
+  width: 100%;
+}
+
+.surat-masuk-create-loader {
+  animation: surat-masuk-create-spin 0.8s linear infinite;
+}
+
+@keyframes surat-masuk-create-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .surat-masuk-create-page {
+    padding: 24px 16px;
+  }
+
+  .surat-masuk-create-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

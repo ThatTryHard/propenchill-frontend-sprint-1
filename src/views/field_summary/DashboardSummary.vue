@@ -1,5 +1,5 @@
 <template>
-  <DashboardLayout>
+  <FieldSummaryLayout>
     <div class="space-y-6 pb-10">
 
       <div>
@@ -174,7 +174,7 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
+  </FieldSummaryLayout>
 </template>
 
 <script setup lang="ts">
@@ -183,7 +183,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/users/auth';
 import { useSuratAntreanStore } from '@/stores/surat_antrean';
 import { useSuratMasukStore } from '@/stores/surat-masuk';
-import DashboardLayout from './DashboardLayout.vue';
+import FieldSummaryLayout from '@/components/layout/FieldSummaryLayout.vue';
 import VTable from '@/components/common/VTable.vue';
 import VPagination from '@/components/common/VPagination.vue';
 import VDropdown from '@/components/common/VDropdown.vue';

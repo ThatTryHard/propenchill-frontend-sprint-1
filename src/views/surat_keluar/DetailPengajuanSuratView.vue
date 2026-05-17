@@ -1,170 +1,3 @@
-<template>
-  <DashboardLayout>
-    <template #sidebar>
-      <SIMPSidebar />
-    </template>
-
-    <main class="flex-1 overflow-y-auto layout-bg">
-      <div class="main-content-wrapper">
-        <div class="header-section mb-10">
-          <div class="title-group">
-            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[var(--app-heading)]">
-              Detail Surat Keluar
-            </h1>
-            <p class="text-[13px] md:text-[14px] leading-[145%] text-[var(--app-muted)] mt-1">
-              Berikut detail surat keluar
-            </p>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-6 w-full max-w-[1440px]">
-          <section class="card">
-            <div class="card-header">
-              <div class="header-left">
-                <div class="icon-box">
-                  <FileText class="icon-white" />
-                </div>
-                <div>
-                  <h2 class="card-title">
-                    {{ detail.template_nama || detail.nama_template || '-' }}
-                  </h2>
-                  <p class="card-id">ID: {{ detail.id_pengajuan || '-' }}</p>
-                </div>
-              </div>
-              <div class="status-chip" :class="getStatusClass(detail.status)">
-                {{ detail.status || 'Pending' }}
-              </div>
-            </div>
-
-            <div class="info-grid three-cols">
-              <div class="info-block">
-                <div class="info-label">Nomor Surat</div>
-                <div class="info-value">{{ detail.nomor_surat || '-' }}</div>
-              </div>
-              <div class="info-block">
-                <div class="info-label">Tanggal Pengajuan</div>
-                <div class="info-value">
-                  {{ formatDate(detail.tanggal_pengajuan || detail.created_at) }}
-                </div>
-              </div>
-              <div class="info-block">
-                <div class="info-label">Pengaju</div>
-                <div class="info-value">{{ submittedBy }}</div>
-              </div>
-            </div>
-
-            <div class="info-grid three-cols mt-6">
-              <div class="info-block">
-                <div class="info-label">Klasifikasi</div>
-                <div class="info-value">{{ detail.klasifikasi || '-' }}</div>
-              </div>
-              <div class="info-block">
-                <div class="info-label">Catatan</div>
-                <div class="info-value">{{ latestNote }}</div>
-              </div>
-              <div class="info-block">
-                <div class="info-label">Status Saat Ini</div>
-                <div class="info-value">{{ detail.status || 'Pending' }}</div>
-              </div>
-            </div>
-          </section>
-
-          <section class="card">
-            <div class="card-header card-header-with-action">
-              <div class="header-left">
-                <div class="icon-box">
-                  <FilePen class="icon-white" />
-                </div>
-                <div>
-                  <h3 class="section-title">{{ formCardTitle }}</h3>
-                  <p class="section-subtitle">{{ formCardSubtitle }}</p>
-                </div>
-              </div>
-
-              <VButton v-if="showEditButton" variant="tertiary" class="btn-edit" @click="navigateToRevision">
-                {{ editButtonLabel }}
-              </VButton>
-            </div>
-
-            <div class="info-grid three-cols">
-              <template v-if="formDataEntries.length > 0">
-                <div v-for="entry in formDataEntries" :key="entry.key" class="info-block">
-                  <div class="info-label">{{ entry.label }}</div>
-                  <div class="info-value">{{ entry.value }}</div>
-                </div>
-              </template>
-
-              <template v-else>
-                <div class="info-block" style="grid-column: span 3">
-                  <div class="info-value" style="color: var(--app-muted); font-style: italic">
-                    Tidak ada data tambahan yang diisi.
-                  </div>
-                </div>
-              </template>
-            </div>
-          </section>
-
-          <section class="card">
-            <div class="card-header">
-              <div class="header-left">
-                <div class="icon-box status-icon-card">
-                  <CheckCircle2 class="icon-white" />
-                </div>
-                <div>
-                  <h3 class="section-title">Status Surat</h3>
-                  <p class="section-subtitle">
-                    Lihat tahapan verifikasi dan catatan dari proses pengajuan.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="status-steps-container">
-              <VSteps :steps="statusSteps" />
-            </div>
-
-            <div v-if="latestStatusNote" class="status-summary-card">
-              <div class="compact-status-card">
-                <div class="compact-status-border"></div>
-                <div class="compact-status-content">
-                  <div class="compact-status-header">
-                    <div class="compact-status-avatar">
-                      <User class="compact-status-avatar-icon" />
-                    </div>
-                    <div class="compact-status-meta">
-                      <p class="compact-status-author">{{ latestStatusNote.actor }}</p>
-                      <p class="compact-status-role">{{ latestStatusNote.role }}</p>
-                    </div>
-                  </div>
-                  <p class="compact-status-text">{{ latestStatusNote.note }}</p>
-                  <div class="compact-status-footer">
-                    <Clock class="compact-status-clock" />
-                    <span>{{ latestStatusNote.time }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <div class="actions-row">
-            <VButton v-if="isApproved" variant="primary" class="btn-primary" @click="handleDownload">
-              Unduh Surat
-            </VButton>
-
-            <VButton v-if="isCancelable" variant="primary" class="btn-danger" @click="showCancelDialog = true">
-              Batalkan Pengajuan
-            </VButton>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <ConfirmationModal v-model:isOpen="showCancelDialog" title="Batalkan Pengajuan"
-      description="Apakah Anda yakin ingin membatalkan pengajuan surat ini? Tindakan ini tidak dapat dikembalikan."
-      confirmText="Iya" cancelText="Tidak" :loading="isCancelling" @confirm="cancelRequest" />
-  </DashboardLayout>
-</template>
-
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -174,9 +7,18 @@ import { useAuthStore } from '@/stores/users/auth'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VButton from '@/components/common/VButton.vue'
+import VCard from '@/components/common/VCard.vue'
+import VChip from '@/components/common/VChip.vue'
 import VSteps from '@/components/common/VSteps.vue'
 import ConfirmationModal from '@/components/common/ConfirmationModal.vue'
-import { FileText, FilePen, CheckCircle2, Clock, User } from 'lucide-vue-next'
+import {
+  ArrowLeft,
+  FileText,
+  FilePen,
+  CheckCircle2,
+  Clock,
+  User,
+} from 'lucide-vue-next'
 import { useSuratKeluarStore } from '@/stores/surat_keluar/index'
 
 type GenericRecord = Record<string, unknown>
@@ -247,8 +89,13 @@ const normalizeStatus = (status: unknown) =>
 
 const normalizeDetailPayload = (payload: unknown): DetailState => {
   if (!payload || typeof payload !== 'object') return { form_data: {}, tracking_status: [] }
+
   const payloadObj = payload as GenericRecord
-  if (payloadObj.data && typeof payloadObj.data === 'object') return payloadObj.data as DetailState
+
+  if (payloadObj.data && typeof payloadObj.data === 'object') {
+    return payloadObj.data as DetailState
+  }
+
   return payload as DetailState
 }
 
@@ -258,6 +105,7 @@ const fetchDetail = async () => {
     detail.value = normalizeDetailPayload(response.data)
   } catch (error) {
     console.error('Gagal ambil detail:', error)
+
     try {
       const listResponse = await api.get('/api/letters/my-requests')
       const listData: DetailState[] = Array.isArray(listResponse.data?.data)
@@ -265,7 +113,9 @@ const fetchDetail = async () => {
         : Array.isArray(listResponse.data)
           ? listResponse.data
           : []
+
       const found = listData.find((item) => item.id_pengajuan == route.params.id)
+
       if (found) detail.value = found
     } catch (nestedError) {
       console.error(nestedError)
@@ -275,6 +125,7 @@ const fetchDetail = async () => {
 
 const cancelRequest = async () => {
   isCancelling.value = true
+
   try {
     const response = await api.put(`/api/letters/requests/${detail.value.id_pengajuan}/cancel`)
 
@@ -301,6 +152,7 @@ const cancelRequest = async () => {
   } catch (error: unknown) {
     const apiError = error as AxiosError<{ error?: string }>
     const errorMsg = apiError.response?.data?.error || 'Gagal membatalkan surat'
+
     suratKeluarStore.triggerAlert('Gagal', errorMsg, 'error')
   } finally {
     isCancelling.value = false
@@ -329,6 +181,7 @@ const submittedBy = computed(() => {
 
   for (const key of candidateKeys) {
     const value = detail.value?.[key]
+
     if (typeof value === 'string' && value.trim()) {
       return value.trim()
     }
@@ -376,6 +229,7 @@ const formCardSubtitle = computed(() => {
   if (isRejected.value) return 'Perbaiki data pengajuan sesuai catatan dan ajukan kembali.'
   return 'Detail data surat yang Anda ajukan.'
 })
+
 const isCancelable = computed(() => {
   const status = normalizeStatus(detail.value.status)
   return status === 'pending'
@@ -420,6 +274,7 @@ const trackingSummary = computed(() => {
 
   const level1Result =
     hasWaitingKepsek || hasVerified ? 'approved' : hasRejected ? 'rejected' : 'pending'
+
   const level2Result = hasVerified
     ? 'approved'
     : hasRejected && hasWaitingKepsek
@@ -508,6 +363,7 @@ const statusSteps = computed(() => {
 
 const historyList = computed(() => {
   const history = detail.value.tracking_status || []
+
   return history.map((item, index) => ({
     id: `${item.status || index}-${index}`,
     status: item.status || `Riwayat ${index + 1}`,
@@ -529,9 +385,16 @@ const latestStatusNote = computed(() => {
   }
 
   const list = historyList.value
+
   if (!list.length) {
-    return { actor: 'Sistem', role: 'Sistem', note: 'Belum ada catatan pada tahap ini.', time: '-' }
+    return {
+      actor: 'Sistem',
+      role: 'Sistem',
+      note: 'Belum ada catatan pada tahap ini.',
+      time: '-',
+    }
   }
+
   return list[list.length - 1]
 })
 
@@ -539,6 +402,7 @@ const formDataEntries = computed(() => {
   const readObject = (source: unknown): GenericRecord => {
     if (!source) return {}
     if (typeof source === 'object' && !Array.isArray(source)) return source as GenericRecord
+
     if (typeof source === 'string') {
       try {
         return JSON.parse(source.replace(/'/g, '"').replace(/None/g, 'null'))
@@ -546,6 +410,7 @@ const formDataEntries = computed(() => {
         return {}
       }
     }
+
     return {}
   }
 
@@ -577,28 +442,33 @@ const formDataEntries = computed(() => {
   return entries
 })
 
-const getStatusClass = (status: unknown) => {
+const getStatusVariant = (status: unknown) => {
   const normalized = normalizeStatus(status)
+
   if (
     ['pending', 'diproses', 'menunggu verifikasi kepsek', 'menunggu_verifikasi_kepsek'].includes(
       normalized,
     )
   ) {
-    return 'status-pending'
+    return 'warning'
   }
-  if (['disetujui', 'selesai', 'verified', 'approved'].includes(normalized)) return 'status-success'
-  if (['ditolak', 'rejected', 'dibatalkan'].includes(normalized)) return 'status-danger'
-  return 'status-default'
+
+  if (['disetujui', 'selesai', 'verified', 'approved'].includes(normalized)) return 'primary'
+  if (['ditolak', 'rejected'].includes(normalized)) return 'danger'
+  if (normalized === 'dibatalkan') return 'deleted'
+
+  return 'tertiary'
 }
 
 const formatDate = (d: unknown) =>
   d
     ? new Date(String(d)).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    })
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
     : '-'
+
 const formatDateTime = (d: unknown) => (d ? new Date(String(d)).toLocaleString('id-ID') : '-')
 
 const handleDownload = async () => {
@@ -608,7 +478,7 @@ const handleDownload = async () => {
     })
 
     const blob = new Blob([response.data], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     })
 
     const url = window.URL.createObjectURL(blob)
@@ -624,7 +494,6 @@ const handleDownload = async () => {
     link.click()
     link.remove()
     window.URL.revokeObjectURL(url)
-
   } catch (error: unknown) {
     console.error('Download error:', error)
     const apiError = error as AxiosError<{ error?: string }>
@@ -636,377 +505,464 @@ const navigateToRevision = () => {
   router.push({ name: 'FormPengajuanSurat', query: { requestId: detail.value.id_pengajuan } })
 }
 
+const navigateBack = () => {
+  router.push('/surat-keluar/riwayat')
+}
+
 onMounted(fetchDetail)
 </script>
 
-<style scoped>
-.main-content-wrapper {
-  padding: 40px 60px;
-  width: 100%;
-  max-width: 1440px;
-}
+<template>
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-.layout-bg {
-  background: var(--app-bg);
-  color: var(--app-text);
-}
+    <main
+      class="
+        min-h-full overflow-y-auto bg-[var(--app-bg)] px-[60px] py-10
+        font-[var(--font-sans)] text-[var(--app-text)]
+        max-[900px]:px-6 max-[900px]:py-7
+        max-[640px]:px-4
+      "
+    >
+      <div class="flex w-full max-w-[1440px] flex-col">
+        <div class="mb-6">
+          <VButton
+            variant="secondary"
+            size="sm"
+            @click="navigateBack"
+          >
+            <template #leftIcon>
+              <ArrowLeft class="h-4 w-4" />
+            </template>
 
-.card {
-  background: var(--app-card);
-  border: 1px solid var(--app-card-border);
-  border-radius: 20px;
-  padding: 32px;
-  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08);
-  color: var(--app-text);
-}
+            Kembali
+          </VButton>
+        </div>
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 32px;
-}
+        <header class="mb-10">
+          <div class="min-w-0">
+            <h1
+              class="
+                m-0 text-[length:var(--app-page-title-font)]
+                font-bold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              Detail Surat Keluar
+            </h1>
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
+            <p
+              class="
+                mt-1 mb-0 text-[length:var(--app-page-subtitle-font)]
+                font-medium leading-[1.45] text-[var(--app-muted)]
+              "
+            >
+              Berikut detail surat keluar
+            </p>
+          </div>
+        </header>
 
-.icon-box {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: var(--app-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
+        <div class="flex w-full flex-col gap-6">
+          <VCard padding-class="p-8">
+            <div
+              class="
+                mb-8 flex items-start justify-between gap-4
+                max-[768px]:flex-col max-[768px]:items-stretch
+              "
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="
+                    flex h-12 w-12 shrink-0 items-center justify-center
+                    rounded-[12px] bg-[var(--app-accent)]
+                    text-[var(--app-text-inverse)]
+                  "
+                >
+                  <FileText class="h-[26px] w-[26px]" />
+                </div>
 
-.status-icon-card {
-  background: var(--app-accent) !important;
-}
+                <div class="min-w-0">
+                  <h2
+                    class="
+                      m-0 text-[length:var(--app-card-title-font)]
+                      font-bold leading-[1.25] text-[var(--app-heading)]
+                    "
+                  >
+                    {{ detail.template_nama || detail.nama_template || '-' }}
+                  </h2>
 
-.icon-white {
-  color: var(--app-text-inverse);
-  width: 26px;
-  height: 26px;
-}
+                  <p
+                    class="
+                      mt-1 mb-0 text-[length:var(--app-font-sm)]
+                      leading-[1.4] text-[var(--app-muted)]
+                    "
+                  >
+                    ID: {{ detail.id_pengajuan || '-' }}
+                  </p>
+                </div>
+              </div>
 
-.card-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--app-heading);
-  margin: 0 0 4px 0;
-}
+              <VChip
+                :label="detail.status || 'Pending'"
+                :variant="getStatusVariant(detail.status)"
+              />
+            </div>
 
-.card-id {
-  font-size: 14px;
-  color: var(--app-muted);
-  margin: 0;
-}
+            <div class="grid grid-cols-3 gap-6 max-[768px]:grid-cols-1">
+              <div class="flex flex-col gap-[10px]">
+                <span
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    font-medium leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
+                  Nomor Surat
+                </span>
 
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 18px;
-  border-radius: 99px;
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 120%;
-  text-align: center;
-  white-space: nowrap;
-}
+                <span
+                  class="
+                    text-[length:var(--app-font-sm)]
+                    font-semibold leading-[1.5] text-[var(--app-heading)]
+                  "
+                >
+                  {{ detail.nomor_surat || '-' }}
+                </span>
+              </div>
 
-.status-chip.status-pending {
-  background: var(--app-warning);
-  color: var(--app-text-inverse);
-}
+              <div class="flex flex-col gap-[10px]">
+                <span
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    font-medium leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
+                  Tanggal Pengajuan
+                </span>
 
-.status-success {
-  background: var(--app-success);
-  color: var(--app-text-inverse);
-}
+                <span
+                  class="
+                    text-[length:var(--app-font-sm)]
+                    font-semibold leading-[1.5] text-[var(--app-heading)]
+                  "
+                >
+                  {{ formatDate(detail.tanggal_pengajuan || detail.created_at) }}
+                </span>
+              </div>
 
-.status-danger {
-  background: var(--app-danger);
-  color: var(--app-text-inverse);
-}
+              <div class="flex flex-col gap-[10px]">
+                <span
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    font-medium leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
+                  Pengaju
+                </span>
 
-.status-default {
-  background: var(--app-soft-card);
-  color: var(--app-text);
-  border: 1px solid var(--app-card-border);
-}
+                <span
+                  class="
+                    text-[length:var(--app-font-sm)]
+                    font-semibold leading-[1.5] text-[var(--app-heading)]
+                  "
+                >
+                  {{ submittedBy }}
+                </span>
+              </div>
+            </div>
 
-.info-grid {
-  display: grid;
-  gap: 24px;
-}
+            <div class="mt-6 grid grid-cols-3 gap-6 max-[768px]:grid-cols-1">
+              <div class="flex flex-col gap-[10px]">
+                <span
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    font-medium leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
+                  Klasifikasi
+                </span>
 
-.info-grid.three-cols {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
+                <span
+                  class="
+                    text-[length:var(--app-font-sm)]
+                    font-semibold leading-[1.5] text-[var(--app-heading)]
+                  "
+                >
+                  {{ detail.klasifikasi || '-' }}
+                </span>
+              </div>
 
-.info-block {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+              <div class="flex flex-col gap-[10px]">
+                <span
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    font-medium leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
+                  Catatan
+                </span>
 
-.card-header-with-action {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
+                <span
+                  class="
+                    text-[length:var(--app-font-sm)]
+                    font-semibold leading-[1.5] text-[var(--app-heading)]
+                  "
+                >
+                  {{ latestNote }}
+                </span>
+              </div>
 
-.section-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--app-heading);
-  margin: 0;
-}
+              <div class="flex flex-col gap-[10px]">
+                <span
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    font-medium leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
+                  Status Saat Ini
+                </span>
 
-.section-subtitle {
-  margin: 6px 0 0;
-  color: var(--app-muted);
-  font-size: 14px;
-  line-height: 1.6;
-}
+                <span
+                  class="
+                    text-[length:var(--app-font-sm)]
+                    font-semibold leading-[1.5] text-[var(--app-heading)]
+                  "
+                >
+                  {{ detail.status || 'Pending' }}
+                </span>
+              </div>
+            </div>
+          </VCard>
 
-.btn-edit {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 18px;
-  border-radius: 99px;
-  border: 1px solid var(--app-card-border);
-  background: var(--app-card);
-  color: var(--app-heading);
-  font-weight: 700;
-  cursor: pointer;
-}
+          <VCard padding-class="p-8">
+            <div
+              class="
+                mb-8 flex items-center justify-between gap-4
+                max-[768px]:flex-col max-[768px]:items-stretch
+              "
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="
+                    flex h-12 w-12 shrink-0 items-center justify-center
+                    rounded-[12px] bg-[var(--app-accent)]
+                    text-[var(--app-text-inverse)]
+                  "
+                >
+                  <FilePen class="h-[26px] w-[26px]" />
+                </div>
 
-.info-label {
-  font-size: 13px;
-  color: var(--app-muted);
-  font-weight: 500;
-}
+                <div class="min-w-0">
+                  <h2
+                    class="
+                      m-0 text-[length:var(--app-section-title-font)]
+                      font-bold leading-[1.2] text-[var(--app-heading)]
+                    "
+                  >
+                    {{ formCardTitle }}
+                  </h2>
 
-.info-value {
-  font-size: 16px;
-  color: var(--app-heading);
-  font-weight: 600;
-  line-height: 1.5;
-}
+                  <p
+                    class="
+                      mt-[6px] mb-0 text-[length:var(--app-font-sm)]
+                      leading-[1.6] text-[var(--app-muted)]
+                    "
+                  >
+                    {{ formCardSubtitle }}
+                  </p>
+                </div>
+              </div>
 
-.mt-6 {
-  margin-top: 24px;
-}
+              <VButton
+                v-if="showEditButton"
+                variant="tertiary"
+                size="sm"
+                @click="navigateToRevision"
+              >
+                {{ editButtonLabel }}
+              </VButton>
+            </div>
 
-.status-summary-card {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-top: 24px;
-}
+            <div class="grid grid-cols-3 gap-6 max-[768px]:grid-cols-1">
+              <template v-if="formDataEntries.length > 0">
+                <div
+                  v-for="entry in formDataEntries"
+                  :key="entry.key"
+                  class="flex flex-col gap-[10px]"
+                >
+                  <span
+                    class="
+                      text-[length:var(--app-font-xs)]
+                      font-medium leading-[1.4] text-[var(--app-muted)]
+                    "
+                  >
+                    {{ entry.label }}
+                  </span>
 
-.compact-status-card {
-  display: flex;
-  width: 100%;
-  max-width: 520px;
-  background: var(--app-card);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-  border: 1px solid var(--app-card-border);
-}
+                  <span
+                    class="
+                      text-[length:var(--app-font-sm)]
+                      font-semibold leading-[1.5] text-[var(--app-heading)]
+                    "
+                  >
+                    {{ entry.value }}
+                  </span>
+                </div>
+              </template>
 
-.compact-status-border {
-  width: 8px;
-  background: var(--app-accent);
-}
+              <template v-else>
+                <div class="col-span-3 max-[768px]:col-span-1">
+                  <p
+                    class="
+                      m-0 text-[length:var(--app-font-sm)]
+                      italic leading-[1.5] text-[var(--app-muted)]
+                    "
+                  >
+                    Tidak ada data tambahan yang diisi.
+                  </p>
+                </div>
+              </template>
+            </div>
+          </VCard>
 
-.compact-status-content {
-  flex: 1;
-  padding: 18px 18px 18px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+          <VCard padding-class="p-8">
+            <div class="mb-8 flex items-start justify-between">
+              <div class="flex items-center gap-4">
+                <div
+                  class="
+                    flex h-12 w-12 shrink-0 items-center justify-center
+                    rounded-[12px] bg-[var(--app-accent)]
+                    text-[var(--app-text-inverse)]
+                  "
+                >
+                  <CheckCircle2 class="h-[26px] w-[26px]" />
+                </div>
 
-.compact-status-header {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
+                <div class="min-w-0">
+                  <h2
+                    class="
+                      m-0 text-[length:var(--app-section-title-font)]
+                      font-bold leading-[1.2] text-[var(--app-heading)]
+                    "
+                  >
+                    Status Surat
+                  </h2>
 
-.compact-status-avatar {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  border-radius: 50%;
-  background: var(--app-accent);
-  display: grid;
-  place-items: center;
-}
+                  <p
+                    class="
+                      mt-[6px] mb-0 text-[length:var(--app-font-sm)]
+                      leading-[1.6] text-[var(--app-muted)]
+                    "
+                  >
+                    Lihat tahapan verifikasi dan catatan dari proses pengajuan.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-.compact-status-avatar-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--app-text-inverse);
-}
+            <div class="w-full pb-4">
+              <VSteps :steps="statusSteps" />
+            </div>
 
-.compact-status-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+            <div
+              v-if="latestStatusNote"
+              class="mt-6 flex w-full justify-center"
+            >
+              <div
+                class="
+                  flex w-full max-w-[520px] overflow-hidden rounded-[20px]
+                  border border-[var(--app-card-border)] bg-[var(--app-card)]
+                  shadow-[0_10px_30px_rgba(15,23,42,0.08)]
+                "
+              >
+                <div class="w-2 shrink-0 bg-[var(--app-accent)]"></div>
 
-.compact-status-author {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--app-heading);
-}
+                <div class="flex flex-1 flex-col gap-[10px] p-[18px_18px_18px_16px]">
+                  <div class="flex items-center gap-3">
+                    <div
+                      class="
+                        grid h-10 w-10 min-w-10 place-items-center rounded-full
+                        bg-[var(--app-accent)] text-[var(--app-text-inverse)]
+                      "
+                    >
+                      <User class="h-[18px] w-[18px]" />
+                    </div>
 
-.compact-status-role {
-  margin: 0;
-  font-size: 13px;
-  color: var(--app-muted);
-}
+                    <div class="flex flex-col gap-0.5">
+                      <p
+                        class="
+                          m-0 text-[length:var(--app-font-sm)]
+                          font-bold leading-[1.3] text-[var(--app-heading)]
+                        "
+                      >
+                        {{ latestStatusNote.actor }}
+                      </p>
 
-.compact-status-text {
-  margin: 0;
-  color: var(--app-text);
-  font-size: 14px;
-  line-height: 1.6;
-}
+                      <p
+                        class="
+                          m-0 text-[length:var(--app-font-xs)]
+                          leading-[1.4] text-[var(--app-muted)]
+                        "
+                      >
+                        {{ latestStatusNote.role }}
+                      </p>
+                    </div>
+                  </div>
 
-.compact-status-footer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--app-muted);
-  font-size: 13px;
-}
+                  <p
+                    class="
+                      m-0 text-[length:var(--app-font-sm)]
+                      leading-[1.6] text-[var(--app-text)]
+                    "
+                  >
+                    {{ latestStatusNote.note }}
+                  </p>
 
-.compact-status-clock {
-  width: 16px;
-  height: 16px;
-}
+                  <div
+                    class="
+                      flex items-center gap-2
+                      text-[length:var(--app-font-xs)]
+                      leading-[1.4] text-[var(--app-muted)]
+                    "
+                  >
+                    <Clock class="h-4 w-4" />
 
-.status-steps-container {
-  width: 100%;
-  padding-bottom: 16px;
-}
+                    <span>{{ latestStatusNote.time }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </VCard>
 
-.actions-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 16px;
-  margin-top: 16px;
-}
+          <div class="flex justify-end gap-4 max-[768px]:flex-col">
+            <VButton
+              v-if="isApproved"
+              variant="primary"
+              @click="handleDownload"
+            >
+              Unduh Surat
+            </VButton>
 
-.btn-secondary,
-.btn-danger,
-.btn-primary {
-  padding: 14px 28px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  border: none;
-  transition:
-    transform 0.2s,
-    opacity 0.2s;
-}
+            <VButton
+              v-if="isCancelable"
+              variant="secondary"
+              @click="showCancelDialog = true"
+            >
+              Batalkan Pengajuan
+            </VButton>
+          </div>
+        </div>
+      </div>
+    </main>
 
-.btn-secondary {
-  background: var(--app-soft-card);
-  color: var(--app-heading);
-  border: 1px solid var(--app-card-border);
-}
-
-.btn-danger {
-  border-radius: 20px;
-  background: var(--app-danger);
-  color: var(--app-text-inverse);
-}
-
-.btn-primary {
-  background: var(--app-accent);
-  color: var(--app-text-inverse);
-}
-
-.btn-secondary:hover,
-.btn-danger:hover,
-.btn-primary:hover {
-  transform: translateY(-2px);
-  opacity: 0.95;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.55);
-  display: grid;
-  place-items: center;
-  z-index: 100;
-}
-
-.modal-card {
-  width: min(400px, calc(100% - 32px));
-  background: var(--app-modal-bg);
-  color: var(--app-modal-text);
-  border: 1px solid var(--app-modal-border);
-  border-radius: 20px;
-  padding: 32px;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.14);
-}
-
-.modal-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--app-modal-text);
-  margin: 0 0 12px;
-}
-
-.modal-text {
-  color: var(--app-muted);
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0 0 24px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-@media (max-width: 768px) {
-  .main-content-wrapper {
-    padding: 24px 20px;
-  }
-
-  .info-grid.three-cols {
-    grid-template-columns: 1fr;
-  }
-
-  .card-header,
-  .card-header-with-action {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
-
-  .actions-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-</style>
+    <ConfirmationModal
+      v-model:isOpen="showCancelDialog"
+      title="Batalkan Pengajuan"
+      description="Apakah Anda yakin ingin membatalkan pengajuan surat ini? Tindakan ini tidak dapat dikembalikan."
+      confirmText="Iya"
+      cancelText="Tidak"
+      :loading="isCancelling"
+      @confirm="cancelRequest"
+    />
+  </DashboardLayout>
+</template>

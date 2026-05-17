@@ -110,12 +110,30 @@ onMounted(() => {
       <SIMPSidebar />
     </template>
 
-    <section class="min-h-full bg-[var(--app-bg)] px-7 py-7 text-[var(--app-text)]">
+    <section
+      class="
+        min-h-full bg-[var(--app-bg)] px-7 py-7
+        font-[var(--font-sans)] text-[var(--app-text)]
+      "
+    >
       <div class="mx-auto max-w-5xl">
         <!-- Header -->
         <div class="mb-5">
-          <h1 class="text-2xl font-bold text-[var(--app-heading)]">Help Desk</h1>
-          <p class="mt-1 text-sm text-[var(--app-muted)]">
+          <h1
+            class="
+              text-[length:var(--app-page-title-font)]
+              font-bold leading-[1.2] text-[var(--app-heading)]
+            "
+          >
+            Help Desk
+          </h1>
+
+          <p
+            class="
+              mt-1 text-[length:var(--app-page-subtitle-font)]
+              font-medium leading-[1.4] text-[var(--app-muted)]
+            "
+          >
             Bagaimana kami dapat membantu Anda?
           </p>
         </div>
@@ -127,7 +145,6 @@ onMounted(() => {
             state="search"
             type="search"
             placeholder="Cari kata kunci bantuan di sini"
-            class="[&_*]:!text-[13px]"
           />
         </div>
 
@@ -136,13 +153,25 @@ onMounted(() => {
           v-if="helpStore.loading"
           paddingClass="p-5"
         >
-          <p class="text-[13px] text-[var(--app-muted)]">Memuat data Help & FAQ...</p>
+          <p
+            class="
+              text-[length:var(--app-card-desc-font)]
+              leading-[1.5] text-[var(--app-muted)]
+            "
+          >
+            Memuat data Help & FAQ...
+          </p>
         </VCard>
 
         <!-- Error -->
         <div
           v-else-if="helpStore.error"
-          class="rounded-2xl border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-5 text-[13px] text-[var(--app-danger)] shadow-sm"
+          class="
+            rounded-2xl border border-[var(--app-danger-border)]
+            bg-[var(--app-danger-bg)] p-5
+            text-[length:var(--app-card-desc-font)]
+            leading-[1.5] text-[var(--app-danger)] shadow-sm
+          "
         >
           {{ helpStore.error }}
         </div>
@@ -170,17 +199,28 @@ onMounted(() => {
                 />
               </div>
 
-              <h2 class="text-base font-semibold text-[var(--app-heading)]">
+              <h2
+                class="
+                  text-[length:var(--app-card-title-font)]
+                  font-semibold leading-[1.2] text-[var(--app-heading)]
+                "
+              >
                 {{ category.title }}
               </h2>
 
-              <p class="mt-2 min-h-[52px] text-[13px] leading-6 text-[var(--app-muted)]">
+              <p
+                class="
+                  mt-2 min-h-[52px]
+                  text-[length:var(--app-card-desc-font)]
+                  leading-6 text-[var(--app-muted)]
+                "
+              >
                 {{ category.description }}
               </p>
 
               <VButton
                 variant="tertiary"
-                class="mt-4 !w-full !justify-between !rounded-full !px-4 !py-2 !text-[13px]"
+                class="mt-4 w-full justify-between rounded-full px-4 py-2"
                 @click="toggleCategory(category.id)"
               >
                 {{ category.button_label }}
@@ -201,7 +241,12 @@ onMounted(() => {
             paddingClass="p-5"
             class="mt-5"
           >
-            <p class="text-[13px] text-[var(--app-muted)]">
+            <p
+              class="
+                text-[length:var(--app-card-desc-font)]
+                leading-[1.5] text-[var(--app-muted)]
+              "
+            >
               Tidak ada kategori bantuan yang sesuai dengan pencarian.
             </p>
           </VCard>
@@ -214,17 +259,28 @@ onMounted(() => {
           >
             <div class="mb-4 flex items-start justify-between gap-4">
               <div>
-                <h2 class="text-lg font-bold text-[var(--app-heading)]">
+                <h2
+                  class="
+                    text-[length:var(--app-section-title-font)]
+                    font-bold leading-[1.2] text-[var(--app-heading)]
+                  "
+                >
                   {{ activeCategory.title }}
                 </h2>
-                <p class="mt-1 text-[13px] text-[var(--app-muted)]">
+
+                <p
+                  class="
+                    mt-1 text-[length:var(--app-card-desc-font)]
+                    leading-[1.5] text-[var(--app-muted)]
+                  "
+                >
                   {{ activeCategory.description }}
                 </p>
               </div>
 
               <VButton
                 variant="tertiary"
-                class="!rounded-full !px-3 !py-1 !text-xs"
+                class="rounded-full px-3 py-1"
                 @click="closeCategoryDetail"
               >
                 Tutup
@@ -239,10 +295,15 @@ onMounted(() => {
                 v-for="item in activeCategory.items"
                 :key="item.question"
                 :title="item.question"
-                titleClass="text-[13px]"
-                contentClass="text-[12px]"
+                titleClass="text-[length:var(--app-font-sm)]"
+                contentClass="text-[length:var(--app-font-xs)]"
               >
-                <p class="text-[12px] leading-6 text-[var(--app-text-inverse)]/90">
+                <p
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    leading-6 text-[var(--app-text-inverse)]/90
+                  "
+                >
                   {{ item.answer }}
                 </p>
               </VAccordion>
@@ -250,7 +311,10 @@ onMounted(() => {
 
             <p
               v-else
-              class="text-[13px] text-[var(--app-muted)]"
+              class="
+                text-[length:var(--app-card-desc-font)]
+                leading-[1.5] text-[var(--app-muted)]
+              "
             >
               Belum ada panduan pada kategori ini.
             </p>
@@ -258,7 +322,14 @@ onMounted(() => {
 
           <!-- Popular Questions -->
           <div class="mt-7">
-            <h2 class="mb-3 text-lg font-bold text-[var(--app-heading)]">FAQ</h2>
+            <h2
+              class="
+                mb-3 text-[length:var(--app-section-title-font)]
+                font-bold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              FAQ
+            </h2>
 
             <div
               v-if="filteredQuestions.length"
@@ -268,10 +339,15 @@ onMounted(() => {
                 v-for="item in filteredQuestions"
                 :key="item.question"
                 :title="item.question"
-                titleClass="text-[13px]"
-                contentClass="text-[12px]"
+                titleClass="text-[length:var(--app-font-sm)]"
+                contentClass="text-[length:var(--app-font-xs)]"
               >
-                <p class="text-[12px] leading-6 text-[var(--app-text-inverse)]/90">
+                <p
+                  class="
+                    text-[length:var(--app-font-xs)]
+                    leading-6 text-[var(--app-text-inverse)]/90
+                  "
+                >
                   {{ item.answer }}
                 </p>
               </VAccordion>
@@ -281,7 +357,12 @@ onMounted(() => {
               v-else
               paddingClass="p-5"
             >
-              <p class="text-[13px] text-[var(--app-muted)]">
+              <p
+                class="
+                  text-[length:var(--app-card-desc-font)]
+                  leading-[1.5] text-[var(--app-muted)]
+                "
+              >
                 Tidak ada pertanyaan yang sesuai dengan pencarian.
               </p>
             </VCard>
@@ -294,22 +375,41 @@ onMounted(() => {
           >
             <div class="grid items-center gap-4 md:grid-cols-[1.35fr_1fr]">
               <div>
-                <h2 class="text-lg font-bold text-[var(--app-heading)]">
+                <h2
+                  class="
+                    text-[length:var(--app-section-title-font)]
+                    font-bold leading-[1.2] text-[var(--app-heading)]
+                  "
+                >
                   {{ helpData.additional_help.title }}
                 </h2>
 
-                <p class="mt-1.5 max-w-xl text-[12px] leading-5 text-[var(--app-muted)]">
+                <p
+                  class="
+                    mt-1.5 max-w-xl
+                    text-[length:var(--app-font-xs)]
+                    leading-5 text-[var(--app-muted)]
+                  "
+                >
                   {{ helpData.additional_help.description }}
                 </p>
 
                 <div class="mt-3 flex items-center gap-3">
                   <div
-                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-accent-soft)] text-[var(--app-accent)]"
+                    class="
+                      flex h-9 w-9 items-center justify-center rounded-xl
+                      bg-[var(--app-accent-soft)] text-[var(--app-accent)]
+                    "
                   >
                     <Mail class="h-4 w-4" />
                   </div>
 
-                  <p class="break-all text-base font-semibold text-[var(--app-heading)]">
+                  <p
+                    class="
+                      break-all text-[length:var(--app-card-title-font)]
+                      font-semibold leading-[1.3] text-[var(--app-heading)]
+                    "
+                  >
                     {{ helpData.support_email }}
                   </p>
                 </div>
@@ -317,7 +417,7 @@ onMounted(() => {
                 <div class="mt-4 flex flex-wrap gap-2.5">
                   <VButton
                     variant="primary"
-                    class="!rounded-xl !px-3.5 !py-2 !text-[12px]"
+                    class="rounded-xl px-3.5 py-2"
                     @click="sendEmail"
                   >
                     <template #leftIcon>
@@ -329,7 +429,7 @@ onMounted(() => {
 
                   <VButton
                     variant="tertiary"
-                    class="!rounded-xl !px-3.5 !py-2 !text-[12px]"
+                    class="rounded-xl px-3.5 py-2"
                     @click="copyEmail"
                   >
                     <template #leftIcon>
@@ -342,20 +442,45 @@ onMounted(() => {
               </div>
 
               <div
-                class="flex items-center gap-3 border-t border-[var(--app-card-border)] pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0"
+                class="
+                  flex items-center gap-3 border-t border-[var(--app-card-border)]
+                  pt-4 md:border-l md:border-t-0 md:pl-6 md:pt-0
+                "
               >
                 <div
-                  class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-accent-soft)] text-[var(--app-accent)]"
+                  class="
+                    flex h-9 w-9 items-center justify-center rounded-xl
+                    bg-[var(--app-accent-soft)] text-[var(--app-accent)]
+                  "
                 >
                   <Clock class="h-4 w-4" />
                 </div>
 
                 <div>
-                  <p class="text-[12px] font-semibold text-[var(--app-heading)]">Jam Layanan</p>
-                  <p class="mt-0.5 text-[12px] text-[var(--app-muted)]">
+                  <p
+                    class="
+                      text-[length:var(--app-font-xs)]
+                      font-semibold leading-[1.3] text-[var(--app-heading)]
+                    "
+                  >
+                    Jam Layanan
+                  </p>
+
+                  <p
+                    class="
+                      mt-0.5 text-[length:var(--app-font-xs)]
+                      leading-[1.4] text-[var(--app-muted)]
+                    "
+                  >
                     {{ helpData.additional_help.operational_days }}
                   </p>
-                  <p class="text-[12px] text-[var(--app-muted)]">
+
+                  <p
+                    class="
+                      text-[length:var(--app-font-xs)]
+                      leading-[1.4] text-[var(--app-muted)]
+                    "
+                  >
                     {{ helpData.additional_help.operational_hours }}
                   </p>
                 </div>

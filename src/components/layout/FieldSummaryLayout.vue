@@ -5,8 +5,6 @@
     </aside>
 
     <div class="flex min-w-0 flex-1 flex-col">
-      <DashboardNavbar />
-
       <main class="flex-1 p-6">
         <slot />
       </main>

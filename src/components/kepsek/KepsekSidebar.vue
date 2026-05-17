@@ -1,9 +1,9 @@
 <template>
   <VSidebar
-    :navItems="navItems"
-    :bottomItems="bottomItems"
-    :userName="userName"
-    :userEmail="userEmail"
+    :nav-items="navItems"
+    :bottom-items="bottomItems"
+    :user-name="userName"
+    :user-email="userEmail"
   />
 </template>
 
@@ -11,7 +11,12 @@
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
 import VSidebar from '@/components/common/VSidebar.vue'
-import { ClipboardCheck, Settings, HelpCircle, LogOut } from 'lucide-vue-next'
+import {
+  ClipboardCheck,
+  Settings,
+  HelpCircle,
+  LogOut,
+} from 'lucide-vue-next'
 
 defineProps<{
   userName?: string
@@ -36,8 +41,21 @@ const navItems = [
 ]
 
 const bottomItems = [
-  { name: 'settings', label: 'Settings', icon: Settings },
-  { name: 'help', label: 'Help', icon: HelpCircle },
-  { name: 'logout', label: 'Log Out', icon: LogOut, action: handleLogout },
+  {
+    name: 'settings',
+    label: 'Settings',
+    icon: Settings,
+  },
+  {
+    name: 'help',
+    label: 'Help',
+    icon: HelpCircle,
+  },
+  {
+    name: 'logout',
+    label: 'Log Out',
+    icon: LogOut,
+    action: handleLogout,
+  },
 ]
 </script>

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import { Edit, PlusCircle, X } from 'lucide-vue-next'
+import { Edit, PlusCircle } from 'lucide-vue-next'
 import VButton from '@/components/common/VButton.vue'
+import VModal from '@/components/common/VModal.vue'
+import VInputField from '@/components/common/VInputField.vue'
+import VDropdown from '@/components/common/VDropdown.vue'
 import { parseFieldErrors } from '@/lib/fieldErrors'
 
 const props = withDefaults(
@@ -27,10 +30,19 @@ const form = reactive({ nama: '', email: '', role: 'ADMIN' })
 const errors = reactive({ nama: '', email: '' })
 const submitError = ref('')
 
+const roleOptions = [
+  { label: 'ADMIN', value: 'ADMIN' },
+  { label: 'BIDANG AGAMA', value: 'BIDANG_AGAMA' },
+  { label: 'BIDANG KESISWAAN', value: 'BIDANG_KESISWAAN' },
+  { label: 'BIDANG AKADEMIK', value: 'BIDANG_AKADEMIK' },
+  { label: 'KEPALA SEKOLAH', value: 'KEPSEK' },
+]
+
 watch(
   () => [props.isOpen, props.initialForm],
   ([isOpen]) => {
     if (!isOpen) return
+
     form.nama = props.initialForm.nama || ''
     form.email = props.initialForm.email || ''
     form.role = props.initialForm.role || 'ADMIN'
@@ -77,6 +89,7 @@ const validateForm = () => {
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
   if (form.email.trim() && !emailRegex.test(form.email)) {
     errors.email = 'Format email tidak valid! (contoh: user@mail.com)'
     isValid = false
@@ -89,100 +102,109 @@ const isSubmitDisabled = computed(() => props.loading)
 
 const handleSubmit = () => {
   if (!validateForm()) return
+
   emit('submit', {
     nama: form.nama.trim(),
     email: form.email.trim(),
     role: form.role,
   })
 }
+
+const handleModalVisibilityChange = (value: boolean) => {
+  emit('update:isOpen', value)
+}
+
+const modalButtons = computed(
+  (): Array<{
+    label: string
+    variant: 'primary' | 'secondary'
+    action: () => void
+    disabled?: boolean
+  }> => [
+    {
+      label: 'Batal',
+      variant: 'secondary',
+      disabled: props.loading,
+      action: closeModal,
+    },
+    {
+      label: props.loading ? 'Menyimpan...' : props.isEdit ? 'Simpan' : 'Tambah',
+      variant: 'primary',
+      disabled: isSubmitDisabled.value,
+      action: handleSubmit,
+    },
+  ],
+)
 </script>
 
 <template>
-  <Teleport to="body">
-    <transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-        @click.self="closeModal"
-      >
-        <transition
-          enter-active-class="transition duration-300 ease-out"
-          enter-from-class="opacity-0 scale-95 translate-y-4"
-          enter-to-class="opacity-100 scale-100 translate-y-0"
-          leave-active-class="transition duration-200 ease-in"
-          leave-from-class="opacity-100 scale-100 translate-y-0"
-          leave-to-class="opacity-0 scale-95 translate-y-4"
+  <VModal
+    :is-open="isOpen"
+    :title="isEdit ? 'Edit Staff' : 'Tambah Staff'"
+    :description="
+      isEdit
+        ? 'Perbarui data akun staff agar informasi tetap akurat.'
+        : 'Tambahkan akun staff baru untuk mengelola sistem.'
+    "
+    max-width-class="max-w-[643px]"
+    :buttons="modalButtons"
+    @update:is-open="handleModalVisibilityChange"
+  >
+    <template #icon>
+      <component
+        :is="isEdit ? Edit : PlusCircle"
+        class="h-12 w-12 text-[var(--app-accent)]"
+      />
+    </template>
+
+    <div class="mt-2 flex w-full flex-col gap-4 text-left">
+      <VInputField
+        v-model="form.nama"
+        label="Nama Lengkap"
+        type="text"
+        placeholder="Masukkan nama lengkap staff"
+        :state="errors.nama ? 'error' : 'default'"
+        :message="errors.nama"
+        :disabled="loading"
+      />
+
+      <VInputField
+        v-model="form.email"
+        label="Alamat Email"
+        type="email"
+        placeholder="contoh: staff@simp.com"
+        :state="errors.email ? 'error' : 'default'"
+        :message="errors.email"
+        :disabled="loading"
+      />
+
+      <div class="flex flex-col gap-2">
+        <label
+          class="
+            text-[length:var(--app-input-label-font)]
+            font-semibold leading-[1.2] text-[var(--app-text)]
+          "
         >
-          <div
-            v-if="isOpen"
-            class="relative w-full max-w-[643px] rounded-[24px] border-[0.5px] border-[var(--app-modal-border)] overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[var(--app-modal-text)] bg-[var(--app-modal-bg)] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-          >
-            <div class="flex flex-col gap-5">
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="text-[var(--app-modal-text)] hover:opacity-70 transition"
-                >
-                  <X class="w-5 h-5" />
-                </button>
-              </div>
+          Role Akses
+        </label>
 
-              <div class="flex flex-col items-center gap-2">
-                <component :is="isEdit ? Edit : PlusCircle" class="w-12 h-12 text-[var(--app-accent)]" />
-                <b class="text-[24px] leading-[120%]">{{ isEdit ? 'Edit Staff' : 'Tambah Staff' }}</b>
-              </div>
-
-              <div class="flex flex-col gap-4">
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold">Nama Lengkap</label>
-                  <div class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]">
-                    <input v-model="form.nama" type="text" placeholder="Masukkan nama lengkap staff" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]" />
-                  </div>
-                  <p v-if="errors.nama" class="text-[12px] text-[var(--app-danger)]">{{ errors.nama }}</p>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold">Alamat Email</label>
-                  <div class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]">
-                    <input v-model="form.email" type="email" placeholder="contoh: staff@simp.com" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]" />
-                  </div>
-                  <p v-if="errors.email" class="text-[12px] text-[var(--app-danger)]">{{ errors.email }}</p>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold">Role Akses</label>
-                  <div class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]">
-                    <select v-model="form.role" class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)]">
-                      <option value="ADMIN">ADMIN</option>
-                      <option value="BIDANG_AGAMA">BIDANG AGAMA</option>
-                      <option value="BIDANG_KESISWAAN">BIDANG KESISWAAN</option>
-                      <option value="BIDANG_AKADEMIK">BIDANG AKADEMIK</option>
-                      <option value="KEPSEK">KEPALA SEKOLAH</option>
-                    </select>
-                  </div>
-                </div>
-
-                <p v-if="submitError" class="text-[13px] text-[var(--app-danger)] font-medium">{{ submitError }}</p>
-              </div>
-
-              <div class="flex items-center justify-end gap-2">
-                <VButton variant="secondary" class="!w-[132px]" :disabled="loading" @click="closeModal">Batal</VButton>
-                <VButton variant="primary" class="!w-[132px]" :disabled="isSubmitDisabled" @click="handleSubmit">
-                  {{ loading ? 'Menyimpan...' : isEdit ? 'Simpan' : 'Tambah' }}
-                </VButton>
-              </div>
-            </div>
-          </div>
-        </transition>
+        <VDropdown
+          v-model="form.role"
+          :options="roleOptions"
+          placeholder="Pilih Role"
+          :disabled="loading"
+        />
       </div>
-    </transition>
-  </Teleport>
+
+      <p
+        v-if="submitError"
+        class="
+          m-0 text-[length:var(--app-font-xs)]
+          font-medium leading-[1.5] text-[var(--app-danger)]
+        "
+      >
+        {{ submitError }}
+      </p>
+    </div>
+  </VModal>
 </template>

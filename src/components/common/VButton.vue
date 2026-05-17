@@ -1,50 +1,153 @@
-<template>
-  <button
-    :class="[
-      'relative flex items-center justify-center gap-2 px-8 py-3 rounded-[20px] font-sans font-semibold text-[16px] leading-[120%] overflow-hidden transition-all duration-200 box-border focus:outline-none',
-      buttonVariantClasses,
-    ]"
-    :disabled="disabled"
-    @click="$emit('click')"
-  >
-    <slot name="leftIcon"></slot>
-
-    <span><slot></slot></span>
-
-    <slot name="rightIcon"></slot>
-  </button>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = defineProps({
-  variant: {
-    type: String,
-    default: 'primary', // Pilihan: 'primary', 'secondary', 'tertiary', 'login'
+const props = withDefaults(
+  defineProps<{
+    variant?: 'primary' | 'secondary' | 'tertiary'
+    size?: 'default' | 'sm' | 'lg'
+    disabled?: boolean
+    type?: 'button' | 'submit' | 'reset'
+  }>(),
+  {
+    variant: 'primary',
+    size: 'default',
+    disabled: false,
+    type: 'button',
   },
-  disabled: Boolean,
+)
+
+const emit = defineEmits<{
+  (e: 'click', event: MouseEvent): void
+}>()
+
+const baseClass = computed(() => {
+  return [
+    'v-button',
+    'relative box-border inline-flex items-center justify-center overflow-hidden',
+    'border border-transparent text-center whitespace-nowrap',
+    'font-[var(--font-sans)] font-semibold leading-[1.2]',
+    'transition-[transform,background-color,border-color,color,box-shadow,filter] duration-200 ease-in-out',
+    'focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]',
+    'disabled:cursor-not-allowed',
+    'enabled:hover:scale-[1.01] enabled:active:scale-[0.98]',
+  ]
 })
 
-defineEmits(['click'])
+const sizeClass = computed(() => {
+  if (props.size === 'sm') {
+    return [
+      'min-h-[32px] rounded-full px-3 py-[7px] gap-[6px]',
+      'text-[length:var(--app-button-sm-font)]',
+    ]
+  }
 
-// Logic Tailwind untuk Normal, Hover, Active (Pressed), dan Disabled
-const buttonVariantClasses = computed(() => {
+  if (props.size === 'lg') {
+    return [
+      'min-h-[42px] rounded-[18px] px-6 py-[10px] gap-2',
+      'text-[length:var(--app-button-lg-font)]',
+    ]
+  }
+
+  return [
+    'min-h-[34px] rounded-[14px] px-5 py-2 gap-[6px]',
+    'text-[length:var(--app-button-font)]',
+  ]
+})
+
+const iconClass = computed(() => {
+  const iconSize =
+    props.size === 'lg'
+      ? '[&>svg]:h-5 [&>svg]:w-5'
+      : props.size === 'sm'
+        ? '[&>svg]:h-3.5 [&>svg]:w-3.5'
+        : '[&>svg]:h-4 [&>svg]:w-4'
+
+  return [
+    'v-button-icon inline-flex shrink-0 items-center justify-center',
+    iconSize,
+  ]
+})
+
+const contentClass = computed(() => {
+  return [
+    'v-button-content inline-flex items-center justify-center',
+    props.size === 'lg' ? 'gap-2' : 'gap-[6px]',
+  ]
+})
+
+const variantClass = computed(() => {
   switch (props.variant) {
-    case 'primary':
-      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))] text-[var(--app-text-inverse)] hover:scale-101 active:scale-98 shadow-[0px_-2px_60px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_-2px_20px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[linear-gradient(rgba(17,24,39,0.3),rgba(17,24,39,0.3)),radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))] disabled:text-[var(--app-text-inverse-muted)] disabled:cursor-not-allowed disabled:brightness-100'
-
     case 'secondary':
-      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[var(--app-chip-primary)] text-[var(--app-text)] hover:scale-101 brightness-95 active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[var(--app-input-disabled-bg)] disabled:text-[var(--app-muted)] disabled:cursor-not-allowed'
+      return [
+        'border-transparent',
+        'bg-[var(--app-button-secondary-bg)]',
+        'text-[var(--app-button-secondary-text)]',
+        'shadow-[0_-2px_0_rgba(0,0,0,0.4)_inset,0_1px_0_rgba(248,250,252,0.4)_inset]',
+        'enabled:hover:brightness-[0.96]',
+        'disabled:bg-[var(--app-input-disabled-bg)] disabled:text-[var(--app-muted)]',
+        'disabled:shadow-[0_-2px_0_rgba(0,0,0,0.18)_inset,0_1px_0_rgba(248,250,252,0.25)_inset]',
+      ]
 
     case 'tertiary':
-      return 'shadow-[0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] bg-[var(--app-card)] text-[var(--app-text)] hover:scale-101 bg-[var(--app-soft-card)] active:scale-98 shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:shadow-[0px_3px_20px_rgba(0,0,0,0.25)_inset,0px_-2px_0px_rgba(0,0,0,0.4)_inset,0px_1px_0px_rgba(248,250,252,0.4)_inset] disabled:bg-[var(--app-input-disabled-bg)] disabled:text-[var(--app-muted)] disabled:cursor-not-allowed'
+      return [
+        'border-[var(--app-border)]',
+        'bg-[var(--app-card)]',
+        'text-[var(--app-text)]',
+        'shadow-[0_-2px_0_rgba(0,0,0,0.18)_inset,0_1px_0_rgba(248,250,252,0.4)_inset]',
+        'enabled:hover:bg-[var(--app-soft-card)]',
+        'disabled:border-[var(--app-border)] disabled:bg-[var(--app-input-disabled-bg)] disabled:text-[var(--app-muted)]',
+      ]
 
-    case 'login':
-      return 'bg-[var(--app-muted)] text-[var(--app-text-inverse)] hover:bg-[var(--app-text-soft)] rounded-xl px-6 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95'
-
+    case 'primary':
     default:
-      return ''
+      return [
+        'border-transparent',
+        '[background:var(--app-button-primary-bg)]',
+        'text-[var(--app-button-primary-text)]',
+        'shadow-[0_-2px_0_rgba(0,0,0,0.4)_inset,0_1px_0_rgba(248,250,252,0.4)_inset]',
+        'enabled:hover:shadow-[0_-2px_60px_rgba(0,0,0,0.4)_inset,0_1px_0_rgba(248,250,252,0.4)_inset]',
+        'disabled:[background:linear-gradient(rgba(17,24,39,0.3),rgba(17,24,39,0.3)),var(--app-button-primary-bg)]',
+        'disabled:text-[var(--app-text-inverse-muted)]',
+        'disabled:shadow-[0_-2px_20px_rgba(0,0,0,0.4)_inset,0_1px_0_rgba(248,250,252,0.4)_inset]',
+      ]
   }
 })
+
+const buttonClass = computed(() => [
+  ...baseClass.value,
+  ...sizeClass.value,
+  ...variantClass.value,
+])
+
+const handleClick = (event: MouseEvent) => {
+  if (props.disabled) return
+  emit('click', event)
+}
 </script>
+
+<template>
+  <button
+    :type="type"
+    :class="buttonClass"
+    :disabled="disabled"
+    @click="handleClick"
+  >
+    <span
+      v-if="$slots.leftIcon"
+      :class="iconClass"
+    >
+      <slot name="leftIcon"></slot>
+    </span>
+
+    <span :class="contentClass">
+      <slot></slot>
+    </span>
+
+    <span
+      v-if="$slots.rightIcon"
+      :class="iconClass"
+    >
+      <slot name="rightIcon"></slot>
+    </span>
+  </button>
+</template>
