@@ -1,33 +1,17 @@
 <template>
-  <aside
-    class="simp-sidebar flex flex-col h-screen w-[210px] min-w-[210px] border-r py-4 px-3 overflow-hidden"
-  >
+  <aside class="simp-sidebar flex flex-col h-screen w-[210px] min-w-[210px] border-r py-4 px-3 overflow-hidden">
     <div class="flex items-center mb-5">
-      <img
-        :src="sidebarLogo"
-        :key="sidebarLogo"
-        alt="SIMP"
-        class="h-24 object-contain"
-      />
+      <img :src="sidebarLogo" :key="sidebarLogo" alt="SIMP" class="h-24 object-contain" />
     </div>
 
     <nav class="flex flex-col gap-1 flex-1 overflow-y-auto min-h-0">
-      <router-link
-        v-for="item in navItems"
-        :key="item.name"
-        :to="item.path"
-        custom
-        v-slot="{ navigate }"
-      >
-        <button
-          @click="navigate"
-          :class="[
-            'sidebar-menu-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10.5px] font-semibold transition-all duration-200 w-full text-left',
-            isNavItemActive(item)
-              ? 'sidebar-menu-active text-white shadow-md'
-              : 'sidebar-menu-inactive',
-          ]"
-        >
+      <router-link v-for="item in navItems" :key="item.name" :to="item.path" custom v-slot="{ navigate }">
+        <button @click="navigate" :class="[
+          'sidebar-menu-item flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[10.5px] font-semibold transition-all duration-200 w-full text-left',
+          isNavItemActive(item)
+            ? 'sidebar-menu-active text-white shadow-md'
+            : 'sidebar-menu-inactive',
+        ]">
           <component :is="item.icon" :size="20" :stroke-width="2" />
           <span>{{ item.label }}</span>
         </button>
@@ -36,35 +20,27 @@
 
     <div class="flex flex-col mt-auto">
       <div class="flex flex-col gap-1 mb-4">
-        <button
-          v-for="item in bottomItems"
-          :key="item.name"
-          @click="handleBottomItemClick(item)"
-          :class="[
-            'sidebar-menu-item flex items-center gap-3 px-4 py-1.5 rounded-xl text-[10.5px] font-medium transition-all duration-200 w-full text-left',
-            isBottomItemActive(item)
-              ? 'sidebar-menu-active text-white shadow-md'
-              : 'sidebar-menu-inactive',
-          ]"
-        >
+        <button v-for="item in bottomItems" :key="item.name" @click="handleBottomItemClick(item)" :class="[
+          'sidebar-menu-item flex items-center gap-3 px-4 py-1.5 rounded-xl text-[10.5px] font-medium transition-all duration-200 w-full text-left',
+          isBottomItemActive(item)
+            ? 'sidebar-menu-active text-white shadow-md'
+            : 'sidebar-menu-inactive',
+        ]">
           <component :is="item.icon" :size="20" :stroke-width="2" />
           <span>{{ item.label }}</span>
         </button>
       </div>
 
-      <button
-        type="button"
-        @click="goToProfile"
-        :class="[
-          'sidebar-profile-card flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-all duration-200',
-          isProfileActive
-            ? 'sidebar-menu-active text-white shadow-md'
-            : 'hover:brightness-105 hover:shadow-md',
-        ]"
-      >
+      <button type="button" @click="goToProfile" :class="[
+        'sidebar-profile-card flex items-center gap-3 px-3 py-3 rounded-2xl w-full text-left transition-all duration-200',
+        isProfileActive
+          ? 'sidebar-menu-active text-white shadow-md'
+          : 'hover:brightness-105 hover:shadow-md',
+      ]">
         <div class="profile-ring flex items-center justify-center w-9 h-9 rounded-full">
-          <div class="profile-icon-bg flex items-center justify-center w-7 h-7 rounded-full">
-            <UserRound :size="18" class="text-[var(--app-accent)]" />
+          <div class="profile-icon-bg flex items-center justify-center w-7 h-7 rounded-full overflow-hidden">
+            <img v-if="userAvatar" :src="userAvatar" alt="Avatar" class="h-full w-full object-cover" />
+            <UserRound v-else :size="18" class="text-[var(--app-accent)]" />
           </div>
         </div>
 
@@ -272,12 +248,10 @@ const handleBottomItemClick = (item: BottomNavItem) => {
 }
 
 .profile-ring {
-  background: conic-gradient(
-    var(--app-accent) 0deg,
-    var(--app-accent) 120deg,
-    var(--app-accent-2) 240deg,
-    var(--app-accent) 360deg
-  );
+  background: conic-gradient(var(--app-accent) 0deg,
+      var(--app-accent) 120deg,
+      var(--app-accent-2) 240deg,
+      var(--app-accent) 360deg);
   padding: 2.5px;
 }
 </style>

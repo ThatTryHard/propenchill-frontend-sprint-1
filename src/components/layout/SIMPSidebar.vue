@@ -37,7 +37,7 @@ import {
   LayoutDashboard,
   ClipboardList,
 } from 'lucide-vue-next'
-import { computed, ref, h } from 'vue'
+import { computed, ref, h, onMounted } from 'vue' // <-- FIX: Ditambahkan onMounted
 import { useRouter, useRoute } from 'vue-router' 
 
 const router = useRouter()
@@ -45,6 +45,9 @@ const route = useRoute()
 const authStore = useAuthStore()
 const profileStore = useProfileStore()
 const isLogoutModalOpen = ref(false)
+const props = defineProps<{
+  userAvatar?: string | null
+}>()
 
 const CustomDetailIcon = () => h('svg', {
   xmlns: 'http://www.w3.org/2000/svg',
@@ -71,8 +74,18 @@ const openLogoutModal = () => {
   isLogoutModalOpen.value = true
 }
 
-// Get avatar from profile store
-const userAvatar = computed(() => profileStore.profile?.avatar_url || null)
+const userAvatar = computed(() => {
+  if (props.userAvatar) return props.userAvatar
+  if (profileStore.profile?.avatar_url) return profileStore.profile.avatar_url
+  return authStore.user?.avatar_url || authStore.user?.avatar || null
+})
+
+// 👇 FIX: Auto-fetch profile saat sidebar dimuat di halaman mana pun (Settings, Riwayat, dll)
+onMounted(() => {
+  if (!profileStore.profile) {
+    profileStore.fetchProfile()
+  }
+})
 
 // DEFINISI MENU BERDASARKAN ROLE
 const currentNavItems = computed(() => {

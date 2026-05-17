@@ -425,6 +425,23 @@ const router = createRouter({
       },
     },
     {
+      path: '/settings/change-password',
+      name: 'change-password',
+      component: () => import('@/views/users/ChangePasswordView.vue'),
+      meta: {
+        requiresAuth: true,
+        roleAccess: [
+          'ADMIN',
+          'KEPSEK',
+          'GURU',
+          'WALI_MURID',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
+      },
+    },
+    {
       path: '/kepsek/dashboard',
       name: 'kepsek-dashboard',
       component: () => import('@/views/principal_dashboard/KepsekDashboardView.vue'),
