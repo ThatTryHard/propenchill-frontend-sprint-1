@@ -1,63 +1,3 @@
-<template>
-  <div class="flex items-center gap-2 text-center text-[14px] text-[var(--app-text)] font-sans">
-    <button
-      @click="prevPage"
-      :disabled="isFirstPage"
-      :class="[
-        'w-[32px] h-[32px] rounded-[4px] flex items-center justify-center transition-all duration-200',
-        isFirstPage
-          ? 'bg-[var(--app-muted)] opacity-50 cursor-not-allowed text-white'
-          : 'bg-[var(--app-card)] border-2 border-[var(--app-card-border)] hover:border-[var(--app-muted)] text-[var(--app-text)] cursor-pointer',
-      ]"
-    >
-      <ChevronLeftIcon class="w-[18px] h-[18px]" />
-    </button>
-
-    <template v-for="(page, index) in paginationRange" :key="index">
-      <div
-        v-if="page === '...'"
-        class="w-[32px] h-[32px] rounded-[4px] bg-[var(--app-card)] border-2 border-[var(--app-card-border)] flex items-center justify-center font-bold select-none"
-      >
-        ...
-      </div>
-
-      <button
-        v-else-if="page === currentPage"
-        class="w-[32px] h-[32px] rounded-[4px] p-[2px] bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] flex items-center justify-center select-none"
-      >
-        <div class="w-full h-full bg-[var(--app-card)] rounded-[2px] flex items-center justify-center">
-          <span
-            class="bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] bg-clip-text text-transparent font-bold leading-[20px]"
-          >
-            {{ page }}
-          </span>
-        </div>
-      </button>
-
-      <button
-        v-else
-        @click="goToPage(page)"
-        class="w-[32px] h-[32px] rounded-[4px] bg-[var(--app-card)] border-2 border-[var(--app-card-border)] hover:border-[var(--app-muted)] flex items-center justify-center font-bold leading-[20px] transition-colors duration-200 cursor-pointer select-none"
-      >
-        {{ page }}
-      </button>
-    </template>
-
-    <button
-      @click="nextPage"
-      :disabled="isLastPage"
-      :class="[
-        'w-[32px] h-[32px] rounded-[4px] flex items-center justify-center transition-all duration-200',
-        isLastPage
-          ? 'bg-[var(--app-muted)] opacity-50 cursor-not-allowed text-white'
-          : 'bg-[var(--app-card)] border-2 border-[var(--app-card-border)] hover:border-[var(--app-muted)] text-[var(--app-text)] cursor-pointer',
-      ]"
-    >
-      <ChevronRightIcon class="w-[18px] h-[18px]" />
-    </button>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
@@ -71,7 +11,6 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  // Jumlah halaman tetangga yang ditampilin di sebelah kanan-kiri halaman aktif
   siblingCount: {
     type: Number,
     default: 1,
@@ -93,16 +32,14 @@ const nextPage = () => {
 
 const goToPage = (page: number | string) => {
   if (typeof page === 'number' && page !== props.currentPage) {
-    emit('update:currentPage', page) // Support buat v-model
-    emit('page-change', page) // Support buat hit API setiap ganti halaman
+    emit('update:currentPage', page)
+    emit('page-change', page)
   }
 }
 
-// Algoritma Pintar buat Generate Pagination (Angka & Elipsis)
 const paginationRange = computed(() => {
   const totalPageNumbers = props.siblingCount + 5
 
-  // Kalau total halamannya dikit, tampilin semua angkanya
   if (totalPageNumbers >= props.totalPages) {
     return range(1, props.totalPages)
   }
@@ -116,21 +53,18 @@ const paginationRange = computed(() => {
   const firstPageIndex = 1
   const lastPageIndex = props.totalPages
 
-  // Kasus 1: Titik-titik cuma ada di kanan [1, 2, 3, 4, 5, '...', 10]
   if (!shouldShowLeftDots && shouldShowRightDots) {
     const leftItemCount = 3 + 2 * props.siblingCount
     const leftRange = range(1, leftItemCount)
     return [...leftRange, '...', props.totalPages]
   }
 
-  // Kasus 2: Titik-titik cuma ada di kiri [1, '...', 6, 7, 8, 9, 10]
   if (shouldShowLeftDots && !shouldShowRightDots) {
     const rightItemCount = 3 + 2 * props.siblingCount
     const rightRange = range(props.totalPages - rightItemCount + 1, props.totalPages)
     return [firstPageIndex, '...', ...rightRange]
   }
 
-  // Kasus 3: Titik-titik ada di kiri dan kanan [1, '...', 4, 5, 6, '...', 10]
   if (shouldShowLeftDots && shouldShowRightDots) {
     const middleRange = range(leftSiblingIndex, rightSiblingIndex)
     return [firstPageIndex, '...', ...middleRange, '...', lastPageIndex]
@@ -143,4 +77,107 @@ const range = (start: number, end: number) => {
   const length = end - start + 1
   return Array.from({ length }, (_, idx) => idx + start)
 }
+
+const basePageClass = [
+  'relative box-border h-8 w-8 shrink-0 rounded-[4px]',
+  'font-[var(--font-sans)] text-[length:var(--app-font-base)] font-bold leading-[20px]',
+  'transition-[background-color,border-color,color,opacity,filter] duration-200 ease-in-out',
+]
+
+const defaultPageClass = [
+  ...basePageClass,
+  'flex items-center justify-center border-2 border-[var(--app-card-border)]',
+  'bg-[var(--app-card)] text-[var(--app-text)]',
+]
+
+const hoverablePageClass = [
+  ...defaultPageClass,
+  'cursor-pointer hover:border-[var(--app-muted)] hover:bg-[var(--app-soft-card)]',
+]
+
+const disabledPageClass = [
+  ...basePageClass,
+  'flex cursor-not-allowed items-center justify-center border-2 border-transparent',
+  'bg-[var(--app-muted)] text-[var(--app-text-inverse)] opacity-50',
+]
+
+const activePageClass = [
+  ...basePageClass,
+  'flex cursor-default items-center justify-center border-0 p-0.5',
+  '[background:var(--gradient-brand)] text-[var(--app-text)]',
+]
 </script>
+
+<template>
+  <nav
+    class="
+      flex items-center gap-2 text-center
+      font-[var(--font-sans)] text-[length:var(--app-font-base)]
+      text-[var(--app-text)]
+    "
+    aria-label="Pagination"
+  >
+    <button
+      type="button"
+      :class="isFirstPage ? disabledPageClass : hoverablePageClass"
+      :disabled="isFirstPage"
+      aria-label="Halaman sebelumnya"
+      @click="prevPage"
+    >
+      <ChevronLeftIcon class="h-[18px] w-[18px]" />
+    </button>
+
+    <template
+      v-for="(page, index) in paginationRange"
+      :key="index"
+    >
+      <div
+        v-if="page === '...'"
+        :class="[
+          ...defaultPageClass,
+          'select-none',
+        ]"
+        aria-hidden="true"
+      >
+        ...
+      </div>
+
+      <button
+        v-else-if="page === currentPage"
+        type="button"
+        :class="activePageClass"
+        aria-current="page"
+      >
+        <span
+          class="
+            flex h-full w-full items-center justify-center
+            rounded-[2px] bg-[var(--app-card)]
+          "
+        >
+          <span class="app-gradient-text-brand font-bold leading-[20px]">
+            {{ page }}
+          </span>
+        </span>
+      </button>
+
+      <button
+        v-else
+        type="button"
+        :class="hoverablePageClass"
+        @click="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+    </template>
+
+    <button
+      type="button"
+      :class="isLastPage ? disabledPageClass : hoverablePageClass"
+      :disabled="isLastPage"
+      aria-label="Halaman berikutnya"
+      @click="nextPage"
+    >
+      <ChevronRightIcon class="h-[18px] w-[18px]" />
+    </button>
+  </nav>
+</template>

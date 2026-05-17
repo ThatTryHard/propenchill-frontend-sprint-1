@@ -1,50 +1,3 @@
-<template>
-  <div
-    @click="toggle"
-    :class="[
-      'w-full relative cursor-pointer shadow-[0px_2px_4px_rgba(0,0,0,0.18)] rounded-[14px] text-[var(--app-text-inverse)] font-sans flex flex-col box-border overflow-hidden',
-      'bg-[linear-gradient(90.74deg,var(--app-accent)_0%,var(--app-accent)_50%,var(--app-accent-2)_100%)] bg-[length:175%_100%]',
-      'transition-all duration-500 ease-in-out select-none',
-      'hover:brightness-[0.92]',
-      isOpen
-        ? 'bg-[position:0%_0%] p-[10px_18px_16px_18px]'
-        : 'bg-[position:100%_0%] p-[10px_18px]',
-    ]"
-  >
-    <div class="flex items-center justify-between w-full gap-4">
-      <div
-        class="flex-1 font-semibold leading-[140%]"
-        :class="titleClass"
-      >
-        {{ title }}
-      </div>
-
-      <ChevronDownIcon
-        :class="[
-          'w-[18px] h-[18px] flex-shrink-0 transition-transform duration-500 ease-in-out',
-          isOpen ? 'rotate-180' : 'rotate-0',
-        ]"
-      />
-    </div>
-
-    <div
-      :class="[
-        'grid transition-all duration-500 ease-in-out',
-        isOpen ? 'grid-rows-[1fr] opacity-100 mt-[8px]' : 'grid-rows-[0fr] opacity-0 mt-0',
-      ]"
-    >
-      <div class="overflow-hidden">
-        <div
-          class="leading-[160%]"
-          :class="contentClass"
-        >
-          <slot>{{ content }}</slot>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ChevronDownIcon } from 'lucide-vue-next'
@@ -60,11 +13,11 @@ defineProps({
   },
   titleClass: {
     type: String,
-    default: 'text-[14px]',
+    default: '',
   },
   contentClass: {
     type: String,
-    default: 'text-[13px]',
+    default: '',
   },
 })
 
@@ -74,3 +27,68 @@ const toggle = () => {
   isOpen.value = !isOpen.value
 }
 </script>
+
+<template>
+  <div
+    class="
+      relative box-border flex w-full cursor-pointer select-none flex-col overflow-hidden
+      rounded-[16px] px-6 pt-3 font-[var(--font-sans)]
+      text-[var(--app-text-inverse)]
+      shadow-[0_4px_4px_rgba(0,0,0,0.25)]
+      transition-[background,filter,padding] duration-300 ease-in-out
+      hover:brightness-95
+    "
+    :class="
+      isOpen
+        ? 'pb-6 [background:var(--app-accent)]'
+        : 'pb-3 [background:var(--gradient-brand)]'
+    "
+    @click="toggle"
+  >
+    <div class="flex w-full items-center justify-between gap-0">
+      <div
+        class="
+          flex-1 text-[length:var(--app-font-xl)]
+          font-semibold leading-[1.2]
+          text-[var(--app-text-inverse)]
+        "
+        :class="titleClass"
+      >
+        {{ title }}
+      </div>
+
+      <ChevronDownIcon
+        class="
+          h-6 w-6 shrink-0 text-[var(--app-text-inverse)]
+          transition-transform duration-300 ease-in-out
+        "
+        :class="{ 'rotate-180': isOpen }"
+      />
+    </div>
+
+    <div
+      class="
+        grid opacity-0 transition-[grid-template-rows,opacity,margin-top]
+        duration-300 ease-in-out
+      "
+      :class="
+        isOpen
+          ? 'mt-3 opacity-100 [grid-template-rows:1fr]'
+          : 'mt-0 opacity-0 [grid-template-rows:0fr]'
+      "
+    >
+      <div class="overflow-hidden">
+        <div
+          class="
+            text-[length:var(--app-font-base)]
+            font-normal leading-[1.5]
+            text-[var(--app-text-inverse)]
+          "
+          :class="contentClass"
+        >
+          <slot>{{ content }}</slot>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

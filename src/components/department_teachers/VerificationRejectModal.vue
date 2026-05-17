@@ -63,7 +63,12 @@ function handleSubmit() {
     maxWidthClass="max-w-[560px]"
     @update:isOpen="handleClose"
   >
-    <div class="mt-4 w-full">
+    <div
+      class="
+        mt-4 w-full
+        font-[var(--font-sans)] text-[var(--app-text)]
+      "
+    >
       <VTextareaField
         :modelValue="notes"
         label="Alasan Penolakan"
@@ -75,36 +80,30 @@ function handleSubmit() {
         @update:modelValue="notes = String($event || '')"
       />
 
-      <div class="mt-5 flex items-center justify-end gap-3">
+      <div
+        class="
+          mt-5 flex items-center justify-end gap-3
+          max-[640px]:flex-col max-[640px]:items-stretch
+        "
+      >
         <VButton
           variant="secondary"
-          class="!w-[132px]"
+          class="min-w-[104px]"
           :disabled="loading"
           @click="handleClose"
         >
           Batal
         </VButton>
 
-        <button
-          type="button"
-          class="reject-submit-button min-w-[150px] rounded-[14px] px-5 py-2 text-[0.93rem] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+        <VButton
+          variant="primary"
+          class="min-w-[150px]"
           :disabled="loading"
           @click="handleSubmit"
         >
           {{ loading ? 'Memproses...' : 'Kirim Penolakan' }}
-        </button>
+        </VButton>
       </div>
     </div>
   </VModal>
 </template>
-
-<style scoped>
-.reject-submit-button {
-  background: var(--app-danger);
-  color: var(--app-text-inverse);
-}
-
-.reject-submit-button:hover:not(:disabled) {
-  background: var(--app-danger-dark);
-}
-</style>

@@ -32,49 +32,87 @@ onMounted(() => {
 
 <template>
   <div
-    class="status-page h-screen w-screen min-h-screen overflow-hidden flex flex-col items-center justify-center p-6 font-sans antialiased"
+    class="
+      flex h-screen min-h-screen w-screen flex-col items-center justify-center
+      overflow-hidden bg-[var(--app-bg)] p-6
+      font-[var(--font-sans)] text-[var(--app-text)] antialiased
+    "
   >
     <main
-      class="status-card w-full max-w-lg rounded-[2.5rem] shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] p-10 flex flex-col items-center text-center transition-transform hover:scale-[1.01] duration-300"
+      class="
+        flex w-full max-w-lg flex-col items-center rounded-[2.5rem]
+        border border-[var(--app-border)] bg-[var(--app-card)]
+        p-10 text-center text-[var(--app-text)]
+        shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)]
+        transition-transform duration-300 hover:scale-[1.01]
+      "
     >
-      <h1 class="status-heading text-[2rem] font-bold tracking-tight mb-6">
+      <h1
+        class="
+          mb-6 text-[length:var(--app-font-display)]
+          font-bold tracking-tight text-[var(--app-heading)]
+        "
+      >
         PropenChill Team's
       </h1>
 
-      <img src="@/assets/SIMP_logo.png" alt="SIMP Logo" />
+      <img
+        src="@/assets/SIMP_logo.png"
+        alt="SIMP Logo"
+        class="h-auto max-w-full"
+      />
 
-      <h2 class="status-subtitle text-[1.125rem] mb-2">
+      <h2
+        class="
+          mb-2 text-[length:var(--app-font-lg)]
+          text-[var(--app-subtext)]
+        "
+      >
         Frontend Environment is ready and running!
       </h2>
 
-      <div class="status-panel w-full rounded-2xl p-5 border">
-        <h3 class="status-label text-[0.75rem] font-bold tracking-widest mb-3">
+      <div
+        class="
+          w-full rounded-2xl border border-[var(--app-border)]
+          bg-[var(--app-soft-card)] p-5
+        "
+      >
+        <h3
+          class="
+            mb-3 text-[length:var(--app-font-xs)]
+            font-bold tracking-widest text-[var(--app-subtext)]
+          "
+        >
           Backend Connection Status:
         </h3>
 
         <div
           :class="[
-            'inline-flex items-center gap-3 px-5 py-3 rounded-full text-[0.875rem] font-bold transition-colors w-full justify-center',
+            'inline-flex w-full items-center justify-center gap-3 rounded-full border px-5 py-3 text-[length:var(--app-font-sm)] font-bold transition-colors',
             loading
-              ? 'bg-slate-200 text-slate-600'
+              ? 'border-[var(--app-border)] bg-[var(--app-input-muted-bg)] text-[var(--app-muted)]'
               : isError
-                ? 'bg-red-100 text-red-700 border border-red-200'
-                : 'bg-green-100 text-green-700 border border-green-200',
+                ? 'border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] text-[var(--app-danger)]'
+                : 'border-[var(--app-success-border)] bg-[var(--app-success-bg)] text-[var(--app-success-dark)]',
           ]"
         >
           <span class="relative flex h-3 w-3">
             <span
               v-if="!loading"
               :class="[
-                'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75',
-                isError ? 'bg-red-400' : 'bg-green-400',
+                'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
+                isError ? 'bg-[var(--app-danger)]' : 'bg-[var(--app-success)]',
               ]"
             ></span>
 
             <span
               :class="[
-                'relative inline-flex rounded-full h-3 w-3',
-                loading ? 'bg-slate-400' : isError ? 'bg-red-500' : 'bg-green-500',
+                'relative inline-flex h-3 w-3 rounded-full',
+                loading
+                  ? 'bg-[var(--app-muted)]'
+                  : isError
+                    ? 'bg-[var(--app-danger)]'
+                    : 'bg-[var(--app-success)]',
               ]"
             ></span>
           </span>
@@ -85,8 +123,14 @@ onMounted(() => {
         </div>
 
         <button
+          type="button"
+          class="
+            mx-auto mt-4 flex items-center justify-center gap-1
+            text-[length:var(--app-font-xs)] font-semibold
+            text-[var(--app-muted)] transition-colors
+            hover:text-[var(--app-accent)]
+          "
           @click="checkBackendConnection"
-          class="mt-4 text-[0.75rem] flex items-center justify-center gap-1 font-semibold mx-auto transition-colors status-refresh"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -108,54 +152,13 @@ onMounted(() => {
       </div>
     </main>
 
-    <footer class="mt-10 text-[0.875rem] font-medium tracking-[0.2em] status-footer">
+    <footer
+      class="
+        mt-10 text-[length:var(--app-font-sm)]
+        font-medium tracking-[0.2em] text-[var(--app-muted)]
+      "
+    >
       <p class="mt-8">Propenchill Team &copy; 2026</p>
     </footer>
   </div>
 </template>
-
-<style scoped>
-.status-page {
-  background: var(--app-bg);
-  color: var(--app-text);
-}
-
-.status-card {
-  background: var(--app-card);
-  color: var(--app-text);
-  border: 1px solid var(--app-border);
-}
-
-.status-heading {
-  color: var(--app-heading);
-}
-
-.status-subtitle {
-  color: var(--app-subtext);
-}
-
-.status-panel {
-  background: var(--app-soft-card);
-  border-color: var(--app-border);
-}
-
-.status-label {
-  color: var(--app-subtext);
-}
-
-.status-refresh {
-  color: var(--app-muted);
-}
-
-.status-refresh:hover {
-  color: #16a34a;
-}
-
-.status-footer {
-  color: var(--app-muted);
-}
-
-:global(html.dark) .status-refresh:hover {
-  color: #86efac;
-}
-</style>

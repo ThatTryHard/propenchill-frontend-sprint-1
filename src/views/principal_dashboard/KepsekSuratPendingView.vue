@@ -4,13 +4,30 @@
       <SIMPSidebar />
     </template>
 
-    <div class="p-8 flex flex-col gap-[20px] h-full font-['Plus_Jakarta_Sans']">
+    <main
+      class="
+        flex h-full flex-col gap-5
+        bg-[var(--app-bg)] p-8
+        font-[var(--font-sans)] text-[var(--app-text)]
+      "
+    >
       <section class="flex flex-col gap-3">
         <div>
-          <h1 class="text-[32px] font-bold text-[var(--app-heading)]">
+          <h1
+            class="
+              m-0 text-[length:var(--app-page-title-font)]
+              font-bold leading-[1.2] text-[var(--app-heading)]
+            "
+          >
             Daftar Surat Pending
           </h1>
-          <p class="text-[24px] text-[var(--app-muted)]">
+
+          <p
+            class="
+              mt-1 mb-0 text-[length:var(--app-page-subtitle-font)]
+              leading-[1.4] text-[var(--app-muted)]
+            "
+          >
             Surat menunggu verifikasi kepsek
           </p>
         </div>
@@ -24,13 +41,14 @@
         />
       </section>
 
-      <section class="grid grid-cols-1 xl:grid-cols-2 gap-[20px]">
+      <section class="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <KepsekPanel paddingClass="px-[24px] py-[16px] h-[330px]">
           <KepsekPendingDurasiFilter
             v-model="filterDurasi"
             :data="store.pendingDurasi"
           />
         </KepsekPanel>
+
         <KepsekPanel paddingClass="px-[27.363px] py-[19.9px] h-[330px]">
           <KepsekBarChart
             title="Distribusi Surat Pending"
@@ -49,12 +67,14 @@
           placeholder="DD/MM/YYYY"
           :icon="Calendar"
         />
+
         <KepsekFilterField
           v-model="filterSender"
           label="Pengirim"
           placeholder="Pengirim"
           :icon="User"
         />
+
         <KepsekFilterField
           v-model="filterSubject"
           label="Perihal"
@@ -70,22 +90,46 @@
           :isLoading="store.loading.pending"
         >
           <template #cell-tanggal_diterima="{ value }">
-            <span>{{ formatDate(String(value || '')) }}</span>
+            <span
+              class="
+                text-[length:var(--app-table-cell-font)]
+                leading-[1.4] text-[var(--app-muted)]
+              "
+            >
+              {{ formatDate(String(value || '')) }}
+            </span>
           </template>
 
           <template #cell-status="{ value }">
-            <span class="text-[16px] font-semibold text-[var(--app-warning)]">{{ value }}</span>
+            <span
+              class="
+                text-[length:var(--app-table-cell-font)]
+                font-semibold leading-[1.4] text-[var(--app-warning)]
+              "
+            >
+              {{ value }}
+            </span>
           </template>
 
           <template #cell-aksi="{ row }">
-            <button
+            <VButton
               v-if="row.id_pengajuan"
-              class="text-[var(--app-accent)] font-semibold text-[16px] hover:underline"
+              variant="secondary"
+              size="sm"
               @click="goToVerification(row)"
             >
               Lihat Detail
-            </button>
-            <span v-else class="text-[var(--app-muted)] text-[16px]">-</span>
+            </VButton>
+
+            <span
+              v-else
+              class="
+                text-[length:var(--app-table-cell-font)]
+                leading-[1.4] text-[var(--app-muted)]
+              "
+            >
+              -
+            </span>
           </template>
         </KepsekPendingTable>
       </section>
@@ -97,24 +141,28 @@
           @page-change="handlePageChange"
         />
       </section>
-    </div>
+    </main>
   </DashboardLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Calendar, FileText, User } from 'lucide-vue-next'
+
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
-import VPagination from '@/components/common/VPagination.vue'
-import VAlert from '@/components/common/VAlert.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
+import VAlert from '@/components/common/VAlert.vue'
+import VButton from '@/components/common/VButton.vue'
+import VPagination from '@/components/common/VPagination.vue'
+
 import KepsekPendingDurasiFilter from '@/components/kepsek/KepsekPendingDurasiFilter.vue'
 import KepsekBarChart from '@/components/kepsek/KepsekBarChart.vue'
 import KepsekPanel from '@/components/kepsek/KepsekPanel.vue'
 import KepsekFilterField from '@/components/kepsek/KepsekFilterField.vue'
 import KepsekPendingTable from '@/components/kepsek/KepsekPendingTable.vue'
+
 import { usePrincipalDashboardStore } from '@/stores/principal_dashboard'
-import { Calendar, User, FileText } from 'lucide-vue-next'
 import { useThemeColors } from '@/stores/principal_dashboard/themeColors'
 
 const router = useRouter()
@@ -128,12 +176,41 @@ const filterDurasi = ref('')
 const currentPage = ref(1)
 
 const columns = [
-  { key: 'nomor_surat', label: 'Nomor Surat', tdClass: 'px-6 py-4 text-[14px] font-semibold text-[var(--app-heading)]' },
-  { key: 'verifikator', label: 'Verifikator', tdClass: 'px-6 py-4 text-[14px] text-[var(--app-text)]' },
-  { key: 'tanggal_diterima', label: 'Tanggal Terima', tdClass: 'px-6 py-4 whitespace-nowrap text-[var(--app-muted)]' },
-  { key: 'pengirim', label: 'Pengirim', tdClass: 'px-6 py-4 text-[14px] text-[var(--app-text)]' },
-  { key: 'jenis_surat', label: 'Jenis Surat', tdClass: 'px-6 py-4 text-[14px] text-[var(--app-text)]' },
-  { key: 'aksi', label: 'Aksi', tdClass: 'px-6 py-4 font-semibold' },
+  {
+    key: 'nomor_surat',
+    label: 'Nomor Surat',
+    tdClass:
+      'px-6 py-4 text-[length:var(--app-table-cell-font)] font-semibold text-[var(--app-heading)]',
+  },
+  {
+    key: 'verifikator',
+    label: 'Verifikator',
+    tdClass:
+      'px-6 py-4 text-[length:var(--app-table-cell-font)] text-[var(--app-text)]',
+  },
+  {
+    key: 'tanggal_diterima',
+    label: 'Tanggal Terima',
+    tdClass:
+      'px-6 py-4 whitespace-nowrap text-[length:var(--app-table-cell-font)] text-[var(--app-muted)]',
+  },
+  {
+    key: 'pengirim',
+    label: 'Pengirim',
+    tdClass:
+      'px-6 py-4 text-[length:var(--app-table-cell-font)] text-[var(--app-text)]',
+  },
+  {
+    key: 'jenis_surat',
+    label: 'Jenis Surat',
+    tdClass:
+      'px-6 py-4 text-[length:var(--app-table-cell-font)] text-[var(--app-text)]',
+  },
+  {
+    key: 'aksi',
+    label: 'Aksi',
+    tdClass: 'px-6 py-4 font-semibold',
+  },
 ]
 
 const errorMessage = computed(() => store.error)
@@ -176,19 +253,20 @@ const filteredRows = computed(() => {
   if (filterDurasi.value) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     result = result.filter((row) => {
       if (!row.tanggal_diterima) return false
-      
+
       const rowDate = new Date(row.tanggal_diterima)
       rowDate.setHours(0, 0, 0, 0)
-      
+
       const diffTime = today.getTime() - rowDate.getTime()
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-      
+
       if (filterDurasi.value === '< 3 Hari') return diffDays < 3
       if (filterDurasi.value === '3 - 7 Hari') return diffDays >= 3 && diffDays <= 7
       if (filterDurasi.value === '> 7 Hari') return diffDays > 7
+
       return true
     })
   }
@@ -200,6 +278,7 @@ const totalPages = computed(() => store.pendingPagination.total_halaman || 1)
 
 const formatDate = (value: string) => {
   if (!value) return '-'
+
   return new Date(value).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -210,6 +289,7 @@ const formatDate = (value: string) => {
 const goToVerification = (row: { id_pengajuan?: number }) => {
   const id = row.id_pengajuan
   if (!id) return
+
   router.push(`/kepsek/surat-antrean/${id}`)
 }
 

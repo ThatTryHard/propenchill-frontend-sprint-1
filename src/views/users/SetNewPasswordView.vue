@@ -1,286 +1,16 @@
-<template>
-  <div
-    class="set-password-card w-full max-w-[500px] rounded-[24px] shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border p-8 flex flex-col items-center text-center"
-  >
-    <div
-      class="set-password-icon w-[4.25rem] h-[4.25rem] rounded-full flex items-center justify-center mb-6"
-    >
-      <LockKeyhole class="w-[2.15rem] h-[2.15rem] text-[var(--app-accent)]" />
-    </div>
-
-    <h1 class="set-password-heading text-[1.7rem] font-bold mb-2">
-      Buat Kata Sandi Baru
-    </h1>
-
-    <p class="set-password-description text-[1rem] leading-relaxed mb-6">
-      Pastikan kata sandi baru Anda memenuhi persyaratan keamanan kami.
-    </p>
-
-    <VAlert
-      v-if="alert.visible"
-      :visible="alert.visible"
-      :type="alert.type"
-      :title="alert.title"
-      :message="alert.message"
-      @close="alert.visible = false"
-      class="mb-6 w-full text-left"
-    />
-
-    <form
-      v-if="!isSuccess"
-      @submit.prevent="handleResetPassword"
-      class="w-full flex flex-col gap-4 text-left"
-    >
-      <VInputField
-        v-model="password"
-        label="Kata Sandi Baru"
-        type="password"
-        placeholder="Masukkan kata sandi baru"
-        :disabled="isLoading"
-        :state="passwordError ? 'error' : 'default'"
-        :message="passwordError"
-      />
-
-      <VInputField
-        v-model="confirmPassword"
-        label="Konfirmasi Kata Sandi"
-        type="password"
-        placeholder="Ulangi kata sandi baru"
-        :disabled="isLoading"
-        :state="confirmPasswordError ? 'error' : 'default'"
-        :message="confirmPasswordError"
-      />
-
-      <div class="password-rules-card w-full p-4 rounded-[12px] border mb-2">
-        <div class="flex items-center justify-between gap-3 mb-3">
-          <h4 class="password-rules-title text-[1rem] font-bold">
-            Persyaratan Kata Sandi:
-          </h4>
-
-          <span class="text-[0.85rem] font-semibold" :class="passwordStrengthColor">
-            {{ passwordStrengthText }}
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="reqMinLength ? 'url(#grad1)' : 'var(--app-card-border)'"
-                :stroke="reqMinLength ? 'none' : 'var(--app-border)'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="reqMinLength"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-
-              <defs v-if="reqMinLength">
-                <linearGradient
-                  id="grad1"
-                  x1="2"
-                  y1="12"
-                  x2="22"
-                  y2="12"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stop-color="var(--app-accent-2)" />
-                  <stop offset="1" stop-color="var(--app-accent)" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            <span
-              :class="reqMinLength ? 'rule-text-valid' : 'rule-text-muted'"
-              class="text-[0.93rem]"
-            >
-              Minimal 8 Karakter
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="reqNumber ? 'url(#grad2)' : 'var(--app-card-border)'"
-                :stroke="reqNumber ? 'none' : 'var(--app-border)'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="reqNumber"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-
-              <defs v-if="reqNumber">
-                <linearGradient
-                  id="grad2"
-                  x1="2"
-                  y1="12"
-                  x2="22"
-                  y2="12"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stop-color="var(--app-accent-2)" />
-                  <stop offset="1" stop-color="var(--app-accent)" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            <span
-              :class="reqNumber ? 'rule-text-valid' : 'rule-text-muted'"
-              class="text-[0.93rem]"
-            >
-              Mengandung Angka (0-9)
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="reqCapital ? 'url(#grad3)' : 'var(--app-card-border)'"
-                :stroke="reqCapital ? 'none' : 'var(--app-border)'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="reqCapital"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-
-              <defs v-if="reqCapital">
-                <linearGradient
-                  id="grad3"
-                  x1="2"
-                  y1="12"
-                  x2="22"
-                  y2="12"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stop-color="var(--app-accent-2)" />
-                  <stop offset="1" stop-color="var(--app-accent)" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            <span
-              :class="reqCapital ? 'rule-text-valid' : 'rule-text-muted'"
-              class="text-[0.93rem]"
-            >
-              Mengandung Huruf Kapital (A-Z)
-            </span>
-          </div>
-
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              class="w-[1.7rem] h-[1.7rem] flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="reqSymbol ? 'url(#grad4)' : 'var(--app-card-border)'"
-                :stroke="reqSymbol ? 'none' : 'var(--app-border)'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="reqSymbol"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-
-              <defs v-if="reqSymbol">
-                <linearGradient
-                  id="grad4"
-                  x1="2"
-                  y1="12"
-                  x2="22"
-                  y2="12"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stop-color="var(--app-accent-2)" />
-                  <stop offset="1" stop-color="var(--app-accent)" />
-                </linearGradient>
-              </defs>
-            </svg>
-
-            <span
-              :class="reqSymbol ? 'rule-text-valid' : 'rule-text-muted'"
-              class="text-[0.93rem]"
-            >
-              Mengandung Karakter Unik
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <VButton
-        type="submit"
-        variant="primary"
-        class="w-full h-[3.45rem] mt-4"
-        :disabled="isLoading || !isPasswordValid"
-      >
-        {{ isLoading ? 'Menyimpan...' : 'Simpan Kata Sandi' }}
-      </VButton>
-    </form>
-
-    <div v-else class="w-full flex flex-col items-center gap-4 mt-4">
-      <VButton @click="router.replace('/login')" variant="primary" class="w-full h-[3.45rem]">
-        Lanjut ke Halaman Login
-      </VButton>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
+import { LockKeyhole, CheckCircle2, Circle } from 'lucide-vue-next'
+
 import { usePasswordStore } from '@/stores/users/password'
-import { LockKeyhole } from 'lucide-vue-next'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VAlert from '@/components/common/VAlert.vue'
-import { toast } from 'vue-sonner'
 import VToast from '@/components/common/VToast.vue'
+
+type AlertType = 'success' | 'error' | 'warning' | 'information'
 
 const router = useRouter()
 const passwordStore = usePasswordStore()
@@ -293,24 +23,51 @@ const confirmPasswordError = ref('')
 const isLoading = ref(false)
 const isSuccess = ref(false)
 
-const alert = reactive({ visible: false, type: 'error', title: '', message: '' })
+const alert = reactive<{
+  visible: boolean
+  type: AlertType
+  title: string
+  message: string
+}>({
+  visible: false,
+  type: 'error',
+  title: '',
+  message: '',
+})
 
-// Logika validasi password
 const reqMinLength = computed(() => password.value.length >= 8)
 const reqCapital = computed(() => /[A-Z]/.test(password.value))
 const reqNumber = computed(() => /[0-9]/.test(password.value))
-// Regex untuk mengecek simbol dari keyboard standar
 const reqSymbol = computed(() => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/.test(password.value))
 
-// Validasi keseluruhan
 const isPasswordValid = computed(() => {
   return reqMinLength.value && reqCapital.value && reqNumber.value && reqSymbol.value
 })
 
-// Indikator teks kekuatan
+const passwordRequirements = computed(() => [
+  {
+    label: 'Minimal 8 Karakter',
+    passed: reqMinLength.value,
+  },
+  {
+    label: 'Mengandung Angka (0-9)',
+    passed: reqNumber.value,
+  },
+  {
+    label: 'Mengandung Huruf Kapital (A-Z)',
+    passed: reqCapital.value,
+  },
+  {
+    label: 'Mengandung Karakter Unik',
+    passed: reqSymbol.value,
+  },
+])
+
 const passwordStrengthText = computed(() => {
   if (password.value.length === 0) return ''
+
   let score = 0
+
   if (reqMinLength.value) score++
   if (reqCapital.value) score++
   if (reqNumber.value) score++
@@ -321,12 +78,11 @@ const passwordStrengthText = computed(() => {
   return 'Sangat Kuat'
 })
 
-const passwordStrengthColor = computed(() => {
-  const text = passwordStrengthText.value
-  if (text === 'Lemah') return 'text-red-500'
-  if (text === 'Kuat') return 'text-[#D1955F]'
-  if (text === 'Sangat Kuat') return 'text-[#3f9760]'
-  return ''
+const passwordStrengthLevel = computed(() => {
+  if (passwordStrengthText.value === 'Lemah') return 'weak'
+  if (passwordStrengthText.value === 'Kuat') return 'strong'
+  if (passwordStrengthText.value === 'Sangat Kuat') return 'very-strong'
+  return 'empty'
 })
 
 onMounted(() => {
@@ -335,9 +91,9 @@ onMounted(() => {
   }
 })
 
-// Validasi form sebelum submit
 const validateForm = () => {
   let isValid = true
+
   passwordError.value = ''
   confirmPasswordError.value = ''
 
@@ -354,7 +110,6 @@ const validateForm = () => {
   return isValid
 }
 
-// logika reset password
 const handleResetPassword = async () => {
   alert.visible = false
 
@@ -369,7 +124,6 @@ const handleResetPassword = async () => {
       password.value,
     )
 
-    // Tampilkan toast sukses
     toast.custom(VToast, {
       componentProps: {
         type: 'success',
@@ -377,13 +131,13 @@ const handleResetPassword = async () => {
       },
     })
 
-    // Set flag sukses untuk tampilkan tombol lanjut
     setTimeout(() => {
       router.replace('/login')
     }, 1500)
   } catch (error: any) {
     alert.visible = true
     alert.type = 'error'
+    alert.title = 'Gagal Mengubah Kata Sandi'
     alert.message =
       error.response?.data?.error || 'Gagal mengubah kata sandi. Sesi Anda mungkin telah berakhir.'
   } finally {
@@ -392,56 +146,215 @@ const handleResetPassword = async () => {
 }
 </script>
 
-<style scoped>
-.set-password-card {
-  background: var(--app-card);
-  color: var(--app-text);
-  border-color: var(--app-border);
-}
+<template>
+  <main
+    class="
+      flex h-full min-h-full w-full items-center justify-center overflow-hidden
+      bg-transparent p-6 font-[var(--font-sans)] text-[var(--app-text)]
+      [@media(max-height:760px)]:p-4
+      max-[480px]:p-[14px]
+    "
+  >
+    <section
+      class="
+        flex w-[min(500px,100%)] max-h-[calc(100dvh-48px)]
+        flex-col items-center overflow-y-auto overflow-x-hidden
+        rounded-[24px] border border-[var(--app-border)]
+        bg-[var(--app-card)] p-8 text-center text-[var(--app-text)]
+        shadow-[0_8px_24px_rgba(0,0,0,0.05)]
+        [&::-webkit-scrollbar]:w-[5px]
+        [&::-webkit-scrollbar-track]:bg-transparent
+        [&::-webkit-scrollbar-thumb]:rounded-full
+        [&::-webkit-scrollbar-thumb]:bg-[var(--app-border)]
+        [@media(max-height:760px)]:max-h-[calc(100dvh-32px)]
+        [@media(max-height:760px)]:px-7
+        [@media(max-height:760px)]:py-6
+        max-[480px]:w-full
+        max-[480px]:rounded-[20px]
+        max-[480px]:px-5
+        max-[480px]:py-6
+      "
+    >
+      <div
+        class="
+          mb-6 flex h-[68px] w-[68px] shrink-0 items-center justify-center
+          rounded-full bg-[var(--app-soft-card)] text-[var(--app-accent)]
+          [@media(max-height:760px)]:mb-4
+          [@media(max-height:760px)]:h-14
+          [@media(max-height:760px)]:w-14
+        "
+      >
+        <LockKeyhole
+          class="
+            h-[34px] w-[34px] text-current
+            [@media(max-height:760px)]:h-7
+            [@media(max-height:760px)]:w-7
+          "
+        />
+      </div>
 
-.set-password-icon {
-  background: var(--app-soft-card);
-}
+      <h1
+        class="
+          [margin:0_0_8px]
+          text-[length:var(--app-modal-title-font)]
+          font-bold leading-[1.2] text-[var(--app-heading)]
+        "
+      >
+        Buat Kata Sandi Baru
+      </h1>
 
-.set-password-heading {
-  color: var(--app-heading);
-}
+      <p
+        class="
+          max-w-[360px] [margin:0_0_24px]
+          text-[length:var(--app-font-sm)]
+          leading-[1.6] text-[var(--app-muted)]
+          [@media(max-height:760px)]:mb-[18px]
+          [@media(max-height:760px)]:leading-[1.45]
+        "
+      >
+        Pastikan kata sandi baru Anda memenuhi persyaratan keamanan kami.
+      </p>
 
-.set-password-description {
-  color: var(--app-muted);
-}
+      <VAlert
+        v-if="alert.visible"
+        :type="alert.type"
+        :title="alert.title"
+        :message="alert.message"
+        class="mb-5 w-full text-left"
+        @close="alert.visible = false"
+      />
 
-.password-rules-card {
-  background: var(--app-soft-card);
-  border-color: var(--app-border);
-}
+      <form
+        v-if="!isSuccess"
+        class="
+          flex w-full flex-col gap-4 text-left
+          [@media(max-height:760px)]:gap-[14px]
+        "
+        @submit.prevent="handleResetPassword"
+      >
+        <VInputField
+          v-model="password"
+          label="Kata Sandi Baru"
+          type="password"
+          placeholder="Masukkan kata sandi baru"
+          :disabled="isLoading"
+          :state="passwordError ? 'error' : 'default'"
+          :message="passwordError"
+        />
 
-.password-rules-title {
-  color: var(--app-heading);
-}
+        <VInputField
+          v-model="confirmPassword"
+          label="Konfirmasi Kata Sandi"
+          type="password"
+          placeholder="Ulangi kata sandi baru"
+          :disabled="isLoading"
+          :state="confirmPasswordError ? 'error' : 'default'"
+          :message="confirmPasswordError"
+        />
 
-.rule-text-valid {
-  color: var(--app-subtext);
-}
+        <section
+          class="
+            w-full rounded-[12px] border border-[var(--app-card-border)]
+            bg-[var(--app-soft-card)] p-[14px] text-[var(--app-text)]
+          "
+        >
+          <div
+            class="
+              mb-3 flex items-center justify-between gap-3
+            "
+          >
+            <h2
+              class="
+                m-0 text-[length:var(--app-font-sm)]
+                font-bold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              Persyaratan Kata Sandi
+            </h2>
 
-.rule-text-muted {
-  color: var(--app-muted);
-}
+            <span
+              :class="[
+                'min-h-[1em] shrink-0 text-[length:var(--app-font-xs)] font-bold leading-[1.2]',
+                passwordStrengthLevel === 'weak'
+                  ? 'text-[var(--app-danger)]'
+                  : passwordStrengthLevel === 'strong'
+                    ? 'text-[var(--app-warning)]'
+                    : passwordStrengthLevel === 'very-strong'
+                      ? 'text-[var(--app-success)]'
+                      : 'text-[var(--app-muted)]',
+              ]"
+            >
+              {{ passwordStrengthText }}
+            </span>
+          </div>
 
-:global(html.dark) .set-password-icon {
-  background: var(--app-soft-card);
-}
+          <div
+            class="
+              grid grid-cols-2 gap-x-4 gap-y-[10px]
+              max-[480px]:grid-cols-1
+            "
+          >
+            <div
+              v-for="requirement in passwordRequirements"
+              :key="requirement.label"
+              :class="[
+                'flex items-center gap-2 transition-colors duration-200 ease-in-out',
+                requirement.passed ? 'text-[var(--app-subtext)]' : 'text-[var(--app-muted)]',
+              ]"
+            >
+              <CheckCircle2
+                v-if="requirement.passed"
+                class="h-5 w-5 shrink-0 text-[var(--app-success)]"
+              />
 
-:global(html.dark) .set-password-icon :deep(svg) {
-  color: var(--app-accent);
-  stroke: var(--app-accent);
-}
+              <Circle
+                v-else
+                class="h-5 w-5 shrink-0 text-[var(--app-input-border)]"
+              />
 
-:global(html.dark) .rule-text-valid {
-  color: var(--app-subtext);
-}
+              <span
+                class="
+                  text-[length:var(--app-font-xs)]
+                  leading-[1.35] text-current
+                "
+              >
+                {{ requirement.label }}
+              </span>
+            </div>
+          </div>
+        </section>
 
-:global(html.dark) .rule-text-muted {
-  color: var(--app-muted);
-}
-</style>
+        <VButton
+          type="submit"
+          variant="primary"
+          class="
+            mt-1 min-h-12 w-full
+            [@media(max-height:760px)]:min-h-[44px]
+          "
+          :disabled="isLoading || !isPasswordValid"
+        >
+          {{ isLoading ? 'Menyimpan...' : 'Simpan Kata Sandi' }}
+        </VButton>
+      </form>
+
+      <div
+        v-else
+        class="
+          mt-4 flex w-full flex-col items-center gap-4
+        "
+      >
+        <VButton
+          type="button"
+          variant="primary"
+          class="
+            mt-1 min-h-12 w-full
+            [@media(max-height:760px)]:min-h-[44px]
+          "
+          @click="router.replace('/login')"
+        >
+          Lanjut ke Halaman Login
+        </VButton>
+      </div>
+    </section>
+  </main>
+</template>

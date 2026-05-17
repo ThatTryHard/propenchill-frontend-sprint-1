@@ -16,43 +16,44 @@
 
     <div class="mt-4 flex w-full flex-col gap-4">
       <div class="w-full">
-        <div
-          class="max-h-[250px] overflow-y-auto rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card)] text-left shadow-sm"
-        >
-          <table class="w-full whitespace-nowrap text-[0.85rem] text-[var(--app-text)]">
-            <thead
-              class="sticky top-0 border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)] text-[var(--app-accent)]"
-            >
-              <tr>
-                <th class="px-3 py-2 text-left font-semibold">NISN</th>
-                <th class="px-3 py-2 text-left font-semibold">Nomor Induk</th>
-                <th class="px-3 py-2 text-left font-semibold">Nama Lengkap</th>
-                <th class="px-3 py-2 text-left font-semibold">Kelas</th>
-              </tr>
-            </thead>
+        <div class="max-h-[250px] overflow-y-auto rounded-[14px]">
+          <VTable
+            :columns="tableColumns"
+            :rows="previewData"
+            empty-message="Belum ada data siswa."
+          >
+            <template #cell-nisn="{ row }">
+              <span class="text-[length:var(--app-table-cell-font)] leading-[1.35] text-[var(--app-subtext)]">
+                {{ row.nisn || '-' }}
+              </span>
+            </template>
 
-            <tbody class="divide-y divide-[var(--app-card-border)]">
-              <tr
-                v-for="(student, idx) in previewData"
-                :key="idx"
-                class="transition-colors hover:bg-[var(--app-table-row-hover)]"
-              >
-                <td class="px-3 py-2">{{ student.nisn || '-' }}</td>
-                <td class="px-3 py-2">{{ student.nis }}</td>
-                <td class="px-3 py-2">{{ student.nama }}</td>
-                <td class="px-3 py-2">{{ student.kelas }}</td>
-              </tr>
+            <template #cell-nis="{ row }">
+              <span class="text-[length:var(--app-table-cell-font)] leading-[1.35] text-[var(--app-subtext)]">
+                {{ row.nis || '-' }}
+              </span>
+            </template>
 
-              <tr v-if="previewData.length === 0">
-                <td colspan="4" class="px-3 py-4 text-center font-medium text-[var(--app-muted)]">
-                  Belum ada data siswa.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            <template #cell-nama="{ row }">
+              <span class="text-[length:var(--app-table-cell-font)] font-medium leading-[1.35] text-[var(--app-heading)]">
+                {{ row.nama || '-' }}
+              </span>
+            </template>
+
+            <template #cell-kelas="{ row }">
+              <span class="text-[length:var(--app-table-cell-font)] leading-[1.35] text-[var(--app-subtext)]">
+                {{ row.kelas || '-' }}
+              </span>
+            </template>
+          </VTable>
         </div>
 
-        <p class="mt-2 text-[0.78rem] italic text-[var(--app-muted)]">
+        <p
+          class="
+            mt-2 mb-0 text-[length:var(--app-font-xs)]
+            italic leading-[1.4] text-[var(--app-muted)]
+          "
+        >
           *Menampilkan maksimal 5 baris pertama sebagai preview.
         </p>
       </div>
@@ -65,15 +66,53 @@ import { ref, computed } from 'vue'
 import { useStudentStore } from '@/stores/students'
 import VModal from '@/components/common/VModal.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import VTable from '@/components/common/VTable.vue'
 
-const props = defineProps({ isOpen: Boolean })
+type AlertType = 'success' | 'error' | 'warning' | 'information'
+
+defineProps({
+  isOpen: Boolean,
+})
+
 const emit = defineEmits(['update:isOpen'])
 const studentStore = useStudentStore()
 
 const isLoading = ref(false)
-const alert = ref({ show: false, type: 'information', message: '' })
 
-const showAlert = (type: string, message: string) => {
+const alert = ref<{
+  show: boolean
+  type: AlertType
+  message: string
+}>({
+  show: false,
+  type: 'information',
+  message: '',
+})
+
+const tableColumns = [
+  {
+    key: 'nisn',
+    label: 'NISN',
+    align: 'left' as const,
+  },
+  {
+    key: 'nis',
+    label: 'Nomor Induk',
+    align: 'left' as const,
+  },
+  {
+    key: 'nama',
+    label: 'Nama Lengkap',
+    align: 'left' as const,
+  },
+  {
+    key: 'kelas',
+    label: 'Kelas',
+    align: 'left' as const,
+  },
+]
+
+const showAlert = (type: AlertType, message: string) => {
   alert.value = { show: true, type, message }
 
   setTimeout(() => {
@@ -95,7 +134,7 @@ const handleExport = async () => {
     setTimeout(() => {
       emit('update:isOpen', false)
     }, 1500)
-  } catch (error) {
+  } catch {
     showAlert('error', 'Gagal mengunduh file Excel.')
   } finally {
     isLoading.value = false

@@ -1,99 +1,3 @@
-<template>
-  <DashboardLayout>
-    <template #sidebar>
-      <SIMPSidebar />
-    </template>
-
-    <div class="layout-bg min-h-full">
-      <div class="main-content-wrapper">
-        <div class="header-section">
-          <div class="title-group">
-            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[var(--app-heading)]">
-              Daftar Pengajuan Surat Keluar
-            </h1>
-            <p class="text-[13px] md:text-[14px] leading-[145%] text-[var(--app-muted)] mt-1">
-              Lihat dan kelola pengajuan surat yang telah dibuat
-            </p>
-          </div>
-          <VButton class="hifi-btn-custom-green" @click="$router.push('/surat-keluar/pengajuan')">
-            <template #left-icon>
-              <Plus :size="20" :stroke-width="3" color="currentColor" class="mr-2" />
-            </template>
-            <template #icon>
-              <Plus :size="20" :stroke-width="3" color="currentColor" class="mr-2" />
-            </template>
-            <Plus :size="20" :stroke-width="3" color="currentColor" class="mr-2 inline-block" />
-            <span>Buat Pengajuan</span>
-          </VButton>
-        </div>
-
-        <div class="search-section">
-          <VInputField v-model="searchQuery" state="search" placeholder="Cari Surat" />
-        </div>
-
-        <div class="filter-section">
-          <div class="dropdown-group">
-            <div class="hifi-dropdown">
-              <VDropdown v-model="filterMonth" :options="monthOptions" placeholder="Bulan" />
-            </div>
-            <div class="hifi-dropdown-status">
-              <VDropdown v-model="filterStatus" :options="statusOptions" placeholder="Status" />
-            </div>
-          </div>
-        </div>
-
-        <div class="hifi-table-container">
-          <div class="table-wrapper">
-            <table class="hifi-table">
-              <thead>
-                <tr>
-                  <th v-for="col in headers" :key="col.value">{{ col.text }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <template v-if="isLoading">
-                  <tr>
-                    <td colspan="6" class="loading-state">Memuat data pengajuan surat...</td>
-                  </tr>
-                </template>
-                <template v-else-if="filteredSurat.length > 0">
-                  <tr v-for="(row, index) in paginatedSurat" :key="row.id_pengajuan">
-                    <td class="cell-center">{{ rowStartIndex + index + 1 }}</td>
-                    <td class="cell-jenis-surat">{{ row.template_nama }}</td>
-                    <td class="cell-center">{{ row.nomor_surat || '-' }}</td>
-                    <td class="cell-center">{{ formatDate(row.tanggal_pengajuan) }}</td>
-                    <td class="cell-status">{{ row.status }}</td>
-                    <td
-                      class="cell-action"
-                      @click="$router.push(`/surat-keluar/detail/${row.id_pengajuan}`)"
-                    >
-                      Detail
-                    </td>
-                  </tr>
-                </template>
-                <template v-else>
-                  <tr>
-                    <td colspan="6" class="empty-state">
-                      Tidak ada data pengajuan surat yang tersedia.
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
-          </div>
-          <div class="show-all">
-            Menampilkan {{ paginatedSurat.length }} dari {{ filteredSurat.length }} data
-          </div>
-        </div>
-
-        <div class="pagination-container">
-          <VPagination v-model:current-page="currentPage" :total-pages="totalPages" />
-        </div>
-      </div>
-    </div>
-  </DashboardLayout>
-</template>
-
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/plugins/axios'
@@ -103,6 +7,8 @@ import VButton from '@/components/common/VButton.vue'
 import VPagination from '@/components/common/VPagination.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
+import VTable from '@/components/common/VTable.vue'
+import VChip from '@/components/common/VChip.vue'
 import { Plus } from 'lucide-vue-next'
 
 interface RiwayatItem {
@@ -121,6 +27,18 @@ const headers = [
   { text: 'Status', value: 'status' },
   { text: 'Aksi', value: 'aksi' },
 ]
+
+const tableColumns = computed(() =>
+  headers.map((header) => ({
+    key: header.value,
+    label: header.text,
+    align:
+      header.value === 'template_nama'
+        ? ('left' as const)
+        : ('center' as const),
+    nowrap: header.value !== 'template_nama',
+  })),
+)
 
 const listPengajuan = ref<RiwayatItem[]>([])
 const filterStatus = ref('')
@@ -145,6 +63,7 @@ const getMonthName = (m: number) => {
     'November',
     'Desember',
   ]
+
   return months[m - 1]
 }
 
@@ -167,6 +86,7 @@ const statusOptions = [
 
 const fetchRiwayat = async () => {
   isLoading.value = true
+
   try {
     const response = await api.get('/api/letters/my-requests')
     listPengajuan.value = Array.isArray(response.data?.data)
@@ -185,13 +105,17 @@ const normalizeStatus = (status: string | null | undefined) => String(status || 
 
 const filteredSurat = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
+
   return listPengajuan.value.filter((surat) => {
     const matchesSearch = !query || surat.template_nama?.toLowerCase().includes(query)
+
     const matchesMonth =
       !filterMonth.value ||
       new Date(surat.tanggal_pengajuan || '').getMonth() + 1 === parseInt(filterMonth.value)
+
     const matchesStatus =
       !filterStatus.value || normalizeStatus(surat.status) === normalizeStatus(filterStatus.value)
+
     return matchesSearch && matchesMonth && matchesStatus
   })
 })
@@ -221,231 +145,208 @@ watch(totalPages, (newTotalPages) => {
 
 const formatDate = (d?: string) =>
   d
-    ? new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })
+    ? new Date(d).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
     : '-'
+
+const getStatusVariant = (status?: string) => {
+  const normalized = normalizeStatus(status)
+
+  if (normalized === 'verified') return 'primary'
+  if (normalized === 'pending' || normalized === 'menunggu verifikasi kepsek') return 'warning'
+  if (normalized === 'rejected') return 'danger'
+  if (normalized === 'dibatalkan') return 'deleted'
+
+  return 'tertiary'
+}
 
 onMounted(fetchRiwayat)
 </script>
 
-<style scoped>
-.main-content-wrapper {
-  padding: 40px 60px;
-  max-width: 1440px;
-}
+<template>
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-.layout-bg {
-  background: var(--app-bg);
-  color: var(--app-text);
-}
+    <main
+      class="
+        min-h-full bg-[var(--app-bg)] px-[60px] py-10
+        font-[var(--font-sans)] text-[var(--app-text)]
+        max-[900px]:px-6 max-[900px]:py-7
+        max-[640px]:px-4
+      "
+    >
+      <div class="flex max-w-[1440px] flex-col">
+        <header
+          class="
+            mb-8 flex items-center justify-between gap-5
+            max-[768px]:flex-col max-[768px]:items-stretch
+          "
+        >
+          <div class="min-w-0">
+            <h1
+              class="
+                m-0 text-[length:var(--app-page-title-font)]
+                font-bold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              Daftar Pengajuan Surat Keluar
+            </h1>
 
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-}
+            <p
+              class="
+                mt-1 mb-0 text-[length:var(--app-page-subtitle-font)]
+                font-medium leading-[1.45] text-[var(--app-muted)]
+              "
+            >
+              Lihat dan kelola pengajuan surat yang telah dibuat
+            </p>
+          </div>
 
-.hifi-btn-custom-green {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 10px !important;
-  padding: 12px 28px !important;
-  border-radius: 20px !important;
-  border: none !important;
-  cursor: pointer;
-  color: var(--app-text-inverse) !important;
-  font-weight: 700 !important;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background: var(--app-accent) !important;
-  position: relative;
-  z-index: 10;
-}
+          <VButton
+            variant="primary"
+            size="sm"
+            class="shrink-0 max-[768px]:w-full"
+            @click="$router.push('/surat-keluar/pengajuan')"
+          >
+            <template #leftIcon>
+              <Plus :size="16" :stroke-width="3" />
+            </template>
 
-.hifi-search-bar {
-  position: relative;
-  width: 100%;
-  margin-bottom: 16px;
-}
+            <span>Buat Pengajuan</span>
+          </VButton>
+        </header>
 
-.hifi-search-bar input {
-  width: 100%;
-  padding: 14px 20px 14px 54px;
-  border-radius: 12px;
-  border: 1px solid var(--app-input-border);
-  background: var(--app-input-bg);
-  color: var(--app-text);
-  font-size: 16px;
-}
+        <section class="mb-3">
+          <VInputField
+            v-model="searchQuery"
+            state="search"
+            placeholder="Cari Surat"
+          />
+        </section>
 
-.search-icon {
-  position: absolute;
-  left: 18px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--app-muted);
-}
+        <section class="mb-6 flex justify-end">
+          <div
+            class="
+              flex gap-3
+              max-[900px]:w-full max-[900px]:flex-col
+            "
+          >
+            <div class="w-[180px] flex-none max-[900px]:w-full">
+              <VDropdown
+                v-model="filterMonth"
+                :options="monthOptions"
+                placeholder="Bulan"
+              />
+            </div>
 
-.search-section {
-  margin-bottom: 12px;
-}
+            <div class="w-[300px] flex-none max-[900px]:w-full">
+              <VDropdown
+                v-model="filterStatus"
+                :options="statusOptions"
+                placeholder="Status"
+              />
+            </div>
+          </div>
+        </section>
 
-.filter-section {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 24px;
-}
+        <section class="flex flex-col">
+          <VTable
+            :columns="tableColumns"
+            :rows="paginatedSurat"
+            :is-loading="isLoading"
+            loading-message="Memuat data pengajuan surat..."
+            empty-message="Tidak ada data pengajuan surat yang tersedia."
+          >
+            <template #cell-id_surat="{ index }">
+              <span
+                class="
+                  text-[length:var(--app-table-cell-font)]
+                  leading-[1.35] text-[var(--app-subtext)]
+                "
+              >
+                {{ rowStartIndex + index + 1 }}
+              </span>
+            </template>
 
-.dropdown-group {
-  display: flex;
-  gap: 12px;
-}
+            <template #cell-template_nama="{ row }">
+              <span
+                class="
+                  block max-w-[280px]
+                  text-[length:var(--app-table-cell-font)]
+                  font-semibold leading-[1.4] text-[var(--app-heading)]
+                "
+              >
+                {{ row.template_nama || '-' }}
+              </span>
+            </template>
 
-.hifi-dropdown {
-  position: relative;
-  width: 180px;
-  flex: 0 0 180px;
-}
+            <template #cell-nomor_surat="{ row }">
+              <span
+                class="
+                  text-[length:var(--app-table-cell-font)]
+                  leading-[1.35] text-[var(--app-subtext)]
+                "
+              >
+                {{ row.nomor_surat || '-' }}
+              </span>
+            </template>
 
-.hifi-dropdown-status {
-  position: relative;
-  width: 300px;
-  flex: 0 0 300px;
-}
+            <template #cell-tanggal_pengajuan="{ row }">
+              <span
+                class="
+                  text-[length:var(--app-table-cell-font)]
+                  leading-[1.35] text-[var(--app-subtext)]
+                "
+              >
+                {{ formatDate(row.tanggal_pengajuan) }}
+              </span>
+            </template>
 
-.hifi-dropdown select {
-  padding: 10px 40px 10px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--app-input-border);
-  appearance: none;
-  font-weight: 600;
-  background: var(--app-input-bg);
-  color: var(--app-text);
-}
+            <template #cell-status="{ row }">
+              <VChip
+                :label="row.status || '-'"
+                :variant="getStatusVariant(row.status)"
+              />
+            </template>
 
-.chevron-icon {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--app-muted);
-}
+            <template #cell-aksi="{ row }">
+              <VButton
+                variant="secondary"
+                size="sm"
+                @click="$router.push(`/surat-keluar/detail/${row.id_pengajuan}`)"
+              >
+                Detail
+              </VButton>
+            </template>
+          </VTable>
 
-.table-wrapper {
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid var(--app-card-border);
-  background-color: var(--app-card);
-  box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08);
-}
+          <div
+            class="
+              mt-4 flex items-center justify-between gap-4
+              max-[640px]:flex-col max-[640px]:items-start
+            "
+          >
+            <p
+              class="
+                m-0 text-[length:var(--app-font-sm)]
+                font-medium leading-[1.4] text-[var(--app-muted)]
+              "
+            >
+              Menampilkan {{ paginatedSurat.length }} dari {{ filteredSurat.length }} data
+            </p>
 
-.hifi-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.hifi-table thead th {
-  background-color: var(--app-table-head-bg);
-  color: var(--app-heading);
-  font-weight: 700;
-  font-size: 18px;
-  padding: 20px;
-  text-align: center;
-  border-bottom: 1px solid var(--app-card-border);
-}
-
-.hifi-table tbody tr:nth-child(even) {
-  background-color: var(--app-table-row-hover);
-}
-
-.hifi-table tbody tr:hover {
-  background-color: var(--app-bg);
-}
-
-.hifi-table tbody td {
-  padding: 16px 20px;
-  font-size: 16px;
-  color: var(--app-text);
-  border-bottom: 1px solid var(--app-card-border);
-  vertical-align: middle;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 40px !important;
-  color: var(--app-muted);
-  font-style: italic;
-}
-
-.loading-state {
-  text-align: center;
-  padding: 40px !important;
-  color: var(--app-muted);
-  font-style: italic;
-}
-
-.cell-center {
-  text-align: center;
-}
-
-.cell-jenis-surat {
-  font-weight: 600;
-  color: var(--app-heading);
-  max-width: 280px;
-  line-height: 1.4;
-}
-
-.cell-status {
-  text-align: center;
-  font-weight: 600;
-  color: var(--app-text);
-}
-
-.cell-action {
-  text-align: center;
-  text-decoration: underline;
-  font-weight: 700;
-  cursor: pointer;
-  color: var(--app-heading);
-  transition: color 0.2s ease;
-}
-
-.cell-action:hover {
-  color: var(--app-accent);
-}
-
-.show-all {
-  color: var(--app-muted);
-  font-size: 14px;
-  margin-top: 12px;
-  font-weight: 500;
-}
-
-.pagination-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 40px;
-}
-
-.inline-block {
-  display: inline-block;
-}
-
-.mr-2 {
-  margin-right: 8px;
-}
-
-@media (max-width: 900px) {
-  .dropdown-group {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .hifi-dropdown,
-  .hifi-dropdown-status {
-    width: 100%;
-    flex: 1 1 auto;
-  }
-}
-</style>
+            <VPagination
+              v-model:current-page="currentPage"
+              :total-pages="totalPages"
+            />
+          </div>
+        </section>
+      </div>
+    </main>
+  </DashboardLayout>
+</template>

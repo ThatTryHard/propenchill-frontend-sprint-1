@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import { PlusCircle, X } from 'lucide-vue-next'
+import { PlusCircle } from 'lucide-vue-next'
 import { useParentStore, validateParentForm } from '@/stores/parents'
 import { parseFieldErrors } from '@/lib/fieldErrors'
+
+import VModal from '@/components/common/VModal.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
+import VTextareaField from '@/components/common/VTextareaField.vue'
+import VAlert from '@/components/common/VAlert.vue'
+
+type AlertType = 'success' | 'error' | 'warning' | 'information'
 
 const props = defineProps<{
   isOpen: boolean
@@ -31,7 +37,13 @@ const errors = reactive({
   no_hp: '',
 })
 
-const submitError = ref('')
+const alert = reactive({
+  visible: false,
+  type: 'error' as AlertType,
+  title: '',
+  message: '',
+})
+
 const isSubmitting = ref(false)
 
 const resetForm = () => {
@@ -44,7 +56,11 @@ const resetForm = () => {
   errors.nama = ''
   errors.email = ''
   errors.no_hp = ''
-  submitError.value = ''
+
+  alert.visible = false
+  alert.type = 'error'
+  alert.title = ''
+  alert.message = ''
 }
 
 watch(
@@ -55,11 +71,13 @@ watch(
 )
 
 const closeModal = () => {
+  if (isSubmitting.value) return
   emit('update:isOpen', false)
 }
 
 const validateForm = () => {
   const result = validateParentForm(form)
+
   errors.nama = result.nama || ''
   errors.email = result.email || ''
   errors.no_hp = result.no_hp || ''
@@ -73,7 +91,7 @@ const handleSubmit = async () => {
   if (!validateForm()) return
 
   isSubmitting.value = true
-  submitError.value = ''
+  alert.visible = false
 
   try {
     const body: Record<string, string> = {
@@ -82,10 +100,16 @@ const handleSubmit = async () => {
       no_hp: form.no_hp.trim(),
     }
 
-    if (form.tanggal_lahir) body.tanggal_lahir = form.tanggal_lahir
-    if (form.alamat.trim()) body.alamat = form.alamat.trim()
+    if (form.tanggal_lahir) {
+      body.tanggal_lahir = form.tanggal_lahir
+    }
+
+    if (form.alamat.trim()) {
+      body.alamat = form.alamat.trim()
+    }
 
     const data = await store.createParent(body)
+
     emit('created', data.message || 'Akun wali murid berhasil dibuat.')
     closeModal()
   } catch (error) {
@@ -98,7 +122,11 @@ const handleSubmit = async () => {
     errors.nama = parsed.fieldErrors.nama || ''
     errors.email = parsed.fieldErrors.email || ''
     errors.no_hp = parsed.fieldErrors.no_hp || ''
-    submitError.value = parsed.generalError
+
+    alert.visible = true
+    alert.type = 'error'
+    alert.title = 'Gagal Menambah Wali Murid'
+    alert.message = parsed.generalError || 'Akun wali murid gagal dibuat.'
   } finally {
     isSubmitting.value = false
   }
@@ -106,170 +134,127 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-        @click.self="closeModal"
-      >
-        <transition
-          enter-active-class="transition duration-300 ease-out"
-          enter-from-class="opacity-0 scale-95 translate-y-4"
-          enter-to-class="opacity-100 scale-100 translate-y-0"
-          leave-active-class="transition duration-200 ease-in"
-          leave-from-class="opacity-100 scale-100 translate-y-0"
-          leave-to-class="opacity-0 scale-95 translate-y-4"
-        >
-          <div
-            v-if="isOpen"
-            class="relative w-full max-w-[720px] rounded-[24px] border-[0.5px] border-[var(--app-modal-border)] overflow-hidden backdrop-blur-[10px] px-8 py-7 text-[var(--app-modal-text)] bg-[var(--app-modal-bg)] shadow-[0px_-2px_4px_rgba(0,0,0,0.2),0px_2px_4px_rgba(255,255,255,0.4)]"
-          >
-            <div class="flex flex-col gap-5">
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  @click="closeModal"
-                  class="text-[var(--app-modal-text)] hover:opacity-70 transition"
-                >
-                  <X class="w-5 h-5" />
-                </button>
-              </div>
+  <VModal
+    :is-open="isOpen"
+    title="Tambah Wali Murid"
+    max-width-class="max-w-[460px]"
+    :buttons="[]"
+    @update:is-open="emit('update:isOpen', $event)"
+  >
+    <div class="create-parent-modal-body">
+      <form class="create-parent-modal-form" @submit.prevent="handleSubmit">
+        <VAlert
+          v-if="alert.visible"
+          :visible="alert.visible"
+          :type="alert.type"
+          :title="alert.title"
+          :message="alert.message"
+          @close="alert.visible = false"
+        />
 
-              <div class="flex flex-col items-center gap-2">
-                <PlusCircle class="w-12 h-12 text-[var(--app-accent)]" />
-                <b class="text-[24px] leading-[120%]">Tambah Wali Murid</b>
-              </div>
+        <VInputField
+          v-model="form.nama"
+          label="Nama Lengkap"
+          type="text"
+          placeholder="Masukkan nama lengkap"
+          :disabled="isSubmitting"
+          :state="errors.nama ? 'error' : 'default'"
+          :message="errors.nama"
+        />
 
-              <div class="flex flex-col gap-4">
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Nama Lengkap </label>
-                  <div
-                    class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]"
-                  >
-                    <input
-                      v-model="form.nama"
-                      type="text"
-                      placeholder="Masukkan nama lengkap"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]"
-                    />
-                  </div>
-                  <p v-if="errors.nama" class="text-[12px] text-[var(--app-danger)]">
-                    {{ errors.nama }}
-                  </p>
-                </div>
+        <VInputField
+          v-model="form.email"
+          label="Email"
+          type="email"
+          placeholder="Masukkan email"
+          :disabled="isSubmitting"
+          :state="errors.email ? 'error' : 'default'"
+          :message="errors.email"
+        />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Email </label>
-                  <div
-                    class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]"
-                  >
-                    <input
-                      v-model="form.email"
-                      type="email"
-                      placeholder="nama@email.com"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]"
-                    />
-                  </div>
-                  <p v-if="errors.email" class="text-[12px] text-[var(--app-danger)]">
-                    {{ errors.email }}
-                  </p>
-                </div>
+        <VInputField
+          v-model="form.no_hp"
+          label="Nomor HP"
+          type="text"
+          placeholder="Masukkan nomor HP"
+          :disabled="isSubmitting"
+          :state="errors.no_hp ? 'error' : 'default'"
+          :message="errors.no_hp"
+        />
 
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Nomor HP </label>
-                  <div
-                    class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]"
-                  >
-                    <input
-                      v-model="form.no_hp"
-                      type="text"
-                      placeholder="08123456789"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]"
-                    />
-                  </div>
-                  <p v-if="errors.no_hp" class="text-[12px] text-[var(--app-danger)]">
-                    {{ errors.no_hp }}
-                  </p>
-                </div>
+        <VInputField
+          v-model="form.tanggal_lahir"
+          label="Tanggal Lahir"
+          type="date"
+          placeholder="Pilih tanggal lahir"
+          :disabled="isSubmitting"
+        />
 
-                <VInputField
-                  v-model="form.tanggal_lahir"
-                  label="Tanggal Lahir"
-                  type="date"
-                  placeholder="Pilih tanggal lahir"
-                />
+        <VTextareaField
+          v-model="form.alamat"
+          label="Alamat"
+          placeholder="Masukkan alamat"
+          :disabled="isSubmitting"
+          :rows="2"
+        />
 
-                <VInputField
-                  v-model="form.no_hp"
-                  label="No HP"
-                  type="text"
-                  placeholder="Masukkan no hp"
-                />
+        <div class="create-parent-modal-actions">
+          <VButton type="button" variant="secondary" :disabled="isSubmitting" @click="closeModal">
+            Batal
+          </VButton>
 
-                <div class="md:col-span-2 flex flex-col gap-2">
-                  <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-text)]">
-                    Alamat
-                  </label>
-                  <div class="rounded-[12px] p-[2px] bg-[var(--app-input-border)]">
-                    <textarea
-                      v-model="form.alamat"
-                      rows="3"
-                      placeholder="Masukkan alamat"
-                      class="w-full rounded-[10px] bg-[var(--app-card)] px-[19px] py-[14px] text-[16px] leading-[150%] text-[var(--app-text)] outline-none resize-none"
-                    />
-                  </div>
-                </div>
-
-                <div class="flex flex-col gap-2">
-                  <label class="text-[16px] leading-[120%] font-semibold"> Alamat </label>
-                  <div
-                    class="rounded-[12px] border-2 border-[var(--app-input-border)] px-[19px] py-[14px]"
-                  >
-                    <input
-                      v-model="form.alamat"
-                      type="text"
-                      placeholder="Masukkan alamat"
-                      class="w-full appearance-none bg-transparent border-none outline-none ring-0 shadow-none focus:outline-none focus:ring-0 text-[16px] leading-[150%] text-[var(--app-text)] placeholder:text-[var(--app-input-placeholder)]"
-                    />
-                  </div>
-                </div>
-
-                <p v-if="submitError" class="text-[13px] text-[var(--app-danger)] font-medium">
-                  {{ submitError }}
-                </p>
-              </div>
-
-              <div class="flex items-center justify-end gap-2">
-                <VButton
-                  variant="secondary"
-                  class="!w-[132px]"
-                  :disabled="isSubmitting"
-                  @click="closeModal"
-                >
-                  Batal
-                </VButton>
-
-                <VButton
-                  variant="primary"
-                  class="!w-[132px]"
-                  :disabled="isSubmitDisabled"
-                  @click="handleSubmit"
-                >
-                  {{ isSubmitting ? 'Menyimpan...' : 'Tambah' }}
-                </VButton>
-              </div>
-            </div>
-          </div>
-        </transition>
-      </div>
-    </transition>
-  </Teleport>
+          <VButton type="submit" variant="primary" :disabled="isSubmitDisabled">
+            {{ isSubmitting ? 'Menyimpan...' : 'Tambah' }}
+          </VButton>
+        </div>
+      </form>
+    </div>
+  </VModal>
 </template>
+
+<style scoped>
+.create-parent-modal-body {
+  width: 100%;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  color: var(--app-text);
+  font-family: var(--font-sans);
+}
+
+.create-parent-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.create-parent-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.create-parent-modal-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--app-border);
+}
+
+.create-parent-modal-form {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.create-parent-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .create-parent-modal-body {
+    max-height: calc(100vh - 150px);
+  }
+
+  .create-parent-modal-actions {
+    flex-direction: column-reverse;
+  }
+}
+</style>

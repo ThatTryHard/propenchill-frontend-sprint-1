@@ -70,6 +70,14 @@ const roleOptions = [
   { label: 'Bidang Kesiswaan', value: 'BIDANG_KESISWAAN' },
 ]
 
+const placeholderOptions = [
+  '{nama}',
+  '{nis}',
+  '{kelas}',
+  '{tanggal}',
+  '{keperluan}',
+]
+
 const editorToolbar = [
   [{ header: [1, 2, 3, false] }],
   ['bold', 'italic', 'underline'],
@@ -138,13 +146,30 @@ function goBack() {
       <SIMPSidebar />
     </template>
 
-    <main class="flex-1 px-4 py-8 overflow-y-auto md:px-8 lg:px-10">
+    <main
+      class="
+        flex-1 overflow-y-auto bg-[var(--app-bg)]
+        px-4 py-8 font-[var(--font-sans)] text-[var(--app-text)]
+        md:px-8 lg:px-10
+      "
+    >
       <div class="w-full">
         <section class="mb-6 flex flex-col gap-1">
-          <h1 class="text-[28px] md:text-[32px] font-bold text-[var(--app-heading)]">
+          <h1
+            class="
+              m-0 text-[length:var(--app-page-title-font)]
+              font-bold leading-[1.2] text-[var(--app-heading)]
+            "
+          >
             Tambah Template Surat Baru
           </h1>
-          <p class="text-[14px] md:text-[16px] text-[var(--app-muted)]">
+
+          <p
+            class="
+              m-0 text-[length:var(--app-page-subtitle-font)]
+              leading-[1.4] text-[var(--app-muted)]
+            "
+          >
             Buat template surat baru untuk digunakan pengguna
           </p>
         </section>
@@ -157,6 +182,7 @@ function goBack() {
             :message="generalError"
             @close="generalError = ''"
           />
+
           <VAlert
             v-if="successMessage"
             type="success"
@@ -165,79 +191,158 @@ function goBack() {
             @close="successMessage = ''"
           />
 
-          <div class="relative z-30">
-            <VCard padding-class="p-6 !overflow-visible">
-              <div class="flex flex-col gap-5">
-                <div>
-                  <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Informasi Template</h2>
-                  <p class="text-[14px] text-[var(--app-muted)]">
-                    Isi identitas dasar template surat terlebih dahulu
-                  </p>
+          <VCard
+            padding-class="p-6"
+            class="relative z-30 overflow-visible"
+          >
+            <div class="flex flex-col gap-5">
+              <div>
+                <h2
+                  class="
+                    m-0 text-[length:var(--app-section-title-font)]
+                    font-semibold leading-[1.25] text-[var(--app-heading)]
+                  "
+                >
+                  Informasi Template
+                </h2>
+
+                <p
+                  class="
+                    mt-1 mb-0 text-[length:var(--app-font-sm)]
+                    leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
+                  Isi identitas dasar template surat terlebih dahulu
+                </p>
+              </div>
+
+              <VInputField
+                v-model="form.nama_template"
+                label="Nama Template"
+                placeholder="Masukkan nama template"
+                :state="fieldErrors.nama_template ? 'error' : 'default'"
+                :message="fieldErrors.nama_template"
+                @blur="normalizeNamaTemplate"
+                @update:modelValue="validateNamaTemplate()"
+              />
+
+              <div class="grid gap-4 lg:grid-cols-2">
+                <div class="flex flex-col gap-2">
+                  <label
+                    class="
+                      text-[length:var(--app-input-label-font)]
+                      font-semibold leading-[1.2] text-[var(--app-text)]
+                    "
+                  >
+                    Jenis Template
+                  </label>
+
+                  <VDropdown
+                    v-model="form.jenis"
+                    :options="jenisOptions"
+                    placeholder="Pilih jenis template"
+                  />
+
+                  <span
+                    v-if="fieldErrors.jenis"
+                    class="
+                      text-[length:var(--app-input-helper-font)]
+                      leading-[1.4] text-[var(--app-danger)]
+                    "
+                  >
+                    {{ fieldErrors.jenis }}
+                  </span>
                 </div>
 
-                <VInputField
-                  v-model="form.nama_template"
-                  @blur="normalizeNamaTemplate"
-                  @update:modelValue="validateNamaTemplate()"
-                  label="Nama Template"
-                  placeholder="Masukkan nama template"
-                  :state="fieldErrors.nama_template ? 'error' : 'default'"
-                  :message="fieldErrors.nama_template"
-                />
+                <div class="flex flex-col gap-2">
+                  <div class="flex items-center gap-2">
+                    <label
+                      class="
+                        text-[length:var(--app-input-label-font)]
+                        font-semibold leading-[1.2] text-[var(--app-text)]
+                      "
+                    >
+                      Metode Template
+                    </label>
 
-                <div class="grid lg:grid-cols-2 gap-4">
-                  <div class="flex flex-col gap-2">
-                    <label class="font-semibold text-[var(--app-text)]">Jenis Template</label>
-                    <VDropdown
-                      v-model="form.jenis"
-                      :options="jenisOptions"
-                      placeholder="Pilih jenis template"
-                    />
-                    <span v-if="fieldErrors.jenis" class="text-xs text-[var(--app-danger)]">
-                      {{ fieldErrors.jenis }}
-                    </span>
+                    <VTooltip
+                      type="small"
+                      text="Pilih Upload DOCX atau Input Manual"
+                    >
+                      <button
+                        type="button"
+                        class="
+                          inline-flex items-center justify-center text-[var(--app-muted)]
+                          transition-colors duration-200 ease-in-out
+                          hover:text-[var(--app-text)]
+                          focus:outline-none focus-visible:outline focus-visible:outline-2
+                          focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                        "
+                      >
+                        <InfoIcon class="h-4 w-4" />
+                      </button>
+                    </VTooltip>
                   </div>
 
-                  <div class="flex flex-col gap-2">
-                    <div class="flex items-center gap-2">
-                      <label class="font-semibold text-[var(--app-text)]"> Metode Template </label>
-                      <VTooltip type="small" text="Pilih Upload DOCX atau Input Manual">
-                        <button type="button" class="text-[var(--app-muted)] hover:text-[var(--app-text)]">
-                          <InfoIcon class="h-4 w-4" />
-                        </button>
-                      </VTooltip>
-                    </div>
+                  <VDropdown
+                    v-model="form.template_mode"
+                    :options="modeOptions"
+                    placeholder="Pilih metode template"
+                  />
 
-                    <VDropdown
-                      v-model="form.template_mode"
-                      :options="modeOptions"
-                      placeholder="Pilih metode template"
-                    />
-                    <span v-if="fieldErrors.template_mode" class="text-xs text-[var(--app-danger)]">
-                      {{ fieldErrors.template_mode }}
-                    </span>
-                  </div>
+                  <span
+                    v-if="fieldErrors.template_mode"
+                    class="
+                      text-[length:var(--app-input-helper-font)]
+                      leading-[1.4] text-[var(--app-danger)]
+                    "
+                  >
+                    {{ fieldErrors.template_mode }}
+                  </span>
                 </div>
               </div>
-            </VCard>
-          </div>
+            </div>
+          </VCard>
 
           <VCard padding-class="p-6">
             <div class="flex flex-col gap-5">
               <div>
                 <div class="flex items-center gap-2">
-                  <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Kontrol Akses</h2>
+                  <h2
+                    class="
+                      m-0 text-[length:var(--app-section-title-font)]
+                      font-semibold leading-[1.25] text-[var(--app-heading)]
+                    "
+                  >
+                    Kontrol Akses
+                  </h2>
+
                   <VTooltip
                     type="large"
                     title="Kontrol Akses"
                     text="Pilih role mana yang dapat melihat atau menggunakan template ini."
                   >
-                    <button type="button" class="text-[var(--app-muted)] hover:text-[var(--app-text)]">
+                    <button
+                      type="button"
+                      class="
+                        inline-flex items-center justify-center text-[var(--app-muted)]
+                        transition-colors duration-200 ease-in-out
+                        hover:text-[var(--app-text)]
+                        focus:outline-none focus-visible:outline focus-visible:outline-2
+                        focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                      "
+                    >
                       <InfoIcon class="h-5 w-5" />
                     </button>
                   </VTooltip>
                 </div>
-                <p class="text-[14px] text-[var(--app-muted)]">
+
+                <p
+                  class="
+                    mt-1 mb-0 text-[length:var(--app-font-sm)]
+                    leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
                   Tentukan role mana yang dapat mengakses template ini
                 </p>
               </div>
@@ -247,31 +352,67 @@ function goBack() {
                   v-for="role in roleOptions"
                   :key="role.value"
                   type="button"
+                  class="
+                    rounded-full transition-transform duration-200 ease-in-out
+                    hover:scale-[1.01] active:scale-[0.98]
+                    focus:outline-none focus-visible:outline focus-visible:outline-2
+                    focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                  "
                   @click="toggleRole(role.value)"
                 >
                   <VChip
                     :label="role.label"
-                    :variant="form.allowed_roles.includes(role.value) ? 'deep' : 'tertiary'"
+                    :variant="form.allowed_roles.includes(role.value) ? 'primary' : 'tertiary'"
                   />
                 </button>
               </div>
 
-              <span v-if="fieldErrors.allowed_roles" class="text-xs text-[var(--app-danger)]">
+              <span
+                v-if="fieldErrors.allowed_roles"
+                class="
+                  text-[length:var(--app-input-helper-font)]
+                  leading-[1.4] text-[var(--app-danger)]
+                "
+              >
                 {{ fieldErrors.allowed_roles }}
               </span>
             </div>
           </VCard>
 
-          <VCard v-if="form.template_mode === 'DOCX'" padding-class="p-6">
+          <VCard
+            v-if="form.template_mode === 'DOCX'"
+            padding-class="p-6"
+          >
             <div class="flex flex-col gap-5">
               <div>
-                <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Unggah Template Surat</h2>
-                <p class="text-[14px] text-[var(--app-muted)]">
+                <h2
+                  class="
+                    m-0 text-[length:var(--app-section-title-font)]
+                    font-semibold leading-[1.25] text-[var(--app-heading)]
+                  "
+                >
+                  Unggah Template Surat
+                </h2>
+
+                <p
+                  class="
+                    mt-1 mb-0 text-[length:var(--app-font-sm)]
+                    leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
                   Unggah file .docx yang berisi placeholder seperti
-                  <span class="font-semibold">{{ placeholderNama }}</span
-                  >, <span class="font-semibold">{{ placeholderNis }}</span
-                  >, dan <span class="font-semibold">{{ placeholderKelas }}</span
-                  >.
+                  <span class="font-semibold text-[var(--app-heading)]">
+                    {{ placeholderNama }}
+                  </span>
+                  ,
+                  <span class="font-semibold text-[var(--app-heading)]">
+                    {{ placeholderNis }}
+                  </span>
+                  , dan
+                  <span class="font-semibold text-[var(--app-heading)]">
+                    {{ placeholderKelas }}
+                  </span>
+                  .
                 </p>
               </div>
 
@@ -283,45 +424,101 @@ function goBack() {
                 @update:modelValue="(file) => handleFileChange(file)"
               />
 
-              <p v-if="fieldErrors.file_template" class="text-xs text-[var(--app-danger)]">
+              <p
+                v-if="fieldErrors.file_template"
+                class="
+                  m-0 text-[length:var(--app-input-helper-font)]
+                  leading-[1.4] text-[var(--app-danger)]
+                "
+              >
                 {{ fieldErrors.file_template }}
               </p>
             </div>
           </VCard>
 
-          <VCard v-else padding-class="p-6">
+          <VCard
+            v-else
+            padding-class="p-6"
+          >
             <div class="flex flex-col gap-5">
               <div>
-                <h2 class="text-[24px] font-semibold text-[var(--app-heading)]">Isi Konten Template</h2>
-                <p class="text-[14px] text-[var(--app-muted)]">
+                <h2
+                  class="
+                    m-0 text-[length:var(--app-section-title-font)]
+                    font-semibold leading-[1.25] text-[var(--app-heading)]
+                  "
+                >
+                  Isi Konten Template
+                </h2>
+
+                <p
+                  class="
+                    mt-1 mb-0 text-[length:var(--app-font-sm)]
+                    leading-[1.4] text-[var(--app-muted)]
+                  "
+                >
                   Header surat sudah disediakan sistem. Anda hanya perlu mengisi konten utama surat.
                 </p>
               </div>
 
-              <div class="overflow-hidden rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)]">
-                <div class="border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)] px-6 py-5">
+              <div
+                class="
+                  overflow-hidden rounded-[20px] border border-[var(--app-card-border)]
+                  bg-[var(--app-card)] text-[var(--app-text)]
+                "
+              >
+                <div
+                  class="
+                    border-b border-[var(--app-card-border)]
+                    bg-[var(--app-table-head-bg)] px-6 py-5
+                  "
+                >
                   <div
                     v-if="!isLoadingConfig"
-                    class="prose max-w-none text-[var(--app-text)]"
+                    class="template-preview-header-html max-w-none text-[var(--app-text)]"
                     v-html="headerHtml"
                   />
-                  <div v-else class="text-sm text-[var(--app-muted)]">Memuat header surat...</div>
+
+                  <div
+                    v-else
+                    class="
+                      text-[length:var(--app-font-sm)]
+                      leading-[1.4] text-[var(--app-muted)]
+                    "
+                  >
+                    Memuat header surat...
+                  </div>
                 </div>
 
                 <div class="px-6 py-5">
-                  <label class="mb-3 block font-semibold text-[var(--app-text)]"> Konten Template </label>
+                  <label
+                    class="
+                      mb-3 block text-[length:var(--app-input-label-font)]
+                      font-semibold leading-[1.2] text-[var(--app-text)]
+                    "
+                  >
+                    Konten Template
+                  </label>
 
                   <div class="mb-3 flex flex-wrap gap-2">
-                    <button type="button" @click="insertPlaceholder('{nama}')">Masukkan {nama}</button>
-                    <button type="button" @click="insertPlaceholder('{nis}')">Masukkan {nis}</button>
-                    <button type="button" @click="insertPlaceholder('{kelas}')">Masukkan {kelas}</button>
-                    <button type="button" @click="insertPlaceholder('{tanggal}')">Masukkan {tanggal}</button>
-                    <button type="button" @click="insertPlaceholder('{keperluan}')">Masukkan {keperluan}</button>
+                    <VButton
+                      v-for="placeholder in placeholderOptions"
+                      :key="placeholder"
+                      variant="tertiary"
+                      size="sm"
+                      @click="insertPlaceholder(placeholder)"
+                    >
+                      Masukkan {{ placeholder }}
+                    </VButton>
                   </div>
 
                   <div
-                    class="rounded-[16px] border"
-                    :class="fieldErrors.konten_template ? 'border-[var(--app-danger)]' : 'border-[var(--app-card-border)]'"
+                    :class="[
+                      'rounded-[16px] border bg-[var(--app-input-bg)] text-[var(--app-text)]',
+                      fieldErrors.konten_template
+                        ? 'border-[var(--app-danger)]'
+                        : 'border-[var(--app-card-border)]',
+                    ]"
                   >
                     <QuillEditor
                       ref="quillRef"
@@ -334,7 +531,13 @@ function goBack() {
                     />
                   </div>
 
-                  <p v-if="fieldErrors.konten_template" class="mt-2 text-xs text-[var(--app-danger)]">
+                  <p
+                    v-if="fieldErrors.konten_template"
+                    class="
+                      mt-2 mb-0 text-[length:var(--app-input-helper-font)]
+                      leading-[1.4] text-[var(--app-danger)]
+                    "
+                  >
                     {{ fieldErrors.konten_template }}
                   </p>
                 </div>
@@ -342,8 +545,14 @@ function goBack() {
             </div>
           </VCard>
 
-          <div class="grid md:grid-cols-2 gap-4">
-            <VButton variant="secondary" class="w-full" @click="goBack"> Batal </VButton>
+          <div class="grid gap-4 md:grid-cols-2">
+            <VButton
+              variant="secondary"
+              class="w-full"
+              @click="goBack"
+            >
+              Batal
+            </VButton>
 
             <VButton
               variant="primary"
@@ -364,24 +573,46 @@ function goBack() {
 :deep(.ql-toolbar.ql-snow) {
   border: none;
   border-bottom: 1px solid var(--app-card-border);
+  background: var(--app-table-head-bg);
+  color: var(--app-text);
 }
 
 :deep(.ql-container.ql-snow) {
   border: none;
   min-height: 220px;
-  font-size: 14px;
+  font-size: var(--app-font-sm);
   color: var(--app-text);
+  background: var(--app-input-bg);
+  font-family: var(--font-sans);
 }
 
 :deep(.ql-editor) {
   min-height: 220px;
   line-height: 1.6;
+  color: var(--app-text);
+}
+
+:deep(.ql-editor.ql-blank::before) {
+  color: var(--app-muted);
+}
+
+:deep(.ql-snow .ql-stroke) {
+  stroke: var(--app-text);
+}
+
+:deep(.ql-snow .ql-fill) {
+  fill: var(--app-text);
+}
+
+:deep(.ql-snow .ql-picker) {
+  color: var(--app-text);
 }
 
 :deep(.template-preview-header-html) {
   font-family: 'Times New Roman', serif;
   font-size: 12pt;
   line-height: 1.3;
+  color: var(--app-text);
 }
 
 :deep(.template-preview-header-html table) {

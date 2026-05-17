@@ -5,7 +5,7 @@ import HomeView from '@/views/HomeView.vue'
 import LoginView from '@/views/users/LoginView.vue'
 import RegisterView from '@/views/users/RegisterView.vue'
 import ParentListView from '@/views/admin/parents/ListView.vue'
-import ForgetPasswordView from '@/views/users/ForgotPasswordView.vue'
+import ForgotPasswordView from '@/views/users/ForgotPasswordView.vue'
 import VerifyOTPView from '@/views/users/VerifyOTPView.vue'
 import SetNewPasswordView from '@/views/users/SetNewPasswordView.vue'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
@@ -72,9 +72,17 @@ const router = createRouter({
           component: RegisterView,
         },
         {
+          path: '/verify-email',
+          name: 'verify-email',
+          component: VerifyEmailView,
+          meta: {
+            publicDefault: true,
+          },
+        },
+        {
           path: '/password-reset',
           name: 'password-reset',
-          component: ForgetPasswordView,
+          component: ForgotPasswordView,
         },
         {
           path: '/verify-otp/',
@@ -90,7 +98,7 @@ const router = createRouter({
     },
     {
       path: '/status',
-      name: 'status',
+      name: 'status',  
       component: StatusView,
     },
     {
@@ -180,9 +188,12 @@ const router = createRouter({
     },
     { path: '/students', redirect: '/admin/students' },
     {
-      path: '/verify-email',
-      name: 'verify-email',
+      path: '/profile/verify-email',
+      name: 'profile-verify-email',
       component: VerifyEmailView,
+      meta: {
+        requiresAuth: true,
+      },
     },
     {
       path: '/surat-keluar/pengajuan',
@@ -499,6 +510,11 @@ const router = createRouter({
       name: 'LetterDetail',
       component: () => import('@/views/field_summary/LetterDetailView.vue'),
       meta: { requiresAuth: true },
+    },
+    {
+      path: '/components',
+      name: 'common-components-playground',
+      component: () => import('@/views/CommonComponentsPlaygroundView.vue'),
     },
   ],
 })

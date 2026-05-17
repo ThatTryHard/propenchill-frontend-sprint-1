@@ -171,7 +171,10 @@ const handleSubmit = async () => {
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+        class="
+          fixed inset-0 z-[100] flex items-center justify-center
+          bg-black/40 p-3 backdrop-blur-sm
+        "
         @click.self="closeModal"
       >
         <transition
@@ -184,25 +187,50 @@ const handleSubmit = async () => {
         >
           <div
             v-if="isOpen"
-            class="student-modal-panel relative w-full max-w-[720px] max-h-[calc(100vh-2rem)] flex flex-col"
+            class="
+              relative flex max-h-[calc(100dvh-32px)] w-full max-w-[640px]
+              flex-col overflow-visible rounded-[20px] border-[0.5px]
+              border-[var(--app-modal-border)] bg-[var(--app-modal-bg)]
+              px-6 py-5 font-[var(--font-sans)] text-[var(--app-modal-text)]
+              shadow-[0_-2px_4px_rgba(0,0,0,0.2),0_2px_4px_rgba(255,255,255,0.4)]
+              backdrop-blur-[10px]
+              max-[640px]:px-4 max-[640px]:py-4
+            "
           >
-            <div class="flex h-full flex-col gap-5 min-h-0">
+            <div class="flex min-h-0 h-full flex-col gap-4">
               <div class="flex justify-end">
-                <button type="button" @click="closeModal" class="student-modal-close">
-                  <X class="w-5 h-5" />
+                <button
+                  type="button"
+                  aria-label="Tutup modal"
+                  class="
+                    inline-flex items-center justify-center
+                    text-[var(--app-modal-text)]
+                    transition-opacity duration-200 ease-in-out
+                    hover:opacity-70
+                    focus:outline-none focus-visible:outline focus-visible:outline-2
+                    focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                  "
+                  @click="closeModal"
+                >
+                  <X class="h-4 w-4" />
                 </button>
               </div>
 
-              <div class="flex flex-col items-center gap-2">
-                <Edit class="w-12 h-12 text-[var(--app-accent)]" />
+              <div class="flex flex-col items-center gap-1.5">
+                <Edit class="h-9 w-9 text-[var(--app-accent)]" />
 
-                <b class="student-modal-title text-[1.7rem] leading-[120%]">
+                <b
+                  class="
+                    text-center text-[length:var(--app-card-title-font)]
+                    font-bold leading-[1.2] text-[var(--app-modal-text)]
+                  "
+                >
                   Edit Data
                 </b>
               </div>
 
-              <div class="flex-1 overflow-y-auto pr-1 -mr-1">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="min-h-0 flex-1 overflow-y-auto pr-1 -mr-1">
+                <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <VInputField
                     v-model="form.nama"
                     label="Nama"
@@ -236,7 +264,12 @@ const handleSubmit = async () => {
                   />
 
                   <div class="flex flex-col gap-2">
-                    <label class="text-[1rem] font-semibold leading-[120%] text-[var(--app-modal-text)]">
+                    <label
+                      class="
+                        text-[length:var(--app-input-label-font)]
+                        font-semibold leading-[1.2] text-[var(--app-modal-text)]
+                      "
+                    >
                       Jenis Kelamin
                     </label>
 
@@ -248,7 +281,10 @@ const handleSubmit = async () => {
 
                     <div
                       v-if="errors.jenis_kelamin"
-                      class="text-[0.85rem] font-light leading-[150%] text-[var(--app-danger)]"
+                      class="
+                        text-[length:var(--app-input-helper-font)]
+                        font-light leading-[1.5] text-[var(--app-danger)]
+                      "
                     >
                       {{ errors.jenis_kelamin }}
                     </div>
@@ -285,17 +321,21 @@ const handleSubmit = async () => {
 
                   <p
                     v-if="submitError || studentStore.error"
-                    class="md:col-span-2 text-[0.93rem] text-[var(--app-danger)] font-medium"
+                    class="
+                      m-0 md:col-span-2
+                      text-[length:var(--app-font-sm)]
+                      font-medium leading-[1.5] text-[var(--app-danger)]
+                    "
                   >
                     {{ submitError || studentStore.error }}
                   </p>
                 </div>
               </div>
 
-              <div class="flex items-center justify-end gap-2">
+              <div class="flex items-center justify-end gap-3">
                 <VButton
                   variant="secondary"
-                  class="!w-[132px]"
+                  class="min-w-[92px]"
                   :disabled="studentStore.loading"
                   @click="closeModal"
                 >
@@ -304,7 +344,7 @@ const handleSubmit = async () => {
 
                 <VButton
                   variant="primary"
-                  class="!w-[132px]"
+                  class="min-w-[92px]"
                   :disabled="isSubmitDisabled"
                   @click="handleSubmit"
                 >
@@ -318,31 +358,3 @@ const handleSubmit = async () => {
     </transition>
   </Teleport>
 </template>
-
-<style scoped>
-.student-modal-panel {
-  overflow: visible;
-  border: 0.5px solid var(--app-modal-border);
-  border-radius: 24px;
-  background: var(--app-modal-bg);
-  color: var(--app-modal-text);
-  padding: 28px 32px;
-  box-shadow:
-    0px -2px 4px rgba(0, 0, 0, 0.2),
-    0px 2px 4px rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-}
-
-.student-modal-close,
-.student-modal-title {
-  color: var(--app-modal-text);
-}
-
-.student-modal-close {
-  transition: opacity 0.2s ease;
-}
-
-.student-modal-close:hover {
-  opacity: 0.7;
-}
-</style>

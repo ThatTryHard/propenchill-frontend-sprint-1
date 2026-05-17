@@ -8,12 +8,15 @@ import {
   Calendar,
 } from 'lucide-vue-next'
 import type { AxiosError } from 'axios'
+
 import { useAuthStore } from '@/stores/users/auth'
 import { useSuratAntreanStore } from '@/stores/surat_antrean'
-import VButton from '@/components/common/VButton.vue'
-import VAlert from '@/components/common/VAlert.vue'
+
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
+import VButton from '@/components/common/VButton.vue'
+import VAlert from '@/components/common/VAlert.vue'
+import VCard from '@/components/common/VCard.vue'
 import VerificationRejectModal from '@/components/department_teachers/VerificationRejectModal.vue'
 
 const route = useRoute()
@@ -42,21 +45,28 @@ const requiredLevelOneRole = computed(() => {
     AKADEMIK: 'BIDANG_AKADEMIK',
     KEAGAMAAN: 'BIDANG_AGAMA',
   }
+
   return map[templateJenis] || null
 })
 
 const userVerifierLevel = computed<number | null>(() => {
   const role = authStore.role || ''
+
   if (departmentRoles.includes(role)) return 1
   if (role === 'KEPSEK') return 2
+
   return null
 })
 
 const nextLevel = computed<number | null>(() => {
   if (!surat.value) return null
+
   const rawValue = (surat.value as Record<string, unknown>).next_level
+
   if (rawValue === null || rawValue === undefined || rawValue === '') return null
+
   const parsed = Number(rawValue)
+
   return Number.isNaN(parsed) ? null : parsed
 })
 
@@ -95,8 +105,10 @@ const rejectionReason = computed(() => {
     for (let index = rawHistory.length - 1; index >= 0; index -= 1) {
       const item = rawHistory[index] as Record<string, unknown>
       const status = String(item?.status || item?.verification_status || '').toLowerCase()
+
       if (status === 'rejected') {
         const note = item?.catatan || item?.notes || item?.note
+
         if (typeof note === 'string' && note.trim()) {
           return note.trim()
         }
@@ -113,7 +125,12 @@ const canVerify = computed(() => {
   if (!userVerifierLevel.value) return false
 
   const role = String(authStore.role || '').toUpperCase()
-  if (userVerifierLevel.value === 1 && requiredLevelOneRole.value && role !== requiredLevelOneRole.value) {
+
+  if (
+    userVerifierLevel.value === 1 &&
+    requiredLevelOneRole.value &&
+    role !== requiredLevelOneRole.value
+  ) {
     return false
   }
 
@@ -132,7 +149,9 @@ function getLetterTitle() {
 const formDataEntries = computed(() => {
   const readObject = (source: unknown): Record<string, unknown> | unknown[] => {
     if (!source) return {}
+
     if (typeof source === 'object') return source as Record<string, unknown>
+
     if (typeof source === 'string') {
       try {
         return JSON.parse(
@@ -140,12 +159,13 @@ const formDataEntries = computed(() => {
             .replace(/'/g, '"')
             .replace(/None/g, 'null')
             .replace(/True/g, 'true')
-            .replace(/False/g, 'false')
+            .replace(/False/g, 'false'),
         )
       } catch {
         return {}
       }
     }
+
     return {}
   }
 
@@ -156,19 +176,25 @@ const formDataEntries = computed(() => {
 
   const toDisplayValue = (value: unknown) => {
     if (value === null || value === undefined || value === '') return '-'
+
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       return String(value)
     }
+
     if (Array.isArray(value)) {
       return value.length ? value.join(', ') : '-'
     }
+
     if (typeof value === 'object') {
       const objectValue = value as Record<string, unknown>
+
       if ('value' in objectValue && objectValue.value !== null && objectValue.value !== undefined) {
         return String(objectValue.value)
       }
+
       return JSON.stringify(value)
     }
+
     return String(value)
   }
 
@@ -179,6 +205,7 @@ const formDataEntries = computed(() => {
           if (item && typeof item === 'object' && ('key' in item || 'value' in item)) {
             const itemObject = item as Record<string, unknown>
             const key = String(itemObject.key || `field_${index + 1}`)
+
             return {
               key,
               label: formatLabel(key),
@@ -197,6 +224,7 @@ const formDataEntries = computed(() => {
 
     if (source && typeof source === 'object') {
       const sourceObject = source as Record<string, unknown>
+
       return Object.keys(sourceObject).map((key) => ({
         key,
         label: formatLabel(key),
@@ -247,6 +275,7 @@ function getStatusClass(status: string): string {
 
 function formatDate(value: string) {
   if (!value) return '-'
+
   return new Date(value).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -258,6 +287,7 @@ function resolveBackPath() {
   if (isAdmin.value) return '/admin/surat-antrean'
   if (isKepsek.value) return '/kepsek/surat-antrean'
   if (isDepartmentTeacher.value) return '/department-teachers/surat-antrean'
+
   return '/admin/surat-antrean'
 }
 
@@ -278,6 +308,7 @@ function mapApiError(error: unknown) {
   const data = err.response?.data
 
   const notesErrors = data?.details?.notes
+
   if (Array.isArray(notesErrors) && notesErrors.length > 0) {
     return {
       message: String(notesErrors[0]),
@@ -329,16 +360,19 @@ async function handleReject(notes: string) {
     isRejectModalOpen.value = false
   } catch (error) {
     const mapped = mapApiError(error)
+
     if (mapped.notesError) {
       rejectNotesError.value = mapped.notesError
       return
     }
+
     generalError.value = mapped.message
   }
 }
 
 onMounted(async () => {
   const id = Number(route.params.id)
+
   if (!id) {
     generalError.value = 'ID surat tidak valid.'
     return
@@ -358,19 +392,28 @@ onMounted(async () => {
       <SIMPSidebar />
     </template>
 
-    <div class="p-8 flex flex-col gap-6 h-full font-['Plus_Jakarta_Sans'] bg-[var(--app-bg)] text-[var(--app-text)]">
-      <section class="mb-4">
-        <button
-          type="button"
-          class="flex items-center gap-2 text-[var(--app-muted)] hover:text-[var(--app-heading)] transition-colors"
+    <main
+      class="
+        flex h-full flex-col gap-6
+        bg-[var(--app-bg)] p-8
+        font-[var(--font-sans)] text-[var(--app-text)]
+      "
+    >
+      <section>
+        <VButton
+          variant="secondary"
+          size="sm"
           @click="goBack"
         >
-          <ArrowLeft class="h-5 w-5" />
-          <span class="text-[14px] font-medium">Kembali</span>
-        </button>
+          <template #leftIcon>
+            <ArrowLeft class="h-4 w-4" />
+          </template>
+
+          Kembali
+        </VButton>
       </section>
 
-      <section>
+      <section class="flex flex-col gap-3">
         <VAlert
           v-if="generalError"
           type="error"
@@ -378,6 +421,7 @@ onMounted(async () => {
           :message="generalError"
           @close="generalError = ''"
         />
+
         <VAlert
           v-if="successMessage"
           type="success"
@@ -387,24 +431,38 @@ onMounted(async () => {
         />
       </section>
 
-      <section
-        v-if="loading"
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
-      >
-        Memuat detail surat...
+      <section v-if="loading">
+        <VCard padding-class="px-6 py-10">
+          <p
+            class="
+              m-0 text-center text-[length:var(--app-font-sm)]
+              leading-[1.5] text-[var(--app-muted)]
+            "
+          >
+            Memuat detail surat...
+          </p>
+        </VCard>
       </section>
 
-      <section v-else-if="surat" class="flex flex-col gap-6">
-        <article
-          class="rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-6 shadow-sm"
-        >
-          <div class="flex items-start justify-between gap-4 mb-3">
-            <h3 class="text-[18px] font-bold leading-[1.4] text-[var(--app-heading)] flex-1">
+      <section
+        v-else-if="surat"
+        class="flex flex-col gap-6"
+      >
+        <VCard padding-class="px-6 py-6">
+          <div class="mb-3 flex items-start justify-between gap-4">
+            <h3
+              class="
+                m-0 flex-1 text-[length:var(--app-card-title-font)]
+                font-bold leading-[1.4] text-[var(--app-heading)]
+              "
+            >
               {{ getLetterTitle() }}
             </h3>
+
             <span
               :class="[
-                'px-4 py-1.5 rounded-full text-[14px] font-semibold whitespace-nowrap',
+                'whitespace-nowrap rounded-full px-4 py-1.5',
+                'text-[length:var(--app-font-sm)] font-semibold leading-[1.2]',
                 getStatusClass(surat.status),
               ]"
             >
@@ -412,65 +470,127 @@ onMounted(async () => {
             </span>
           </div>
 
-          <div class="flex flex-wrap items-center gap-5 mb-2">
-            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
-              <Folder class="w-4 h-4 text-[var(--app-muted)]" />
+          <div class="flex flex-wrap items-center gap-5">
+            <div
+              class="
+                flex items-center gap-1.5
+                text-[length:var(--app-font-sm)]
+                leading-[1.4] text-[var(--app-muted)]
+              "
+            >
+              <Folder class="h-4 w-4 text-[var(--app-muted)]" />
               <span>{{ surat.kategori || '-' }}</span>
             </div>
 
-            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
-              <User class="w-4 h-4 text-[var(--app-muted)]" />
+            <div
+              class="
+                flex items-center gap-1.5
+                text-[length:var(--app-font-sm)]
+                leading-[1.4] text-[var(--app-muted)]
+              "
+            >
+              <User class="h-4 w-4 text-[var(--app-muted)]" />
               <span>{{ surat.nama_pengaju }}</span>
             </div>
 
-            <div class="flex items-center gap-1.5 text-[14px] text-[var(--app-muted)]">
-              <Calendar class="w-4 h-4 text-[var(--app-muted)]" />
+            <div
+              class="
+                flex items-center gap-1.5
+                text-[length:var(--app-font-sm)]
+                leading-[1.4] text-[var(--app-muted)]
+              "
+            >
+              <Calendar class="h-4 w-4 text-[var(--app-muted)]" />
               <span>{{ formatDate(surat.tanggal_pengajuan) }}</span>
             </div>
           </div>
-        </article>
+        </VCard>
 
-        <section
-          class="rounded-[20px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-6 shadow-sm"
-        >
-          <h2 class="text-[18px] font-bold text-[var(--app-heading)] mb-4">Data Form</h2>
+        <VCard padding-class="px-6 py-6">
+          <h2
+            class="
+              mb-4 mt-0 text-[length:var(--app-section-title-font)]
+              font-bold leading-[1.2] text-[var(--app-heading)]
+            "
+          >
+            Data Form
+          </h2>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
+          <div class="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-3">
             <template v-if="formDataEntries.length > 0">
-              <div v-for="entry in formDataEntries" :key="entry.key" class="min-w-0">
-                <p class="text-[13px] leading-[145%] text-[var(--app-muted)]">
+              <div
+                v-for="entry in formDataEntries"
+                :key="entry.key"
+                class="min-w-0"
+              >
+                <p
+                  class="
+                    m-0 text-[length:var(--app-font-xs)]
+                    leading-[1.45] text-[var(--app-muted)]
+                  "
+                >
                   {{ entry.label }}
                 </p>
-                <p class="mt-1 text-[18px] leading-[150%] font-semibold text-[var(--app-heading)] break-words">
+
+                <p
+                  class="
+                    mt-1 mb-0 break-words
+                    text-[length:var(--app-card-title-font)]
+                    font-semibold leading-[1.5] text-[var(--app-heading)]
+                  "
+                >
                   {{ entry.value }}
                 </p>
               </div>
             </template>
 
             <template v-else>
-              <div class="md:col-span-3 text-[14px] text-[var(--app-muted)] italic">
+              <div
+                class="
+                  text-[length:var(--app-font-sm)] italic
+                  leading-[1.5] text-[var(--app-muted)] md:col-span-3
+                "
+              >
                 Tidak ada data form yang tersedia.
               </div>
             </template>
           </div>
-        </section>
+        </VCard>
 
-        <section
+        <VCard
           v-if="isRejectedStatus && rejectionReason"
-          class="rounded-[20px] border border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] px-6 py-5 shadow-sm"
+          padding-class="px-6 py-5"
+          class="
+            border-[var(--app-danger-border)]
+            bg-[var(--app-danger-bg)]
+          "
         >
-          <h2 class="text-[18px] font-bold text-[var(--app-danger)] mb-2">
+          <h2
+            class="
+              mb-2 mt-0 text-[length:var(--app-section-title-font)]
+              font-bold leading-[1.2] text-[var(--app-danger)]
+            "
+          >
             Alasan Penolakan
           </h2>
-          <p class="text-[15px] leading-[155%] text-[var(--app-danger)] break-words">
+
+          <p
+            class="
+              m-0 break-words text-[length:var(--app-font-sm)]
+              leading-[1.55] text-[var(--app-danger)]
+            "
+          >
             {{ rejectionReason }}
           </p>
-        </section>
+        </VCard>
 
-        <div v-if="canVerify" class="flex items-center justify-center gap-4">
+        <div
+          v-if="canVerify"
+          class="flex items-center justify-center gap-4"
+        >
           <VButton
             variant="secondary"
-            class="!rounded-full !px-6 w-150"
+            class="min-w-[150px]"
             :disabled="actionLoading"
             @click="openRejectModal"
           >
@@ -479,7 +599,7 @@ onMounted(async () => {
 
           <VButton
             variant="primary"
-            class="!rounded-full !px-6 w-150"
+            class="min-w-[150px]"
             :disabled="actionLoading"
             @click="handleApprove"
           >
@@ -488,13 +608,19 @@ onMounted(async () => {
         </div>
       </section>
 
-      <section
-        v-else
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
-      >
-        Surat tidak ditemukan.
+      <section v-else>
+        <VCard padding-class="px-6 py-10">
+          <p
+            class="
+              m-0 text-center text-[length:var(--app-font-sm)]
+              leading-[1.5] text-[var(--app-muted)]
+            "
+          >
+            Surat tidak ditemukan.
+          </p>
+        </VCard>
       </section>
-    </div>
+    </main>
 
     <VerificationRejectModal
       :isOpen="isRejectModalOpen"

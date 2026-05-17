@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
+import { CheckCircle2, Circle } from 'lucide-vue-next'
+
 import VToast from '@/components/common/VToast.vue'
+import VAlert from '@/components/common/VAlert.vue'
+import VButton from '@/components/common/VButton.vue'
+import VInputField from '@/components/common/VInputField.vue'
 import { useAuthStore } from '@/stores/users/auth'
 import { usePasswordStore } from '@/stores/users/password'
-import VInputField from '@/components/common/VInputField.vue'
-import VButton from '@/components/common/VButton.vue'
+
+type AlertType = 'success' | 'error' | 'warning' | 'information'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -24,7 +29,39 @@ const emailError = ref('')
 const noHpError = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
+
+const alert = reactive<{
+  visible: boolean
+  type: AlertType
+  title: string
+  message: string
+}>({
+  visible: false,
+  type: 'error',
+  title: '',
+  message: '',
+})
+
 const pwdStrength = computed(() => passwordStore.checkPasswordStrength(password.value))
+
+const passwordRequirements = computed(() => [
+  {
+    label: 'Minimal 8 Karakter',
+    passed: pwdStrength.value.reqMinLength,
+  },
+  {
+    label: 'Mengandung Angka (0-9)',
+    passed: pwdStrength.value.reqNumber,
+  },
+  {
+    label: 'Huruf Kapital (A-Z)',
+    passed: pwdStrength.value.reqCapital,
+  },
+  {
+    label: 'Karakter Unik/Simbol',
+    passed: pwdStrength.value.reqSymbol,
+  },
+])
 
 watch(nama, () => (namaError.value = ''))
 watch(email, () => (emailError.value = ''))
@@ -38,6 +75,7 @@ const validateForm = () => {
   noHpError.value = ''
   passwordError.value = ''
   confirmPasswordError.value = ''
+  alert.visible = false
 
   let hasError = false
 
@@ -79,6 +117,7 @@ const handleRegister = async () => {
   if (!validateForm()) return
 
   isLoading.value = true
+  alert.visible = false
 
   try {
     const response = await authStore.register({
@@ -97,6 +136,7 @@ const handleRegister = async () => {
         message: 'Registrasi berhasil! Silakan lanjut verifikasi email.',
       },
     })
+
     setTimeout(() => {
       router.push({
         name: 'verify-email',
@@ -105,12 +145,19 @@ const handleRegister = async () => {
     }, 1000)
   } catch (error: unknown) {
     const message = (error as Error).message
+
     toast.custom(VToast, {
       componentProps: {
         type: 'error',
         message: 'Registrasi Gagal! Silakan coba lagi.',
       },
     })
+
+    alert.visible = true
+    alert.type = 'error'
+    alert.title = 'Registrasi Gagal'
+    alert.message = message || 'Terjadi kesalahan saat membuat akun. Silakan coba lagi.'
+
     emailError.value = message
     noHpError.value = message
   } finally {
@@ -120,232 +167,246 @@ const handleRegister = async () => {
 </script>
 
 <template>
-  <div class="w-full max-w-[600px] flex flex-col items-center justify-start pb-10">
-    <div class="absolute top-8 left-8 z-20">
-      <img src="@/assets/Inrab_Logo.png" alt="SMA Insan Rabbany" class="h-16 opacity-80" />
+  <main
+    class="
+      relative flex h-full min-h-full w-full items-start justify-center
+      overflow-y-auto overflow-x-hidden bg-transparent p-6
+      font-[var(--font-sans)] text-[var(--app-text)]
+      [&::-webkit-scrollbar]:w-[6px]
+      [&::-webkit-scrollbar-track]:bg-transparent
+      [&::-webkit-scrollbar-thumb]:rounded-full
+      [&::-webkit-scrollbar-thumb]:bg-[var(--app-border)]
+      [@media(max-height:780px)]:p-4
+      max-[640px]:p-[18px]
+    "
+  >
+    <div
+      class="
+        fixed left-8 top-8 z-[2]
+        max-[640px]:left-5 max-[640px]:top-5
+      "
+    >
+      <img
+        src="@/assets/Inrab_Logo.png"
+        alt="SMA Insan Rabbany"
+        class="
+          h-16 w-auto object-contain opacity-80
+          [@media(max-height:780px)]:h-12
+          max-[640px]:h-12
+        "
+      />
     </div>
 
-    <div class="flex flex-col items-center mb-8">
-      <img src="@/assets/SIMP.png" alt="SIMP Box" class="h-32 mb-6" />
-      <h1 class="text-[28px] font-bold text-[#767E86]">Create Account</h1>
-    </div>
+    <section
+      class="
+        flex min-h-full w-[min(600px,100%)] flex-col items-center
+        pt-6 pb-10
+        [@media(max-height:780px)]:pt-3
+        [@media(max-height:780px)]:pb-7
+        max-[640px]:w-full
+        max-[640px]:pt-14
+      "
+    >
+      <div
+        class="
+          mb-6 flex shrink-0 flex-col items-center text-center
+          [@media(max-height:780px)]:mb-4
+        "
+      >
+        <img
+          src="@/assets/SIMP.png"
+          alt="SIMP Box"
+          class="
+            mb-[18px] h-28 w-auto object-contain
+            [@media(max-height:780px)]:mb-3
+            [@media(max-height:780px)]:h-[84px]
+          "
+        />
 
-    <form @submit.prevent="handleRegister" class="w-full flex flex-col gap-3">
-      <VInputField
-        v-model="nama"
-        label="Nama Lengkap"
-        type="text"
-        placeholder="Masukkan nama lengkap"
-        :disabled="isLoading"
-        :state="namaError ? 'error' : 'default'"
-        :message="namaError"
-      />
-
-      <VInputField
-        v-model="email"
-        label="Email"
-        type="email"
-        placeholder="nama@email.com"
-        :disabled="isLoading"
-        :state="emailError ? 'error' : 'default'"
-        :message="emailError"
-      />
-
-      <VInputField
-        v-model="noHp"
-        label="Nomor HP"
-        type="text"
-        placeholder="Contoh: 08123456789"
-        :disabled="isLoading"
-        :state="noHpError ? 'error' : 'default'"
-        :message="noHpError"
-      />
-
-      <VInputField
-        v-model="password"
-        label="Kata Sandi"
-        type="password"
-        placeholder="Masukkan kata sandi"
-        :disabled="isLoading"
-        :state="passwordError ? 'error' : 'default'"
-        :message="passwordError"
-      />
-
-      <VInputField
-        v-model="confirmPassword"
-        label="Konfirmasi Kata Sandi"
-        type="password"
-        placeholder="Masukkan ulang kata sandi"
-        :disabled="isLoading"
-        :state="confirmPasswordError ? 'error' : 'default'"
-        :message="confirmPasswordError"
-      />
-
-      <div class="w-full bg-[#f8fafc] p-4 rounded-[12px] border border-[#e2e8f0] mb-2">
-        <div class="flex items-center justify-between mb-3">
-          <h4 class="text-[14px] font-bold text-[#111827]">Persyaratan Kata Sandi:</h4>
-          <span class="text-[12px] font-semibold" :class="pwdStrength.color">
-            {{ pwdStrength.text }}
-          </span>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="pwdStrength.reqMinLength ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="pwdStrength.reqMinLength ? 'none' : '#CBD5E1'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="pwdStrength.reqMinLength"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              <defs v-if="pwdStrength.reqMinLength">
-                <linearGradient
-                  id="grad1"
-                  x1="2"
-                  y1="12"
-                  x2="22"
-                  y2="12"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop stop-color="#D1955F" />
-                  <stop offset="1" stop-color="#3F9760" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <span
-              :class="pwdStrength.reqMinLength ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
-              class="text-[13px]"
-              >Minimal 8 Karakter</span
-            >
-          </div>
-
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="pwdStrength.reqNumber ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="pwdStrength.reqNumber ? 'none' : '#CBD5E1'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="pwdStrength.reqNumber"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            <span
-              :class="pwdStrength.reqNumber ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
-              class="text-[13px]"
-              >Mengandung Angka (0-9)</span
-            >
-          </div>
-
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="pwdStrength.reqCapital ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="pwdStrength.reqCapital ? 'none' : '#CBD5E1'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="pwdStrength.reqCapital"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            <span
-              :class="pwdStrength.reqCapital ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
-              class="text-[13px]"
-              >Huruf Kapital (A-Z)</span
-            >
-          </div>
-
-          <div class="flex items-center gap-2 transition-colors duration-300">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                :fill="pwdStrength.reqSymbol ? 'url(#grad1)' : '#E2E8F0'"
-                :stroke="pwdStrength.reqSymbol ? 'none' : '#CBD5E1'"
-                stroke-width="1.5"
-              />
-              <path
-                v-if="pwdStrength.reqSymbol"
-                d="M8 12.5L10.5 15L16 9"
-                stroke="white"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-            <span
-              :class="pwdStrength.reqSymbol ? 'text-[#4a5568]' : 'text-[#94a3b8]'"
-              class="text-[13px]"
-              >Karakter Unik/Simbol</span
-            >
-          </div>
-        </div>
+        <h1
+          class="
+            m-0 text-[length:var(--app-font-title)]
+            font-bold leading-[1.2] text-[var(--app-muted)]
+          "
+        >
+          Create Account
+        </h1>
       </div>
 
-      <VButton type="submit" variant="primary" class="mt-4 w-full h-[52px]" :disabled="isLoading">
-        {{ isLoading ? 'Memproses...' : 'Daftar' }}
-      </VButton>
+      <VAlert
+        v-if="alert.visible"
+        :type="alert.type"
+        :title="alert.title"
+        :message="alert.message"
+        class="mb-[14px] w-full"
+        @close="alert.visible = false"
+      />
 
-      <p class="text-center text-sm text-[#767E86] mt-2">
-        Sudah punya akun?
-        <router-link
-          to="/login"
-          class="font-semibold text-[#3f9760] hover:text-[#0c4923] hover:underline transition-colors"
+      <form
+        class="
+          flex w-full flex-col gap-3
+          [@media(max-height:780px)]:gap-[10px]
+        "
+        @submit.prevent="handleRegister"
+      >
+        <VInputField
+          v-model="nama"
+          label="Nama Lengkap"
+          type="text"
+          placeholder="Masukkan nama lengkap"
+          :disabled="isLoading"
+          :state="namaError ? 'error' : 'default'"
+          :message="namaError"
+        />
+
+        <VInputField
+          v-model="email"
+          label="Email"
+          type="email"
+          placeholder="Masukkan email"
+          :disabled="isLoading"
+          :state="emailError ? 'error' : 'default'"
+          :message="emailError"
+        />
+
+        <VInputField
+          v-model="noHp"
+          label="Nomor HP"
+          type="text"
+          placeholder="Masukkan nomor HP (contoh: 081234567890)"
+          :disabled="isLoading"
+          :state="noHpError ? 'error' : 'default'"
+          :message="noHpError"
+        />
+
+        <VInputField
+          v-model="password"
+          label="Kata Sandi"
+          type="password"
+          placeholder="Masukkan kata sandi"
+          :disabled="isLoading"
+          :state="passwordError ? 'error' : 'default'"
+          :message="passwordError"
+        />
+
+        <VInputField
+          v-model="confirmPassword"
+          label="Konfirmasi Kata Sandi"
+          type="password"
+          placeholder="Masukkan ulang kata sandi"
+          :disabled="isLoading"
+          :state="confirmPasswordError ? 'error' : 'default'"
+          :message="confirmPasswordError"
+        />
+
+        <section
+          class="
+            w-full rounded-[12px] border border-[var(--app-card-border)]
+            bg-[var(--app-soft-card)] p-[14px] text-[var(--app-text)]
+            [@media(max-height:780px)]:p-3
+          "
         >
-          Login di sini
-        </router-link>
-      </p>
-    </form>
-  </div>
+          <div
+            class="
+              mb-3 flex items-center justify-between gap-3
+            "
+          >
+            <h2
+              class="
+                m-0 text-[length:var(--app-font-sm)]
+                font-bold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              Persyaratan Kata Sandi
+            </h2>
+
+            <span
+              :class="[
+                'shrink-0 text-[length:var(--app-font-xs)] font-bold leading-[1.2]',
+                pwdStrength.isValid ? 'text-[var(--app-success)]' : 'text-[var(--app-muted)]',
+              ]"
+            >
+              {{ pwdStrength.text }}
+            </span>
+          </div>
+
+          <div
+            class="
+              grid grid-cols-2 gap-x-4 gap-y-[10px]
+              [@media(max-height:780px)]:gap-y-2
+              max-[640px]:grid-cols-1
+            "
+          >
+            <div
+              v-for="requirement in passwordRequirements"
+              :key="requirement.label"
+              :class="[
+                'flex items-center gap-2 transition-colors duration-200 ease-in-out',
+                requirement.passed ? 'text-[var(--app-subtext)]' : 'text-[var(--app-muted)]',
+              ]"
+            >
+              <CheckCircle2
+                v-if="requirement.passed"
+                class="h-5 w-5 shrink-0 text-[var(--app-success)]"
+              />
+
+              <Circle
+                v-else
+                class="h-5 w-5 shrink-0 text-[var(--app-input-border)]"
+              />
+
+              <span
+                class="
+                  text-[length:var(--app-font-xs)]
+                  leading-[1.35] text-current
+                "
+              >
+                {{ requirement.label }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <VButton
+          type="submit"
+          variant="primary"
+          class="
+            mt-1 min-h-[46px] w-full
+            [@media(max-height:780px)]:min-h-[42px]
+          "
+          :disabled="isLoading"
+        >
+          {{ isLoading ? 'Memproses...' : 'Daftar' }}
+        </VButton>
+
+        <p
+          class="
+            mt-2 mb-0 text-center
+            text-[length:var(--app-font-sm)]
+            leading-[1.5] text-[var(--app-muted)]
+          "
+        >
+          Sudah punya akun?
+
+          <router-link
+            to="/login"
+            class="
+              font-semibold text-[var(--app-accent)]
+              no-underline transition-colors duration-200 ease-in-out
+              hover:text-[var(--app-accent-2)]
+              hover:underline
+              focus:outline-none
+              focus-visible:rounded-[6px]
+              focus-visible:outline
+              focus-visible:outline-2
+              focus-visible:outline-offset-[3px]
+              focus-visible:outline-[var(--app-accent)]
+            "
+          >
+            Login di sini
+          </router-link>
+        </p>
+      </form>
+    </section>
+  </main>
 </template>

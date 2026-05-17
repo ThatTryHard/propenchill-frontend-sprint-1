@@ -1,64 +1,3 @@
-<template>
-  <div class="flex flex-col gap-2 w-full font-sans">
-    <label
-      v-if="label && actualState !== 'search'"
-      :class="['text-[16px] font-semibold leading-[120%]', labelStyles]"
-    >
-      {{ label }}
-    </label>
-
-    <div :class="['relative flex items-center w-full rounded-[12px]', wrapperStyles]">
-      <div
-        v-if="actualState === 'search'"
-        class="absolute left-[19px] flex items-center text-[var(--app-input-placeholder)]"
-      >
-        <SearchIcon class="w-[24px] h-[24px]" />
-      </div>
-
-      <input
-        :type="computedType"
-        :value="modelValue"
-        @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :class="[
-          'w-full py-[14px] text-[16px] leading-[150%] focus:outline-none transition-all duration-200',
-          '[&::-ms-reveal]:hidden [&::-ms-clear]:hidden',
-          actualState === 'search' ? 'pl-[53px]' : 'pl-[19px]',
-          isPassword || actualState === 'error' || actualState === 'success' || disabled
-            ? 'pr-[53px]'
-            : 'pr-[19px]',
-          inputStyles,
-        ]"
-      />
-
-      <div class="absolute right-[19px] flex items-center">
-        <button
-          v-if="isPassword && !disabled"
-          type="button"
-          @click="togglePassword"
-          class="text-[var(--app-input-placeholder)] hover:text-[var(--app-text)] focus:outline-none transition-colors"
-        >
-          <component :is="showPassword ? EyeOffIcon : EyeIcon" class="w-[24px] h-[24px]" />
-        </button>
-
-        <XCircleIcon v-else-if="actualState === 'error'" class="w-[24px] h-[24px] text-[var(--app-danger)]" />
-        <CheckCircle2Icon
-          v-else-if="actualState === 'success'"
-          class="w-[24px] h-[24px] text-[var(--app-success)]"
-        />
-        <LockIcon v-else-if="disabled" class="w-[24px] h-[24px] text-[var(--app-muted)]" />
-      </div>
-    </div>
-
-    <div v-if="message" :class="['text-[12px] font-light leading-[150%]', messageStyles]">
-      {{ message }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import {
@@ -70,34 +9,61 @@ import {
   SearchIcon,
 } from 'lucide-vue-next'
 
-const props = defineProps({
-  modelValue: [String, Number],
-  label: String,
-  type: { type: String, default: 'text' },
-  placeholder: String,
-  disabled: Boolean,
-  state: { type: String, default: 'default' }, // Pilihan: 'default', 'error', 'success', 'search'
-  message: String,
-})
+type InputState = 'default' | 'error' | 'success' | 'search'
 
-defineEmits(['update:modelValue'])
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string | number
+    label?: string
+    type?: string
+    placeholder?: string
+    disabled?: boolean
+    state?: InputState
+    message?: string
+  }>(),
+  {
+    modelValue: '',
+    label: '',
+    type: 'text',
+    placeholder: '',
+    disabled: false,
+    state: 'default',
+    message: '',
+  },
+)
 
-// Setup Password Logic
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>()
+
 const isPassword = computed(() => props.type === 'password')
 const showPassword = ref(false)
-const togglePassword = () => (showPassword.value = !showPassword.value)
+const isFocused = ref(false)
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
+}
 
 const computedType = computed(() => {
-  if (isPassword.value) return showPassword.value ? 'text' : 'password'
+  if (isPassword.value) {
+    return showPassword.value ? 'text' : 'password'
+  }
+
   return props.type
 })
 
-// Setup Focus State untuk transisi border gradient saat di-klik
-const isFocused = ref(false)
-const handleFocus = () => (isFocused.value = true)
-const handleBlur = () => (isFocused.value = false)
+const handleFocus = () => {
+  isFocused.value = true
+}
 
-// Evaluasi state akhir (prioritaskan disabled, lalu search/error/success, baru kemudian cek focus)
+const handleBlur = () => {
+  isFocused.value = false
+}
+
+const handleInput = (event: Event) => {
+  emit('update:modelValue', (event.target as HTMLInputElement).value)
+}
+
 const actualState = computed(() => {
   if (props.disabled) return 'disabled'
   if (props.state === 'search') return 'search'
@@ -107,52 +73,229 @@ const actualState = computed(() => {
   return 'default'
 })
 
-// STYLING DINAMIS SESUAI LOCOFY LU
-
-const labelStyles = computed(() => {
-  if (actualState.value === 'disabled') return 'text-[var(--app-input-placeholder)]'
-  if (actualState.value === 'error')
-    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
-  if (actualState.value === 'success')
-    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
-  return 'text-[var(--app-text)]'
+const rootClass = computed(() => {
+  return `v-input-field--${actualState.value}`
 })
 
-const messageStyles = computed(() => {
-  if (actualState.value === 'error')
-    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
-  if (actualState.value === 'success')
-    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
-  return 'hidden' // Sembunyikan kalau nggak ada pesan
+const shouldShowLabel = computed(() => {
+  return Boolean(props.label) && actualState.value !== 'search'
 })
 
-const wrapperStyles = computed(() => {
-  // KUNCI FIX: Selalu pakai padding 2px (p-[2px]) di semua state!
-  // Ini mencegah terjadinya layout shift (loncat/pop) saat diklik.
-  const base = 'p-[2px]'
-
-  if (actualState.value === 'active' || isFocused.value)
-    return `${base} bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))]`
-  if (actualState.value === 'error')
-    return `${base} bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))]`
-  if (actualState.value === 'success')
-    return `${base} bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))]`
-
-  // Default, Search, dan Disabled pakai background abu-abu yang seolah-olah jadi "border" 2px
-  return `${base} bg-[var(--app-input-border)]`
+const shouldShowRightIcon = computed(() => {
+  return (
+    isPassword.value ||
+    actualState.value === 'error' ||
+    actualState.value === 'success' ||
+    props.disabled
+  )
 })
 
-const inputStyles = computed(() => {
-  // Inner radius tetap 10px biar pas di dalam wrapper 12px
-  const base = 'rounded-[10px] text-[var(--app-text)] placeholder-[var(--app-input-placeholder)]'
+const shouldShowMessage = computed(() => {
+  return Boolean(props.message) && ['error', 'success'].includes(actualState.value)
+})
+
+const fieldClass = computed(() => {
+  return [
+    'v-input-field',
+    rootClass.value,
+    'flex w-full flex-col gap-2',
+    'font-[var(--font-sans)] text-[var(--app-text)]',
+    actualState.value === 'disabled' ? 'text-[var(--app-input-placeholder)]' : '',
+  ]
+})
+
+const labelClass = computed(() => {
+  const baseClass = [
+    'v-input-label',
+    'w-full font-semibold leading-[1.2]',
+    'text-[length:var(--app-input-label-font)]',
+  ]
+
+  if (actualState.value === 'error') {
+    return [...baseClass, 'app-gradient-text-error']
+  }
+
+  if (actualState.value === 'success') {
+    return [...baseClass, 'app-gradient-text-success']
+  }
 
   if (actualState.value === 'disabled') {
-    return `${base} bg-[var(--app-input-disabled-bg)] cursor-not-allowed`
-  }
-  if (actualState.value === 'search') {
-    return `${base} bg-[var(--app-input-muted-bg)]`
+    return [...baseClass, 'text-[var(--app-input-placeholder)]']
   }
 
-  return `${base} bg-[var(--app-input-bg)]`
+  return [...baseClass, 'text-[var(--app-text)]']
+})
+
+const wrapperClass = computed(() => {
+  const baseClass = [
+    'v-input-wrapper',
+    'relative box-border flex w-full items-center',
+    'rounded-[var(--app-input-radius)] p-0.5',
+    'transition-[background,opacity] duration-200 ease-in-out',
+  ]
+
+  if (actualState.value === 'active') {
+    return [...baseClass, '[background:var(--gradient-brand)]']
+  }
+
+  if (actualState.value === 'error') {
+    return [...baseClass, '[background:var(--gradient-error)]']
+  }
+
+  if (actualState.value === 'success') {
+    return [...baseClass, '[background:var(--gradient-success)]']
+  }
+
+  return [...baseClass, 'bg-[var(--app-input-border)]']
+})
+
+const inputClass = computed(() => {
+  const baseClass = [
+    'v-input',
+    'box-border w-full border-0',
+    'rounded-[var(--app-input-inner-radius)]',
+    'px-[var(--app-input-padding-x)] py-[var(--app-input-padding-y)]',
+    'bg-[var(--app-input-bg)] text-[var(--app-text)]',
+    'font-[var(--font-sans)] text-[length:var(--app-input-font)] font-normal leading-[1.5]',
+    'transition-colors duration-200 ease-in-out',
+    'focus:outline-none',
+    'placeholder:text-[var(--app-input-placeholder)] placeholder:opacity-100',
+    'disabled:cursor-not-allowed',
+    '[&::-ms-reveal]:hidden [&::-ms-clear]:hidden',
+    actualState.value === 'search' ? 'pl-[var(--app-input-icon-padding)]' : '',
+    shouldShowRightIcon.value ? 'pr-[var(--app-input-icon-padding)]' : '',
+  ]
+
+  if (actualState.value === 'search') {
+    return [...baseClass, 'bg-[var(--app-input-muted-bg)]']
+  }
+
+  if (actualState.value === 'disabled') {
+    return [...baseClass, 'bg-[var(--app-input-disabled-bg)] text-[var(--app-muted)]']
+  }
+
+  return baseClass
+})
+
+const leftIconClass = computed(() => {
+  return [
+    'v-input-left-icon',
+    'absolute left-[var(--app-input-icon-offset)] z-[2] flex items-center',
+    'text-[var(--app-input-placeholder)]',
+  ]
+})
+
+const rightIconClass = computed(() => {
+  return [
+    'v-input-right-icon',
+    'absolute right-[var(--app-input-icon-offset)] z-[2] flex items-center',
+    'text-[var(--app-input-placeholder)]',
+  ]
+})
+
+const iconClass = computed(() => {
+  return [
+    'v-input-icon',
+    'h-[var(--app-input-icon-size)] w-[var(--app-input-icon-size)]',
+  ]
+})
+
+const iconButtonClass = computed(() => {
+  return [
+    'v-input-icon-button',
+    'inline-flex items-center justify-center',
+    'text-[var(--app-input-placeholder)]',
+    'transition-colors duration-200 ease-in-out',
+    'hover:text-[var(--app-text)] focus:outline-none',
+    '[&>svg]:h-[var(--app-input-icon-size)] [&>svg]:w-[var(--app-input-icon-size)]',
+  ]
+})
+
+const messageClass = computed(() => {
+  const baseClass = [
+    'v-input-message',
+    'w-full text-[length:var(--app-input-helper-font)] font-light leading-[1.5]',
+  ]
+
+  if (actualState.value === 'error') {
+    return [...baseClass, 'app-gradient-text-error']
+  }
+
+  if (actualState.value === 'success') {
+    return [...baseClass, 'app-gradient-text-success']
+  }
+
+  return [...baseClass, 'text-[var(--app-muted)]']
 })
 </script>
+
+<template>
+  <div :class="fieldClass">
+    <label
+      v-if="shouldShowLabel"
+      :class="labelClass"
+    >
+      {{ label }}
+    </label>
+
+    <div :class="wrapperClass">
+      <div
+        v-if="actualState === 'search'"
+        :class="leftIconClass"
+      >
+        <SearchIcon :class="iconClass" />
+      </div>
+
+      <input
+        :type="computedType"
+        :value="modelValue ?? ''"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :class="inputClass"
+        @input="handleInput"
+        @focus="handleFocus"
+        @blur="handleBlur"
+      />
+
+      <div
+        v-if="shouldShowRightIcon"
+        :class="rightIconClass"
+      >
+        <button
+          v-if="isPassword && !disabled"
+          type="button"
+          :class="iconButtonClass"
+          aria-label="Tampilkan atau sembunyikan kata sandi"
+          @click="togglePassword"
+        >
+          <component
+            :is="showPassword ? EyeIcon : EyeOffIcon"
+            :class="iconClass"
+          />
+        </button>
+
+        <XCircleIcon
+          v-else-if="actualState === 'error'"
+          class="v-input-icon v-input-icon-error h-[var(--app-input-icon-size)] w-[var(--app-input-icon-size)] text-[var(--app-danger)]"
+        />
+
+        <CheckCircle2Icon
+          v-else-if="actualState === 'success'"
+          class="v-input-icon v-input-icon-success h-[var(--app-input-icon-size)] w-[var(--app-input-icon-size)] text-[var(--app-success)]"
+        />
+
+        <LockIcon
+          v-else-if="disabled"
+          class="v-input-icon v-input-icon-disabled h-[var(--app-input-icon-size)] w-[var(--app-input-icon-size)] text-[var(--app-muted)]"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="shouldShowMessage"
+      :class="messageClass"
+    >
+      {{ message }}
+    </div>
+  </div>
+</template>

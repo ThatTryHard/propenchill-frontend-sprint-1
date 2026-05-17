@@ -1,25 +1,13 @@
-<template>
-  <VSidebar
-    :navItems="currentNavItems"
-    :bottomItems="bottomItems"
-    :userName="authStore.user?.nama"
-    :userEmail="authStore.user?.email"
-    :userAvatar="userAvatar"
-  />
-
-  <LogoutConfirmationModal
-    :isOpen="isLogoutModalOpen"
-    @update:isOpen="isLogoutModalOpen = $event"
-    @confirmed="handleLogout"
-  />
-</template>
-
 <script setup lang="ts">
+import { computed, h, onMounted, ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/users/auth'
 import { useProfileStore } from '@/stores/profile'
-import type { NavItem, BottomNavItem } from '@/components/common/VSidebar.vue'
+
 import VSidebar from '@/components/common/VSidebar.vue'
 import LogoutConfirmationModal from '@/components/common/LogoutConfirmationModal.vue'
+import type { NavItem, BottomNavItem } from '@/components/common/VSidebar.vue'
+
 import {
   ClipboardCheck,
   Inbox,
@@ -37,33 +25,59 @@ import {
   LayoutDashboard,
   ClipboardList,
 } from 'lucide-vue-next'
-import { computed, ref, h, onMounted } from 'vue' // <-- FIX: Ditambahkan onMounted
-import { useRouter, useRoute } from 'vue-router' 
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const profileStore = useProfileStore()
+
 const isLogoutModalOpen = ref(false)
 const props = defineProps<{
   userAvatar?: string | null
 }>()
 
-const CustomDetailIcon = () => h('svg', {
-  xmlns: 'http://www.w3.org/2000/svg',
-  width: '22',
-  height: '18',
-  viewBox: '0 0 22 18',
-  fill: 'none'
-}, [
-  h('path', {
-    d: 'M21.0002 4L12.0092 9.727C11.7041 9.90421 11.3576 9.99755 11.0047 9.99755C10.6519 9.99755 10.3054 9.90421 10.0002 9.727L1.00024 4M3.00024 1H19.0002C20.1048 1 21.0002 1.89543 21.0002 3V15C21.0002 16.1046 20.1048 17 19.0002 17H3.00024C1.89567 17 1.00024 16.1046 1.00024 15V3C1.00024 1.89543 1.89567 1 3.00024 1Z',
-    stroke: 'currentColor', 
-    'stroke-width': '2',
-    'stroke-linecap': 'round',
-    'stroke-linejoin': 'round'
-  })
-])
+const CustomDetailIcon = () =>
+  h(
+    'svg',
+    {
+      xmlns: 'http://www.w3.org/2000/svg',
+      viewBox: '0 0 22 18',
+      fill: 'none',
+      class: 'h-[1.15rem] w-[1.15rem] shrink-0 text-current',
+    },
+    [
+      h('path', {
+        d: 'M21.0002 4L12.0092 9.727C11.7041 9.90421 11.3576 9.99755 11.0047 9.99755C10.6519 9.99755 10.3054 9.90421 10.0002 9.727L1.00024 4M3.00024 1H19.0002C20.1048 1 21.0002 1.89543 21.0002 3V15C21.0002 16.1046 20.1048 17 19.0002 17H3.00024C1.89567 17 1.00024 16.1046 1.00024 15V3C1.00024 1.89543 1.89567 1 3.00024 1Z',
+        stroke: 'currentColor',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+      }),
+    ],
+  )
+
+const userAvatar = computed(() => {
+  if (props.userAvatar) return props.userAvatar
+  return profileStore.profile?.avatar_url || null
+})
+
+onMounted(() => {
+  if (!profileStore.profile) {
+    profileStore.fetchProfile()
+  }
+})
+
+const normalizedRole = computed(() => {
+  return String(authStore.role || '').toUpperCase()
+})
+
+const isDepartmentRole = computed(() => {
+  return ['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(normalizedRole.value)
+})
+
+const isRequesterRole = computed(() => {
+  return ['GURU', 'WALI_MURID'].includes(normalizedRole.value)
+})
 
 const handleLogout = () => {
   authStore.logout()
@@ -74,37 +88,60 @@ const openLogoutModal = () => {
   isLogoutModalOpen.value = true
 }
 
-const userAvatar = computed(() => {
-  if (props.userAvatar) return props.userAvatar
-  if (profileStore.profile?.avatar_url) return profileStore.profile.avatar_url
-  return authStore.user?.avatar_url || authStore.user?.avatar || null
-})
-
-// 👇 FIX: Auto-fetch profile saat sidebar dimuat di halaman mana pun (Settings, Riwayat, dll)
-onMounted(() => {
-  if (!profileStore.profile) {
-    profileStore.fetchProfile()
+const getDepartmentDashboardConfig = () => {
+  if (normalizedRole.value === 'BIDANG_AKADEMIK') {
+    return {
+      label: 'Akademik',
+      path: '/akademik/dashboard',
+    }
   }
-})
 
-// DEFINISI MENU BERDASARKAN ROLE
-const currentNavItems = computed(() => {
-  const role = String(authStore.role || '').toUpperCase()
+  if (normalizedRole.value === 'BIDANG_KESISWAAN') {
+    return {
+      label: 'Kesiswaan',
+      path: '/kesiswaan/dashboard',
+    }
+  }
 
-  // 1. ROLE ADMIN
-  if (role === 'ADMIN') {
-    const adminItems: NavItem[] = [
-      { name: 'parents', label: 'Kelola Wali Murid', path: '/admin/parents', icon: Users },
-      { name: 'teachers', label: 'Kelola Akun Guru', path: '/admin/teachers', icon: UserRound },
+  return {
+    label: 'Keagamaan',
+    path: '/keagamaan/dashboard',
+  }
+}
+
+const currentNavItems = computed<NavItem[]>(() => {
+  if (normalizedRole.value === 'ADMIN') {
+    return [
+      {
+        name: 'parents',
+        label: 'Kelola Wali Murid',
+        path: '/admin/parents',
+        icon: Users,
+        matchPaths: ['/admin/parents'],
+      },
+      {
+        name: 'teachers',
+        label: 'Kelola Akun Guru',
+        path: '/admin/teachers',
+        icon: UserRound,
+        matchPaths: ['/admin/teachers'],
+      },
       {
         name: 'students',
         label: 'Basis Data Siswa & Staf',
         path: '/admin/students',
         icon: BarChart3,
+        matchPaths: ['/admin/students'],
       },
-      { name: 'staff', label: 'Kelola Akun Staff', path: '/admin/management', icon: ShieldCheck },
       {
-        name: 'surat-masuk',
+        name: 'staff',
+        label: 'Kelola Akun Staff',
+        path: '/admin/management',
+        icon: ShieldCheck,
+        matchPaths: ['/admin/management'],
+      },
+      {
+        name: 'surat-masuk-admin',
         label: 'Arsip Surat Masuk',
         path: '/admin/surat-masuk',
         icon: Inbox,
@@ -122,25 +159,28 @@ const currentNavItems = computed(() => {
         label: 'Manajemen Template',
         path: '/letter_templates',
         icon: Mail,
+        matchPaths: ['/letter_templates'],
       },
       {
         name: 'template-create',
         label: 'Tambah Template',
         path: '/letter_templates/create',
         icon: PlusCircle,
+        matchPaths: ['/letter_templates/create'],
       },
       {
         name: 'surat-keluar',
         label: 'Pengajuan Surat Keluar',
         path: '/surat-keluar/pengajuan',
         icon: FilePlus2,
+        matchPaths: ['/surat-keluar/pengajuan'],
       },
       {
         name: 'riwayat-pengajuan',
         label: 'Riwayat Pengajuan Surat',
         path: '/surat-keluar/riwayat',
         icon: FileText,
-        matchPaths: ['/surat-keluar/detail'],
+        matchPaths: ['/surat-keluar/riwayat', '/surat-keluar/detail'],
       },
       {
         name: 'activity-logs-admin',
@@ -150,43 +190,28 @@ const currentNavItems = computed(() => {
         matchPaths: ['/admin/activity-logs'],
       },
     ]
-
-    return adminItems
   }
 
-  // 2. ROLE GURU BIDANG (AKADEMIK, KESISWAAN, AGAMA)
-  if (['BIDANG_AGAMA', 'BIDANG_KESISWAAN', 'BIDANG_AKADEMIK'].includes(role)) {
-    let bidangLabel = ''
-    let dashboardPath = ''
-
-    if (role === 'BIDANG_AKADEMIK') {
-      bidangLabel = 'Akademik'
-      dashboardPath = '/akademik/dashboard'
-    } else if (role === 'BIDANG_KESISWAAN') {
-      bidangLabel = 'Kesiswaan'
-      dashboardPath = '/kesiswaan/dashboard'
-    } else if (role === 'BIDANG_AGAMA') {
-      bidangLabel = 'Keagamaan'
-      dashboardPath = '/keagamaan/dashboard'
-    }
+  if (isDepartmentRole.value) {
+    const dashboardConfig = getDepartmentDashboardConfig()
 
     const departmentItems: NavItem[] = [
       {
-        name: `dashboard-${bidangLabel.toLowerCase()}`,
-        label: `Dashboard Ringkasan Surat Bidang ${bidangLabel}`,
-        path: dashboardPath,
-        icon: LayoutDashboard, 
-        matchPaths: [dashboardPath],
-      }
+        name: `dashboard-${dashboardConfig.label.toLowerCase()}`,
+        label: `Dashboard Ringkasan Surat Bidang ${dashboardConfig.label}`,
+        path: dashboardConfig.path,
+        icon: LayoutDashboard,
+        matchPaths: [dashboardConfig.path],
+      },
     ]
 
     if (route.path.includes('/detail/')) {
       departmentItems.push({
         name: 'letter-detail',
         label: 'Detail Informasi Surat',
-        path: route.path, 
-        icon: CustomDetailIcon, 
-        matchPaths: [route.path], 
+        path: route.path,
+        icon: CustomDetailIcon,
+        matchPaths: [route.path],
       })
     }
 
@@ -199,7 +224,7 @@ const currentNavItems = computed(() => {
         matchPaths: ['/department-teachers/surat-antrean'],
       },
       {
-        name: 'inbox',
+        name: 'surat-masuk-department',
         label: 'Arsip Surat Masuk',
         path: '/department-teachers/surat-masuk',
         icon: Inbox,
@@ -210,21 +235,22 @@ const currentNavItems = computed(() => {
         label: 'Catat Surat Masuk',
         path: '/department-teachers/surat-masuk/create',
         icon: PlusCircle,
+        matchPaths: ['/department-teachers/surat-masuk/create'],
       },
       {
         name: 'template-management',
         label: 'Manajemen Template',
         path: '/letter_templates',
         icon: Mail,
-      }
+        matchPaths: ['/letter_templates'],
+      },
     )
 
     return departmentItems
   }
 
-  // 3. ROLE KEPSEK
-  if (role === 'KEPSEK') {
-    const kepsekItems: NavItem[] = [
+  if (normalizedRole.value === 'KEPSEK') {
+    return [
       {
         name: 'dashboard-kepsek',
         label: 'Dashboard',
@@ -246,7 +272,13 @@ const currentNavItems = computed(() => {
         icon: ClipboardCheck,
         matchPaths: ['/kepsek/surat-antrean'],
       },
-      { name: 'inbox', label: 'Arsip Surat Masuk', path: '/kepsek/surat-masuk', icon: Inbox },
+      {
+        name: 'surat-masuk-kepsek',
+        label: 'Arsip Surat Masuk',
+        path: '/kepsek/surat-masuk',
+        icon: Inbox,
+        matchPaths: ['/kepsek/surat-masuk'],
+      },
       {
         name: 'activity-logs-kepsek',
         label: 'Log dan Riwayat Aktivitas',
@@ -255,37 +287,31 @@ const currentNavItems = computed(() => {
         matchPaths: ['/kepsek/activity-logs'],
       },
     ]
-
-    return kepsekItems
   }
 
-  // 4. ROLE GURU ATAU WALI MURID (Pengaju Surat)
-  if (['GURU', 'WALI_MURID'].includes(role || '')) {
-    const requesterItems: NavItem[] = [
+  if (isRequesterRole.value) {
+    return [
       {
         name: 'create-request',
         label: 'Buat Pengajuan Surat',
         path: '/surat-keluar/pengajuan',
         icon: FilePlus2,
+        matchPaths: ['/surat-keluar/pengajuan'],
       },
       {
         name: 'my-history',
         label: 'Riwayat Pengajuan',
         path: '/surat-keluar/riwayat',
         icon: FileText,
-        matchPaths: ['/surat-keluar/detail'],
+        matchPaths: ['/surat-keluar/riwayat', '/surat-keluar/detail'],
       },
     ]
-
-    return requesterItems
   }
 
   return []
 })
 
 const bottomItems = computed<BottomNavItem[]>(() => {
-  const role = String(authStore.role || '').toUpperCase()
-
   const items: BottomNavItem[] = [
     {
       name: 'settings',
@@ -296,7 +322,7 @@ const bottomItems = computed<BottomNavItem[]>(() => {
     },
   ]
 
-  if (role === 'WALI_MURID') {
+  if (normalizedRole.value === 'WALI_MURID') {
     items.push({
       name: 'help',
       label: 'Help',
@@ -317,10 +343,19 @@ const bottomItems = computed<BottomNavItem[]>(() => {
 })
 </script>
 
-<style scoped>
-:deep(.lucide) {
-  flex-shrink: 0 !important;
-  width: 24px !important;
-  height: 24px !important;
-}
-</style>
+<template>
+  <VSidebar
+    :navItems="currentNavItems"
+    :bottomItems="bottomItems"
+    :userName="authStore.user?.nama"
+    :userEmail="authStore.user?.email"
+    :userAvatar="userAvatar"
+    class="[&_.lucide]:h-[1.15rem] [&_.lucide]:w-[1.15rem] [&_.lucide]:shrink-0 [&_.lucide]:text-current sticky top-0 h-screen self-start"
+  />
+
+  <LogoutConfirmationModal
+    :isOpen="isLogoutModalOpen"
+    @update:isOpen="isLogoutModalOpen = $event"
+    @confirmed="handleLogout"
+  />
+</template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, watch } from 'vue'
-import { LockIcon } from 'lucide-vue-next'
 import VModal from '@/components/common/VModal.vue'
+import VInputField from '@/components/common/VInputField.vue'
 import VTextareaField from '@/components/common/VTextareaField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
 import VButton from '@/components/common/VButton.vue'
@@ -65,27 +65,25 @@ function handleSubmit() {
     maxWidthClass="max-w-[560px]"
     @update:isOpen="handleClose"
   >
-    <div class="mt-4 flex w-full flex-col gap-5 text-left">
-      <div class="flex flex-col gap-2 font-sans">
-        <label class="text-[1rem] font-semibold text-[var(--app-heading)]">
-          Teruskan Kepada
-        </label>
+    <div
+      class="
+        mt-4 flex w-full flex-col gap-5 text-left
+        font-[var(--font-sans)] text-[var(--app-text)]
+      "
+    >
+      <VInputField
+        label="Teruskan Kepada"
+        model-value="Kepala Sekolah"
+        disabled
+      />
 
-        <div
-          class="flex w-full items-center justify-between rounded-[12px] border px-[19px] py-[14px] text-[1rem] font-semibold"
-          style="
-            background: var(--app-input-disabled-bg);
-            border-color: var(--app-input-border);
-            color: var(--app-muted);
+      <div class="relative z-20 flex flex-col gap-2">
+        <label
+          class="
+            text-[length:var(--app-input-label-font)]
+            font-semibold leading-[1.2] text-[var(--app-heading)]
           "
         >
-          <span>Kepala Sekolah</span>
-          <LockIcon class="h-5 w-5 opacity-50" />
-        </div>
-      </div>
-
-      <div class="relative z-20 flex flex-col gap-2 font-sans">
-        <label class="text-[1rem] font-semibold text-[var(--app-heading)]">
           Sifat Disposisi
         </label>
 
@@ -110,10 +108,15 @@ function handleSubmit() {
         />
       </div>
 
-      <div class="relative z-10 mt-2 flex items-center justify-end gap-3">
+      <div
+        class="
+          relative z-10 mt-2 flex items-center justify-end gap-3
+          max-[640px]:flex-col max-[640px]:items-stretch
+        "
+      >
         <VButton
           variant="secondary"
-          class="!w-[132px]"
+          class="min-w-[104px]"
           :disabled="loading"
           @click="handleClose"
         >
@@ -122,7 +125,7 @@ function handleSubmit() {
 
         <VButton
           variant="primary"
-          class="!w-[190px]"
+          class="min-w-[190px]"
           :disabled="loading"
           @click="handleSubmit"
         >

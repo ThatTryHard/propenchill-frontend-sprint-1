@@ -1,39 +1,99 @@
 <template>
-  <div class="flex flex-col h-full">
-    <!-- Header with matching sizes -->
-    <div class="flex justify-between items-start mb-4">
+  <div
+    class="
+      flex h-full flex-col
+      font-[var(--font-sans)] text-[var(--app-text)]
+    "
+  >
+    <div class="mb-4 flex items-start justify-between">
       <div>
-        <h3 class="text-[14px] font-semibold text-[var(--app-heading)]">
+        <h3
+          class="
+            m-0 text-[length:var(--app-font-sm)]
+            font-semibold leading-[1.3] text-[var(--app-heading)]
+          "
+        >
           Surat Keluar Tertahan
         </h3>
-        <p class="text-[11px] text-[var(--app-muted)]">
+
+        <p
+          class="
+            mt-1 mb-0 text-[length:var(--app-font-xs)]
+            leading-[1.4] text-[var(--app-muted)]
+          "
+        >
           Berdasarkan durasi pengajuan
         </p>
       </div>
+
       <div class="text-right">
-        <span class="text-[20px] font-bold text-[var(--app-heading)] leading-none">{{ totalPending }}</span>
-        <p class="text-[9px] font-bold text-[var(--app-muted)] uppercase tracking-tighter">Total Pending</p>
+        <span
+          class="
+            block text-[length:var(--app-font-xl)]
+            font-bold leading-none text-[var(--app-heading)]
+          "
+        >
+          {{ totalPending }}
+        </span>
+
+        <p
+          class="
+            mt-1 mb-0 text-[length:var(--app-font-caption)]
+            font-bold uppercase leading-[1.2] tracking-tight
+            text-[var(--app-muted)]
+          "
+        >
+          Total Pending
+        </p>
       </div>
     </div>
 
-    <!-- Content: Static Cards -->
-    <div class="flex flex-col gap-3 flex-1 h-full">
-      <div 
-        v-for="item in durationData" 
+    <div class="flex h-full flex-1 flex-col gap-3">
+      <div
+        v-for="item in durationData"
         :key="item.label"
-        class="w-full flex-1 flex items-center justify-between px-5 py-3 rounded-[12px] opacity-80"
-        :style="{ backgroundColor: item.bgColor }"
+        :class="[
+          'flex w-full flex-1 items-center justify-between',
+          'rounded-[12px] px-5 py-3 opacity-80',
+          item.cardClass,
+        ]"
       >
         <div class="flex items-center gap-3">
-          <div 
-            class="w-3 h-3 rounded-full" 
-            :style="{ backgroundColor: item.color }"
+          <div
+            :class="[
+              'h-3 w-3 rounded-full',
+              item.dotClass,
+            ]"
           ></div>
-          <span class="text-[15px] font-semibold text-[var(--app-heading)]">{{ item.label }}</span>
+
+          <span
+            class="
+              text-[length:var(--app-font-base)]
+              font-semibold leading-[1.3] text-[var(--app-heading)]
+            "
+          >
+            {{ item.label }}
+          </span>
         </div>
+
         <div class="flex items-baseline gap-1">
-          <span class="text-[24px] font-bold leading-none text-[var(--app-heading)]">{{ item.value }}</span>
-          <span class="text-[12px] text-[var(--app-muted)]">Surat</span>
+          <span
+            class="
+              text-[length:var(--app-font-title)]
+              font-bold leading-none text-[var(--app-heading)]
+            "
+          >
+            {{ item.value }}
+          </span>
+
+          <span
+            class="
+              text-[length:var(--app-font-xs)]
+              leading-[1.3] text-[var(--app-muted)]
+            "
+          >
+            Surat
+          </span>
         </div>
       </div>
     </div>
@@ -58,20 +118,20 @@ const durationData = computed(() => [
   {
     label: '< 3 Hari',
     value: props.data.kurang_dari_3_hari,
-    color: 'var(--app-success)', // Green
-    bgColor: 'var(--app-success-bg)',
+    cardClass: 'bg-[var(--app-success-bg)]',
+    dotClass: 'bg-[var(--app-success)]',
   },
   {
     label: '3 - 7 Hari',
     value: props.data.antara_3_7_hari,
-    color: 'var(--app-warning)', // Orange/Yellow
-    bgColor: 'var(--app-warning-bg)',
+    cardClass: 'bg-[var(--app-warning-bg)]',
+    dotClass: 'bg-[var(--app-warning)]',
   },
   {
     label: '> 7 Hari',
     value: props.data.lebih_dari_7_hari,
-    color: 'var(--app-danger)', // Red
-    bgColor: 'var(--app-danger-bg)',
+    cardClass: 'bg-[var(--app-danger-bg)]',
+    dotClass: 'bg-[var(--app-danger)]',
   },
 ])
 </script>
