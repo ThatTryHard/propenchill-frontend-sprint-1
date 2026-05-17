@@ -32,6 +32,7 @@ type ApiErrorResponse = {
 
 export const useSettingsPreferenceStore = defineStore('settingsPreference', {
   state: () => ({
+    activeTab: 'preference',
     preference: null as SettingsPreference | null,
     loading: false,
     saving: false,

@@ -36,6 +36,8 @@ const variantStyles = computed(() => {
       return 'bg-[var(--app-chip-primary)]'
     case 'secondary':
       return 'bg-[var(--app-chip-secondary)]'
+    case 'warning':
+      return 'bg-[var(--app-warning-bg)] text-[var(--app-warning)]'
     case 'tertiary':
       return 'bg-[var(--app-chip-tertiary)]'
     case 'deep':

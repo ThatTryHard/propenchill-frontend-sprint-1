@@ -4,7 +4,9 @@
       <SIMPSidebar />
     </template>
 
-    <div class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans">
+    <div
+      class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans"
+    >
       <section class="flex flex-col gap-4">
         <div class="flex items-center gap-3">
           <VActionButton variant="secondary" @click="goBack">Kembali</VActionButton>
@@ -19,11 +21,15 @@
         </div>
       </section>
 
-      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
+      <div
+        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
+      >
         <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
           <div>
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-[12px] bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)] flex items-center justify-center text-[var(--app-text-inverse)] font-bold">
+              <div
+                class="w-12 h-12 rounded-[12px] bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)] flex items-center justify-center text-[var(--app-text-inverse)] font-bold"
+              >
                 SM
               </div>
               <div>
@@ -37,7 +43,9 @@
           <VChip :label="suratInfo.status" :variant="statusChipVariant" />
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-[14px] text-[var(--app-subtext)]">
+        <div
+          class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-[14px] text-[var(--app-subtext)]"
+        >
           <div v-for="field in suratInfo.fields" :key="field.label">
             <p class="m-0 text-[var(--app-muted)] font-semibold">{{ field.label }}</p>
             <p class="m-0 text-[16px] font-semibold text-[var(--app-heading)]">{{ field.value }}</p>
@@ -45,7 +53,9 @@
         </div>
       </div>
 
-      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
+      <div
+        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
+      >
         <h3 class="m-0 text-[20px] font-bold text-[var(--app-text)]">Ringkasan Log</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
           <div>
@@ -54,11 +64,15 @@
           </div>
           <div>
             <p class="m-0 text-[var(--app-muted)] font-semibold">Durasi Proses</p>
-            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">{{ summary.duration }}</p>
+            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">
+              {{ summary.duration }}
+            </p>
           </div>
           <div>
             <p class="m-0 text-[var(--app-muted)] font-semibold">Pengguna Terlibat</p>
-            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">{{ summary.uniqueUsers }}</p>
+            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">
+              {{ summary.uniqueUsers }}
+            </p>
           </div>
         </div>
         <div v-if="summary.longestStage" class="mt-4 text-[14px] text-[var(--app-subtext)]">
@@ -66,23 +80,32 @@
         </div>
       </div>
 
-      <div class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm">
+      <div
+        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
+      >
         <div class="flex items-center justify-between">
-          <h3 class="m-0 text-[20px] font-bold text-[var(--app-text)]">Timeline Aktivitas Real-Time</h3>
+          <h3 class="m-0 text-[20px] font-bold text-[var(--app-text)]">
+            Timeline Aktivitas Real-Time
+          </h3>
         </div>
 
         <div v-if="logsStore.detailLoading" class="py-10 text-center text-[var(--app-subtext)]">
           Memuat timeline...
         </div>
 
-        <div v-else-if="timelineItems.length === 0" class="py-10 text-center text-[var(--app-subtext)]">
+        <div
+          v-else-if="timelineItems.length === 0"
+          class="py-10 text-center text-[var(--app-subtext)]"
+        >
           Belum ada aktivitas yang tercatat.
         </div>
 
         <div v-else class="mt-6 flex flex-col gap-6">
           <div v-for="(item, index) in timelineItems" :key="item.id" class="flex gap-6">
             <div class="flex flex-col items-center">
-              <div class="w-12 h-12 rounded-full bg-[var(--app-soft-card)] border-2 border-[var(--app-accent)] flex items-center justify-center text-[var(--app-accent)] font-bold">
+              <div
+                class="w-12 h-12 rounded-full bg-[var(--app-soft-card)] border-2 border-[var(--app-accent)] flex items-center justify-center text-[var(--app-accent)] font-bold"
+              >
                 {{ index + 1 }}
               </div>
               <div
@@ -98,20 +121,26 @@
                     <h4 class="m-0 text-[18px] font-bold text-[var(--app-text)]">
                       {{ item.title || getActionLabel(item) }}
                     </h4>
-                    <p class="m-0 text-[13px] text-[var(--app-muted)]">{{ formatDateTime(item.created_at) }}</p>
+                    <p class="m-0 text-[13px] text-[var(--app-muted)]">
+                      {{ formatDateTime(item.created_at) }}
+                    </p>
                   </div>
                   <VChip :label="formatStatus(item)" :variant="getStatusVariant(item)" />
                 </div>
 
                 <div class="flex items-center gap-3 text-[13px] text-[var(--app-subtext)]">
-                  <div class="w-8 h-8 rounded-full bg-[var(--app-soft-card)] flex items-center justify-center text-[12px] font-semibold">
+                  <div
+                    class="w-8 h-8 rounded-full bg-[var(--app-soft-card)] flex items-center justify-center text-[12px] font-semibold"
+                  >
                     {{ getInitials(item.actor_name) }}
                   </div>
                   <div>
                     <p class="m-0 text-[14px] font-semibold text-[var(--app-text)]">
                       {{ item.actor_name || 'Sistem' }}
                     </p>
-                    <p class="m-0 text-[12px] text-[var(--app-muted)]">{{ item.actor_role || '-' }}</p>
+                    <p class="m-0 text-[12px] text-[var(--app-muted)]">
+                      {{ item.actor_role || '-' }}
+                    </p>
                   </div>
                 </div>
 
@@ -119,7 +148,10 @@
                   {{ item.description || getActionDetail(item) }}
                 </div>
 
-                <div v-if="noteText(item)" class="bg-[var(--app-input-muted-bg)] rounded-[16px] p-4 text-[13px] text-[var(--app-subtext)]">
+                <div
+                  v-if="noteText(item)"
+                  class="bg-[var(--app-input-muted-bg)] rounded-[16px] p-4 text-[13px] text-[var(--app-subtext)]"
+                >
                   <div class="font-semibold text-[var(--app-muted)] mb-1">Catatan:</div>
                   <div>{{ noteText(item) }}</div>
                 </div>
@@ -162,7 +194,8 @@ const suratInfo = ref({
 const statusChipVariant = computed(() => {
   const status = suratInfo.value.status.toLowerCase()
   if (['verified', 'disetujui', 'selesai'].includes(status)) return 'deep'
-  if (['rejected', 'ditolak'].includes(status)) return 'secondary'
+  // include deleted as a red/secondary accent
+  if (['rejected', 'ditolak', 'dihapus', 'terhapus'].includes(status)) return 'secondary'
   if (['pending', 'diproses'].includes(status)) return 'primary'
   return 'tertiary'
 })
@@ -179,17 +212,15 @@ const summary = computed(() => {
 
   let duration = '-'
   if (items.length > 1) {
-    const start = new Date(items[0].created_at).getTime()
-    const end = new Date(items[items.length - 1].created_at).getTime()
+    const start = new Date(items[0]?.created_at || 0).getTime()
+    const end = new Date(items[items.length - 1]?.created_at || 0).getTime()
     if (!Number.isNaN(start) && !Number.isNaN(end) && end >= start) {
       duration = formatDuration(end - start)
     }
   }
 
   const stage = logsStore.longestStage
-  const longestStage = stage?.label
-    ? `${stage.label} (${stage.jumlah_hari_kerja} hari kerja)`
-    : ''
+  const longestStage = stage?.label ? `${stage.label} (${stage.jumlah_hari_kerja} hari kerja)` : ''
 
   return {
     total,
@@ -259,10 +290,16 @@ const getActionDetail = (log: ActivityLogItem) => {
 }
 
 const formatStatus = (log: ActivityLogItem) => {
+  // If this log entry denotes deletion, show explicit 'dihapus' label
+  if (log.action === 'deleted') return 'dihapus'
+
   return String(log.status_to || log.status_from || '-').trim() || '-'
 }
 
 const getStatusVariant = (log: ActivityLogItem) => {
+  // Deleted entries should be highlighted with red/secondary
+  if (log.action === 'deleted') return 'secondary'
+
   const status = String(log.status_to || log.status_from || '').toLowerCase()
   if (['verified', 'disetujui', 'selesai'].includes(status)) return 'deep'
   if (['rejected', 'ditolak'].includes(status)) return 'secondary'
@@ -342,10 +379,32 @@ const formatDate = (value?: string) => {
   })
 }
 
+const applyTimelineHeader = (type: SuratType, id: number) => {
+  const header = logsStore.timelineHeader
+  if (!header) return false
+
+  const title = header.perihal || (type === 'surat_masuk' ? 'Surat Masuk' : 'Surat Keluar')
+  suratInfo.value = {
+    id: String(id || '-'),
+    title,
+    status: String(header.status_display || '-').toLowerCase(),
+    fields: [
+      { label: 'Nomor Surat', value: String(header.nomor || '-') },
+      { label: 'Pengirim', value: String(header.pengirim || '-') },
+      { label: 'Tanggal', value: String(header.tanggal || '-') },
+      { label: 'Perihal', value: String(header.perihal || '-') },
+    ],
+  }
+
+  return true
+}
+
 const fetchSuratInfo = async (type: SuratType, id: number) => {
   try {
     if (type === 'surat_masuk') {
-      const response = await api.get(`/api/surat-masuk/${id}/`)
+      const response = await api.get(`/api/surat-masuk/${id}/`, {
+        params: { include_deleted: 1 },
+      })
       const payload = response.data?.data || response.data || {}
       buildSuratInfo(payload, type)
       return
@@ -355,6 +414,60 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
     const payload = response.data?.data || response.data || {}
     buildSuratInfo(payload, type)
   } catch (error) {
+    const status = (error as any)?.response?.status
+    if (status === 404) {
+      if (applyTimelineHeader(type, id)) {
+        return
+      }
+
+      // Try to recover details from timeline/activity log metadata (snapshot)
+      try {
+        if (!logsStore.timeline || logsStore.timeline.length === 0) {
+          // ensure timeline is loaded
+          await logsStore.fetchTimeline(type, id)
+        }
+
+        // Look for a metadata snapshot or payload in any timeline item
+        let foundPayload: Record<string, any> | null = null
+        for (const entry of logsStore.timeline) {
+          const m = entry.metadata || {}
+          if (m.snapshot && typeof m.snapshot === 'object') {
+            foundPayload = m.snapshot as Record<string, any>
+            break
+          }
+          if (m.payload && typeof m.payload === 'object') {
+            foundPayload = m.payload as Record<string, any>
+            break
+          }
+          // some integrations may inline fields directly in metadata
+          if (Object.keys(m).length > 0) {
+            const keys = Object.keys(m).map((k) => k.toLowerCase())
+            if (keys.includes('perihal') || keys.includes('nomor_surat') || keys.includes('id_surat_masuk')) {
+              foundPayload = m as Record<string, any>
+              break
+            }
+          }
+        }
+
+        if (foundPayload) {
+          buildSuratInfo(foundPayload, type)
+          return
+        }
+      } catch (e) {
+        // ignore — fall through to deleted sentinel below
+      }
+
+      suratInfo.value = {
+        id: String(id || '-'),
+        title: 'Dokumen Dihapus',
+        status: 'dihapus',
+        fields: [
+          { label: 'Info', value: 'Detail surat tidak tersedia karena dokumen telah dihapus.' },
+        ],
+      }
+      return
+    }
+
     showAlert('error', 'Gagal memuat detail surat.', 'Error')
   }
 }
@@ -367,7 +480,8 @@ const loadDetail = async () => {
   }
 
   try {
-    await Promise.all([logsStore.fetchTimeline(type, suratId.value), fetchSuratInfo(type, suratId.value)])
+    await logsStore.fetchTimeline(type, suratId.value)
+    await fetchSuratInfo(type, suratId.value)
   } catch {
     showAlert('error', 'Gagal memuat detail log aktivitas.', 'Error')
   }

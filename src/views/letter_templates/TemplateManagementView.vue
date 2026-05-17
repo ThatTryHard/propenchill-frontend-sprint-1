@@ -432,27 +432,14 @@ onMounted(() => {
           Pilih template surat sesuai kebutuhan Anda
         </p>
 
-        <VAlert
-          v-if="generalError"
-          type="error"
-          title="Gagal"
-          :message="generalError"
-          @close="generalError = ''"
-        />
+        <VAlert v-if="generalError" type="error" title="Gagal" :message="generalError" @close="generalError = ''" />
 
-        <VAlert
-          v-if="successMessage"
-          type="success"
-          title="Berhasil"
-          :message="successMessage"
-          @close="clearSuccessMessage"
-        />
+        <VAlert v-if="successMessage" type="success" title="Berhasil" :message="successMessage"
+          @close="clearSuccessMessage" />
       </section>
 
       <section class="mb-8">
-        <div
-          class="rounded-[24px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-5 py-5 shadow-sm"
-        >
+        <div class="rounded-[24px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-5 py-5 shadow-sm">
           <div class="flex flex-col gap-4">
             <div class="flex items-center gap-3">
               <Filter class="h-6 w-6 text-[var(--app-heading)]" />
@@ -465,12 +452,8 @@ onMounted(() => {
               <label class="text-[13px] font-semibold leading-[120%] text-[var(--app-heading)]">
                 Pencarian
               </label>
-              <VInputField
-                v-model="search"
-                state="search"
-                placeholder="Cari template berdasarkan nama"
-                @keydown.enter="handleApplyFilter"
-              />
+              <VInputField v-model="search" state="search" placeholder="Cari template berdasarkan nama"
+                @keydown.enter="handleApplyFilter" />
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -497,19 +480,12 @@ onMounted(() => {
             </div>
 
             <div class="flex flex-wrap items-center justify-end gap-3">
-              <VButton
-                variant="primary"
-                class="!h-[42px] !rounded-full !px-5 !text-[14px]"
-                @click="handleApplyFilter"
-              >
+              <VButton variant="primary" class="!h-[42px] !rounded-full !px-5 !text-[14px]" @click="handleApplyFilter">
                 Terapkan Filter
               </VButton>
 
-              <VButton
-                variant="secondary"
-                class="!h-[42px] !rounded-full !px-5 !text-[14px]"
-                @click="handleResetFilter"
-              >
+              <VButton variant="secondary" class="!h-[42px] !rounded-full !px-5 !text-[14px]"
+                @click="handleResetFilter">
                 <template #leftIcon>
                   <RotateCcw class="h-4 w-4" />
                 </template>
@@ -521,15 +497,13 @@ onMounted(() => {
       </section>
 
       <section class="mb-8 grid grid-cols-1 gap-5 md:grid-cols-2">
+        <!-- <div class="relative h-[128px] overflow-hidden rounded-[28px] border border-[#d9e2e7] bg-[#eef5f0] shadow-sm"> -->
         <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm"
-        >
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
+
           <div class="absolute bottom-0 left-0 opacity-90">
-            <img
-              :src="mailIcon"
-              alt="Mail Icon"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
-            />
+            <img :src="mailIcon" alt="Mail Icon"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
 
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
@@ -543,14 +517,10 @@ onMounted(() => {
         </div>
 
         <div
-          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm"
-        >
+          class="relative h-[128px] overflow-hidden rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] shadow-sm">
           <div class="absolute bottom-0 left-0 opacity-70">
-            <img
-              :src="studentIcon"
-              alt="Student Icon"
-              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]"
-            />
+            <img :src="studentIcon" alt="Student Icon"
+              class="h-[78px] w-[78px] object-contain translate-x-[-10px] translate-y-[10px]" />
           </div>
 
           <div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
@@ -570,43 +540,29 @@ onMounted(() => {
         </h2>
       </section>
 
-      <section
-        v-if="isLoading"
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
-      >
+      <section v-if="isLoading"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]">
         Memuat data template...
       </section>
 
-      <section
-        v-else-if="templates.length === 0"
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]"
-      >
+      <section v-else-if="templates.length === 0"
+        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] px-6 py-10 text-center text-[var(--app-muted)]">
         Belum ada template surat.
       </section>
 
-      <section
-        v-else
-        class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] p-4 md:p-5"
-      >
+      <section v-else class="rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-card)] p-4 md:p-5">
         <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
-          <article
-            v-for="item in templates"
-            :key="item.id_template"
-            class="relative min-h-[220px] rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] px-5 py-4 shadow-sm transition hover:-translate-y-[2px] hover:shadow-md"
-          >
-            <button
-              v-if="canManageTemplateItem(item)"
-              type="button"
+          <article v-for="item in templates" :key="item.id_template"
+            class="relative min-h-[220px] rounded-[28px] border border-[var(--app-card-border)] bg-[var(--app-soft-card)] px-5 py-4 shadow-sm transition hover:-translate-y-[2px] hover:shadow-md">
+            <button v-if="canManageTemplateItem(item)" type="button"
               class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-[var(--app-muted)] transition hover:bg-[var(--app-danger-bg)] hover:text-[var(--app-danger)]"
-              @click="handleDelete(item.id_template)"
-            >
+              @click="handleDelete(item.id_template)">
               <Trash2 class="h-4 w-4" />
             </button>
 
             <div class="mb-4">
               <span
-                class="inline-flex rounded-full bg-[var(--app-accent)] px-3 py-[5px] text-[12px] font-semibold leading-none text-[var(--app-text-inverse)] shadow-sm"
-              >
+                class="inline-flex rounded-full bg-[var(--app-accent)] px-3 py-[5px] text-[12px] font-semibold leading-none text-[var(--app-text-inverse)] shadow-sm">
                 {{ formatJenis(item.jenis) }}
               </span>
             </div>
@@ -631,51 +587,34 @@ onMounted(() => {
                 Lihat Template
               </VActionButton>
 
-              <VActionButton
-                v-if="canManageTemplateItem(item)"
-                variant="primary"
-                @click="goToEdit(item.id_template)"
-              >
+              <VActionButton v-if="canManageTemplateItem(item)" variant="primary" @click="goToEdit(item.id_template)">
                 Edit
               </VActionButton>
 
               <div v-if="canManageTemplateItem(item)" class="flex items-center gap-2">
-                <button
-                  type="button"
-                  :title="item.is_active ? 'Nonaktifkan template' : 'Aktifkan template'"
-                  :class="[
-                    'relative h-[40px] rounded-full border border-[var(--app-card-border)] shadow-sm transition-all duration-300',
-                    item.is_active ? 'w-[95px] bg-[var(--app-accent)]' : 'w-[125px] bg-[var(--app-card)]',
-                  ]"
-                  @click.stop="openToggleModal(item)"
-                >
-                  <span
-                    class="absolute top-1/2 -translate-y-1/2 text-[12px] font-semibold transition-all duration-300"
-                    :class="
-                      item.is_active
-                        ? 'left-[18px] text-[var(--app-text-inverse)]'
-                        : 'right-[16px] text-[var(--app-heading)]'
-                    "
-                  >
+                <button type="button" :title="item.is_active ? 'Nonaktifkan template' : 'Aktifkan template'" :class="[
+                  'relative h-[40px] rounded-full border border-[var(--app-card-border)] shadow-sm transition-all duration-300',
+                  item.is_active ? 'w-[95px] bg-[var(--app-accent)]' : 'w-[125px] bg-[var(--app-card)]',
+                ]" @click.stop="openToggleModal(item)">
+                  <span class="absolute top-1/2 -translate-y-1/2 text-[12px] font-semibold transition-all duration-300"
+                    :class="item.is_active
+                      ? 'left-[18px] text-[var(--app-text-inverse)]'
+                      : 'right-[16px] text-[var(--app-heading)]'
+                      ">
                     {{ item.is_active ? 'Aktif' : 'Non-Aktif' }}
                   </span>
 
                   <span
                     class="absolute top-[3px] h-[32px] w-[32px] rounded-full bg-[var(--app-bg)] shadow-sm transition-all duration-300"
-                    :class="item.is_active ? 'right-[4px]' : 'left-[4px]'"
-                  />
+                    :class="item.is_active ? 'right-[4px]' : 'left-[4px]'" />
                 </button>
               </div>
 
-              <span
-                v-else
-                class="inline-flex rounded-full px-2.5 py-[5px] text-[11px] font-semibold leading-none"
-                :class="
-                  item.is_active
-                    ? 'bg-[var(--app-success-bg)] text-[var(--app-success)]'
-                    : 'bg-[var(--app-danger-bg)] text-[var(--app-danger)]'
-                "
-              >
+              <span v-else class="inline-flex rounded-full px-2.5 py-[5px] text-[11px] font-semibold leading-none"
+                :class="item.is_active
+                  ? 'bg-[var(--app-success-bg)] text-[var(--app-success)]'
+                  : 'bg-[var(--app-danger-bg)] text-[var(--app-danger)]'
+                  ">
                 {{ item.is_active ? 'Aktif' : 'Nonaktif' }}
               </span>
 
@@ -693,28 +632,18 @@ onMounted(() => {
             Menampilkan halaman {{ pagination?.page || 1 }} dari {{ pagination?.total_pages || 1 }}
           </span>
 
-          <VPagination
-            v-model:current-page="currentPage"
-            :total-pages="pagination?.total_pages || 1"
-            @update:current-page="handlePageChange"
-          />
+          <VPagination v-model:current-page="currentPage" :total-pages="pagination?.total_pages || 1"
+            @update:current-page="handlePageChange" />
         </div>
       </section>
     </main>
 
-    <TemplatePreviewModal
-      :isOpen="isPreviewModalOpen"
-      :template="previewTemplate"
-      :isLoading="templateStore.isFetchingDetail"
-      @update:isOpen="handleClosePreviewModal"
-    />
+    <TemplatePreviewModal :isOpen="isPreviewModalOpen" :template="previewTemplate"
+      :isLoading="templateStore.isFetchingDetail" @update:isOpen="handleClosePreviewModal" />
 
-    <VModal
-      v-model:isOpen="isDeleteModalOpen"
-      title="Hapus Template"
+    <VModal v-model:isOpen="isDeleteModalOpen" title="Hapus Template"
       description="Apakah Anda yakin ingin menghapus template ini? Template yang dihapus tidak akan tampil lagi pada daftar template."
-      :maxWidthClass="'max-w-[420px]'"
-      :buttons="[
+      :maxWidthClass="'max-w-[420px]'" :buttons="[
         {
           label: 'Batal',
           variant: 'secondary',
@@ -725,23 +654,16 @@ onMounted(() => {
           variant: 'primary',
           action: confirmDeleteTemplate,
         },
-      ]"
-    >
+      ]">
       <template #icon>
-        <div
-          class="flex items-center justify-center w-[72px] h-[72px] rounded-full bg-[var(--app-danger-bg)]"
-        >
+        <div class="flex items-center justify-center w-[72px] h-[72px] rounded-full bg-[var(--app-danger-bg)]">
           <Trash2 class="w-[32px] h-[32px] text-[var(--app-danger)]" />
         </div>
       </template>
     </VModal>
 
-    <VModal
-      v-model:isOpen="isToggleModalOpen"
-      :title="toggleModalTitle"
-      :description="toggleModalDescription"
-      :maxWidthClass="'max-w-[420px]'"
-      :buttons="[
+    <VModal v-model:isOpen="isToggleModalOpen" :title="toggleModalTitle" :description="toggleModalDescription"
+      :maxWidthClass="'max-w-[420px]'" :buttons="[
         {
           label: 'Batal',
           variant: 'secondary',
@@ -752,7 +674,6 @@ onMounted(() => {
           variant: 'primary',
           action: confirmToggleTemplate,
         },
-      ]"
-    />
+      ]" />
   </DashboardLayout>
 </template>

@@ -90,7 +90,7 @@ const router = createRouter({
     },
     {
       path: '/status',
-      name: 'status',  
+      name: 'status',
       component: StatusView,
     },
     {
@@ -411,6 +411,23 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsView,
+      meta: {
+        requiresAuth: true,
+        roleAccess: [
+          'ADMIN',
+          'KEPSEK',
+          'GURU',
+          'WALI_MURID',
+          'BIDANG_AGAMA',
+          'BIDANG_KESISWAAN',
+          'BIDANG_AKADEMIK',
+        ],
+      },
+    },
+    {
+      path: '/settings/change-password',
+      name: 'change-password',
+      component: () => import('@/views/users/ChangePasswordView.vue'),
       meta: {
         requiresAuth: true,
         roleAccess: [

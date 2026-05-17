@@ -16,6 +16,12 @@ export interface DistribusiJenisSurat {
   pengajuan: number
 }
 
+export interface DistribusiSuratPending {
+  akademik: number
+  kesiswaan: number
+  keagamaan: number
+}
+
 export interface TrendWaktuItem {
   bulan: string
   surat_masuk: number
@@ -30,11 +36,18 @@ export interface PerbandinganPeranItem {
   ditolak: number
 }
 
-export interface StatusSurat {
+export interface PendingDurasi {
+  kurang_dari_3_hari: number
+  antara_3_7_hari: number
+  lebih_dari_7_hari: number
+  total_pending: number
+}
+
+export interface StatusSuratKeluar {
   disetujui: number
-  diproses: number
+  menunggu_kepsek: number
   ditolak: number
-  menunggu: number
+  menunggu_wakil_bidang: number
 }
 
 export interface ApprovalRateItem {
@@ -57,14 +70,12 @@ export interface FlowPerBidang {
 }
 
 export interface SuratPendingItem {
-  id?: number
-  id_surat?: number
+  id_pengajuan: number
   nomor_surat: string
   verifikator: string
   tanggal_diterima: string
   pengirim: string
   jenis_surat: string
-  status: string
 }
 
 export interface PendingPagination {
@@ -89,11 +100,24 @@ const emptyDistribusi: DistribusiJenisSurat = {
   pengajuan: 0,
 }
 
-const emptyStatus: StatusSurat = {
+const emptyDistribusiPending: DistribusiSuratPending = {
+  akademik: 0,
+  kesiswaan: 0,
+  keagamaan: 0,
+}
+
+const emptyPendingDurasi: PendingDurasi = {
+  kurang_dari_3_hari: 0,
+  antara_3_7_hari: 0,
+  lebih_dari_7_hari: 0,
+  total_pending: 0,
+}
+
+const emptyStatusKeluar: StatusSuratKeluar = {
   disetujui: 0,
-  diproses: 0,
+  menunggu_kepsek: 0,
   ditolak: 0,
-  menunggu: 0,
+  menunggu_wakil_bidang: 0,
 }
 
 const emptyFlow: FlowSummary = {
@@ -119,22 +143,15 @@ const toNumber = (value: unknown, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
-const mapStatusLabel = (value: string | null | undefined) => {
-  const normalized = String(value || '').toLowerCase()
-  if (normalized.includes('menunggu')) return 'Menunggu Verifikasi Kepsek'
-  if (normalized.includes('ditolak')) return 'Ditolak'
-  if (normalized.includes('disetujui')) return 'Disetujui'
-  if (normalized.includes('diproses')) return 'Diproses'
-  return value ? String(value) : '-'
-}
-
 export const usePrincipalDashboardStore = defineStore('principal-dashboard', {
   state: () => ({
     summary: { ...emptySummary } as DashboardSummary,
     distribusiJenisSurat: { ...emptyDistribusi } as DistribusiJenisSurat,
+    distribusiSuratPending: { ...emptyDistribusiPending } as DistribusiSuratPending,
     trendWaktu: [] as TrendWaktuItem[],
     perbandinganPeran: [] as PerbandinganPeranItem[],
-    statusSurat: { ...emptyStatus } as StatusSurat,
+    pendingDurasi: { ...emptyPendingDurasi } as PendingDurasi,
+    statusSuratKeluar: { ...emptyStatusKeluar } as StatusSuratKeluar,
     approvalRate: [] as ApprovalRateItem[],
     flowWaliMurid: { ...emptyFlow } as FlowSummary,
     flowPerBidang: { ...emptyFlowPerBidang } as FlowPerBidang,
@@ -187,6 +204,22 @@ export const usePrincipalDashboardStore = defineStore('principal-dashboard', {
       }
     },
 
+    async fetchDistribusiSuratPending() {
+      try {
+        const response = await api.get('/api/kepsek/dashboard/distribusi-surat-pending')
+        const payload = response.data?.data || {}
+        this.distribusiSuratPending = {
+          akademik: toNumber(payload.akademik),
+          kesiswaan: toNumber(payload.kesiswaan),
+          keagamaan: toNumber(payload.keagamaan),
+        }
+      } catch (error) {
+        this.distribusiSuratPending = { ...emptyDistribusiPending }
+        this.setError('Gagal memuat distribusi surat pending.')
+        throw error
+      }
+    },
+
     async fetchTrendWaktu() {
       try {
         const response = await api.get('/api/kepsek/dashboard/trend-waktu')
@@ -225,19 +258,36 @@ export const usePrincipalDashboardStore = defineStore('principal-dashboard', {
       }
     },
 
-    async fetchStatusSurat() {
+    async fetchPendingDurasi() {
       try {
-        const response = await api.get('/api/kepsek/dashboard/status-surat')
+        const response = await api.get('/api/kepsek/dashboard/status-surat/pending-durasi')
         const payload = response.data?.data || {}
-        this.statusSurat = {
-          disetujui: toNumber(payload.disetujui),
-          diproses: toNumber(payload.diproses),
-          ditolak: toNumber(payload.ditolak),
-          menunggu: toNumber(payload.menunggu),
+        this.pendingDurasi = {
+          kurang_dari_3_hari: toNumber(payload.kurang_dari_3_hari),
+          antara_3_7_hari: toNumber(payload.antara_3_7_hari),
+          lebih_dari_7_hari: toNumber(payload.lebih_dari_7_hari),
+          total_pending: toNumber(payload.total_pending),
         }
       } catch (error) {
-        this.statusSurat = { ...emptyStatus }
-        this.setError('Gagal memuat status surat.')
+        this.pendingDurasi = { ...emptyPendingDurasi }
+        this.setError('Gagal memuat status surat pending berdasarkan durasi.')
+        throw error
+      }
+    },
+
+    async fetchStatusSuratKeluar() {
+      try {
+        const response = await api.get('/api/kepsek/dashboard/status-surat/keluar')
+        const payload = response.data?.data || {}
+        this.statusSuratKeluar = {
+          disetujui: toNumber(payload.disetujui),
+          menunggu_kepsek: toNumber(payload.menunggu_kepsek),
+          ditolak: toNumber(payload.ditolak),
+          menunggu_wakil_bidang: toNumber(payload.menunggu_wakil_bidang),
+        }
+      } catch (error) {
+        this.statusSuratKeluar = { ...emptyStatusKeluar }
+        this.setError('Gagal memuat status surat keluar.')
         throw error
       }
     },
@@ -309,22 +359,14 @@ export const usePrincipalDashboardStore = defineStore('principal-dashboard', {
         const payload = response.data?.data || {}
         const rawResults = Array.isArray(payload.results) ? payload.results : []
 
-        this.pendingLetters = rawResults.map((item: SuratPendingItem) => {
-          const rawId = (item as any).id ?? (item as any).id_surat
-          const parsedId = Number(rawId)
-          const resolvedId = Number.isFinite(parsedId) ? parsedId : undefined
-
-          return {
-            id: resolvedId,
-            id_surat: resolvedId,
-            nomor_surat: String(item.nomor_surat || '-'),
-            verifikator: String(item.verifikator || '-'),
-            tanggal_diterima: String(item.tanggal_diterima || ''),
-            pengirim: String(item.pengirim || '-'),
-            jenis_surat: String(item.jenis_surat || '-'),
-            status: mapStatusLabel(item.status),
-          }
-        })
+        this.pendingLetters = rawResults.map((item: SuratPendingItem) => ({
+          id_pengajuan: toNumber(item.id_pengajuan),
+          nomor_surat: String(item.nomor_surat || '-'),
+          verifikator: String(item.verifikator || '-'),
+          tanggal_diterima: String(item.tanggal_diterima || ''),
+          pengirim: String(item.pengirim || '-'),
+          jenis_surat: String(item.jenis_surat || '-'),
+        }))
 
         const pagination = payload.pagination || {}
         this.pendingPagination = {
@@ -352,7 +394,8 @@ export const usePrincipalDashboardStore = defineStore('principal-dashboard', {
           this.fetchTrendWaktu(),
           this.fetchDistribusiJenisSurat(),
           this.fetchPerbandinganPeran(),
-          this.fetchStatusSurat(),
+          this.fetchPendingDurasi(),
+          this.fetchStatusSuratKeluar(),
           this.fetchApprovalRate(),
           this.fetchFlowWaliMurid(),
           this.fetchFlowPerBidang(),
@@ -367,7 +410,8 @@ export const usePrincipalDashboardStore = defineStore('principal-dashboard', {
       await Promise.allSettled([
         this.fetchSuratPending(page),
         this.fetchDistribusiJenisSurat(),
-        this.fetchFlowPerBidang(),
+        this.fetchDistribusiSuratPending(),
+        this.fetchPendingDurasi(),
       ])
     },
   },

@@ -20,6 +20,13 @@ export interface ActivityLogItem {
 }
 
 export interface TimelineResponse {
+  header?: {
+    nomor?: string
+    perihal?: string
+    pengirim?: string
+    tanggal?: string
+    status_display?: string
+  }
   items: ActivityLogItem[]
   tahap_paling_lama?: {
     label: string | null
@@ -57,6 +64,7 @@ export const useActivityLogsStore = defineStore('activity-logs', {
   state: () => ({
     logs: [] as ActivityLogItem[],
     timeline: [] as ActivityLogItem[],
+    timelineHeader: null as TimelineResponse['header'] | null,
     longestStage: null as TimelineResponse['tahap_paling_lama'] | null,
     loading: false,
     detailLoading: false,
@@ -88,16 +96,19 @@ export const useActivityLogsStore = defineStore('activity-logs', {
     async fetchTimeline(suratType: SuratType, suratId: number) {
       this.detailLoading = true
       this.timeline = []
+      this.timelineHeader = null
       this.longestStage = null
 
       try {
         const response = await api.get(`/api/activity-logs/timeline/${suratType}/${suratId}/`)
         const payload = response.data as TimelineResponse
+        this.timelineHeader = payload?.header || null
         this.timeline = Array.isArray(payload?.items) ? payload.items : []
         this.longestStage = payload?.tahap_paling_lama || null
       } catch (error) {
         console.error('Gagal mengambil timeline activity logs:', error)
         this.timeline = []
+        this.timelineHeader = null
         this.longestStage = null
         throw error
       } finally {
