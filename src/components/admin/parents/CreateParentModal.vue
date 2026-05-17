@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
-import { PlusCircle } from 'lucide-vue-next'
 import { useParentStore, validateParentForm } from '@/stores/parents'
 import { parseFieldErrors } from '@/lib/fieldErrors'
 
@@ -141,8 +140,16 @@ const handleSubmit = async () => {
     :buttons="[]"
     @update:is-open="emit('update:isOpen', $event)"
   >
-    <div class="create-parent-modal-body">
-      <form class="create-parent-modal-form" @submit.prevent="handleSubmit">
+    <!-- Scrollable body — mirrors EditParentModal layout -->
+    <div
+      class="
+        flex w-full flex-col text-left
+        font-[var(--font-sans)] text-[var(--app-text)]
+        max-h-[75vh] overflow-y-auto px-1
+        scrollbar-thin scrollbar-thumb-[var(--app-border)] scrollbar-track-transparent
+      "
+    >
+      <form class="flex w-full flex-col gap-4 pb-2" @submit.prevent="handleSubmit">
         <VAlert
           v-if="alert.visible"
           :visible="alert.visible"
@@ -198,12 +205,29 @@ const handleSubmit = async () => {
           :rows="2"
         />
 
-        <div class="create-parent-modal-actions">
-          <VButton type="button" variant="secondary" :disabled="isSubmitting" @click="closeModal">
+        <!-- Action buttons -->
+        <div
+          class="
+            flex items-center justify-end gap-3 mt-2
+            max-[640px]:flex-col-reverse max-[640px]:items-stretch
+          "
+        >
+          <VButton
+            type="button"
+            variant="secondary"
+            class="min-w-[110px]"
+            :disabled="isSubmitting"
+            @click="closeModal"
+          >
             Batal
           </VButton>
 
-          <VButton type="submit" variant="primary" :disabled="isSubmitDisabled">
+          <VButton
+            type="submit"
+            variant="primary"
+            class="min-w-[110px]"
+            :disabled="isSubmitDisabled"
+          >
             {{ isSubmitting ? 'Menyimpan...' : 'Tambah' }}
           </VButton>
         </div>
@@ -211,50 +235,3 @@ const handleSubmit = async () => {
     </div>
   </VModal>
 </template>
-
-<style scoped>
-.create-parent-modal-body {
-  width: 100%;
-  max-height: calc(100vh - 180px);
-  overflow-y: auto;
-  color: var(--app-text);
-  font-family: var(--font-sans);
-}
-
-.create-parent-modal-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.create-parent-modal-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.create-parent-modal-body::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: var(--app-border);
-}
-
-.create-parent-modal-form {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.create-parent-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 4px;
-}
-
-@media (max-width: 640px) {
-  .create-parent-modal-body {
-    max-height: calc(100vh - 150px);
-  }
-
-  .create-parent-modal-actions {
-    flex-direction: column-reverse;
-  }
-}
-</style>

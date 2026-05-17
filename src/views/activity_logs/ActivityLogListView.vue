@@ -45,9 +45,15 @@ const statusOptions = [
   { label: 'Rejected', value: 'rejected' },
   { label: 'Dibatalkan', value: 'dibatalkan' },
   { label: 'Dihapus', value: 'dihapus' },
+  { label: 'Menunggu Verifikasi Kepsek', value: 'menunggu_verifikasi_kepsek' },
+  { label: 'Verified', value: 'verified' },
+  { label: 'Rejected', value: 'rejected' },
+  { label: 'Dibatalkan', value: 'dibatalkan' },
+  { label: 'Dihapus', value: 'dihapus' },
 ]
 
 const tableColumns = [
+  { key: 'id', label: 'ID Surat' },
   { key: 'id', label: 'ID Surat' },
   { key: 'waktu', label: 'Waktu' },
   { key: 'nama', label: 'Nama Pengguna' },
@@ -165,6 +171,16 @@ const normalizeStatusValue = (raw?: string) => {
 }
 
 const formatStatus = (log: ActivityLogItem) => {
+  if (log.action === 'deleted') return 'Dihapus'
+  const raw = String(log.status_to || log.status_from || '')
+  const normalized = normalizeStatusValue(raw)
+  if (!normalized) return '-'
+  // display in title case
+  return normalized
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
   if (log.action === 'deleted') return 'Dihapus'
 
   const rawStatus = String(log.status_to || log.status_from || '')

@@ -20,6 +20,8 @@ const passwordStore = usePasswordStore()
 const nama = ref('')
 const email = ref('')
 const noHp = ref('')
+const nisn = ref('')
+const kodeValidasi = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const isLoading = ref(false)
@@ -27,6 +29,8 @@ const isLoading = ref(false)
 const namaError = ref('')
 const emailError = ref('')
 const noHpError = ref('')
+const nisnError = ref('')
+const kodeValidasiError = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
 
@@ -66,6 +70,8 @@ const passwordRequirements = computed(() => [
 watch(nama, () => (namaError.value = ''))
 watch(email, () => (emailError.value = ''))
 watch(noHp, () => (noHpError.value = ''))
+watch(nisn, () => (nisnError.value = ''))
+watch(kodeValidasi, () => (kodeValidasiError.value = ''))
 watch(password, () => (passwordError.value = ''))
 watch(confirmPassword, () => (confirmPasswordError.value = ''))
 
@@ -73,6 +79,8 @@ const validateForm = () => {
   namaError.value = ''
   emailError.value = ''
   noHpError.value = ''
+  nisnError.value = ''
+  kodeValidasiError.value = ''
   passwordError.value = ''
   confirmPasswordError.value = ''
   alert.visible = false
@@ -91,6 +99,22 @@ const validateForm = () => {
 
   if (!noHp.value) {
     noHpError.value = 'Nomor HP wajib diisi!'
+    hasError = true
+  }
+
+  if (!nisn.value) {
+    nisnError.value = 'NISN wajib diisi!'
+    hasError = true
+  } else if (!/^\d{10}$/.test(nisn.value)) {
+    nisnError.value = 'NISN harus 10 digit angka!'
+    hasError = true
+  }
+
+  if (!kodeValidasi.value) {
+    kodeValidasiError.value = 'Kode validasi wajib diisi!'
+    hasError = true
+  } else if (!/^[A-Z0-9]{6,8}$/i.test(kodeValidasi.value)) {
+    kodeValidasiError.value = 'Kode validasi harus 6-8 karakter huruf/angka!'
     hasError = true
   }
 
@@ -124,6 +148,8 @@ const handleRegister = async () => {
       nama: nama.value,
       email: email.value,
       no_hp: noHp.value,
+      nisn: nisn.value,
+      kode_validasi: kodeValidasi.value,
       password: password.value,
       confirm_password: confirmPassword.value,
     })
@@ -158,8 +184,16 @@ const handleRegister = async () => {
     alert.title = 'Registrasi Gagal'
     alert.message = message || 'Terjadi kesalahan saat membuat akun. Silakan coba lagi.'
 
-    emailError.value = message
-    noHpError.value = message
+    // Route the server error to the relevant field
+    if (message.includes('NISN')) {
+      nisnError.value = message
+    } else if (message.includes('kode validasi') || message.includes('kode_validasi')) {
+      kodeValidasiError.value = message
+    } else if (message.includes('Email') || message.includes('email')) {
+      emailError.value = message
+    } else if (message.includes('HP') || message.includes('no_hp')) {
+      noHpError.value = message
+    }
   } finally {
     isLoading.value = false
   }
@@ -180,6 +214,7 @@ const handleRegister = async () => {
       max-[640px]:p-[18px]
     "
   >
+    <!-- School logo -->
     <div
       class="
         fixed left-8 top-8 z-[2]
@@ -207,6 +242,7 @@ const handleRegister = async () => {
         max-[640px]:pt-14
       "
     >
+      <!-- Heading block -->
       <div
         class="
           mb-6 flex shrink-0 flex-col items-center text-center
@@ -233,6 +269,7 @@ const handleRegister = async () => {
         </h1>
       </div>
 
+      <!-- Global error alert -->
       <VAlert
         v-if="alert.visible"
         :type="alert.type"
@@ -242,6 +279,7 @@ const handleRegister = async () => {
         @close="alert.visible = false"
       />
 
+      <!-- Registration form -->
       <form
         class="
           flex w-full flex-col gap-3
@@ -279,6 +317,28 @@ const handleRegister = async () => {
           :message="noHpError"
         />
 
+        <!-- NISN — 10-digit student national ID -->
+        <VInputField
+          v-model="nisn"
+          label="NISN Siswa"
+          type="text"
+          placeholder="Masukkan 10 digit NISN"
+          :disabled="isLoading"
+          :state="nisnError ? 'error' : 'default'"
+          :message="nisnError"
+        />
+
+        <!-- Validation code provided by the school -->
+        <VInputField
+          v-model="kodeValidasi"
+          label="Kode Validasi"
+          type="text"
+          placeholder="Masukkan kode dari sekolah"
+          :disabled="isLoading"
+          :state="kodeValidasiError ? 'error' : 'default'"
+          :message="kodeValidasiError"
+        />
+
         <VInputField
           v-model="password"
           label="Kata Sandi"
@@ -299,6 +359,7 @@ const handleRegister = async () => {
           :message="confirmPasswordError"
         />
 
+        <!-- Password requirements checklist -->
         <section
           class="
             w-full rounded-[12px] border border-[var(--app-card-border)]
@@ -306,11 +367,7 @@ const handleRegister = async () => {
             [@media(max-height:780px)]:p-3
           "
         >
-          <div
-            class="
-              mb-3 flex items-center justify-between gap-3
-            "
-          >
+          <div class="mb-3 flex items-center justify-between gap-3">
             <h2
               class="
                 m-0 text-[length:var(--app-font-sm)]

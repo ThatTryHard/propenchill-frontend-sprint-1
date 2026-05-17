@@ -117,34 +117,14 @@ onUnmounted(() => {
       <div
         v-if="isOpen"
         class="
-          absolute left-0 top-[calc(100%+8px)] z-[10000] w-full overflow-hidden
+          absolute left-0 top-[calc(100%+6px)] z-[10000] w-full
+          overflow-hidden
           rounded-[var(--app-input-inner-radius)] border border-[var(--app-card-border)]
           bg-[var(--app-card)] text-[var(--app-text)]
           shadow-[0_10px_24px_rgba(2,20,9,0.18)]
           dark:shadow-[0_10px_24px_rgba(0,0,0,0.35)]
         "
       >
-        <div
-          class="
-            flex w-full items-center justify-between gap-2
-            px-[var(--app-dropdown-padding-x)] py-[var(--app-dropdown-padding-y)]
-            [background:var(--gradient-brand)]
-            text-[length:var(--app-input-font)] font-semibold leading-[1.2]
-            text-[var(--app-text-inverse)]
-          "
-        >
-          <span class="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
-            {{ selectedLabel }}
-          </span>
-
-          <ChevronDownIcon
-            class="
-              h-[var(--app-dropdown-icon-size)] w-[var(--app-dropdown-icon-size)]
-              shrink-0 rotate-180 text-current
-            "
-          />
-        </div>
-
         <ul
           class="
             m-0 flex max-h-[320px] w-full list-none flex-col overflow-y-auto p-0

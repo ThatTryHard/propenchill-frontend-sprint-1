@@ -6,7 +6,7 @@
 
     <div class="p-8 font-['Plus_Jakarta_Sans'] bg-[var(--app-bg)] min-h-screen">
       <div class="mb-8">
-        <p class="text-[14px] text-[var(--app-muted)] font-medium">
+        <p class="text-[length:var(--app-font-sm)] text-[var(--app-muted)] font-medium">
           Dashboard Ringkasan Surat Bidang Akademik >
           <span class="text-[var(--app-text)] font-bold">Detail Informasi Surat</span>
         </p>
@@ -14,8 +14,8 @@
 
       <div class="bg-[var(--app-card)] rounded-[24px] border border-[var(--app-card-border)] shadow-sm p-8">
         <div class="mb-10">
-          <h1 class="text-[24px] font-bold text-[var(--app-text)]">Detail Informasi Surat</h1>
-          <p class="text-[var(--app-muted)] text-[14px]">Berikut detail informasi surat</p>
+          <h1 class="text-[length:var(--app-page-title-font)] font-bold text-[var(--app-text)]">Detail Informasi Surat</h1>
+          <p class="text-[length:var(--app-font-sm)] text-[var(--app-muted)]">Berikut detail informasi surat</p>
         </div>
 
         <div class="flex justify-between items-start mb-12">
@@ -30,15 +30,15 @@
                 </div>
 
                 <div>
-                <h2 class="text-[28px] font-extrabold text-[var(--app-text)] leading-tight mb-1">
+                <h2 class="mb-1 text-[length:var(--app-font-title)] font-extrabold leading-tight text-[var(--app-text)]">
                     {{ letterData.perihal }}
                 </h2>
-                <p class="text-[18px] font-bold text-[var(--app-muted)]">ID: {{ letterData.id_surat }}</p>
+                <p class="text-[length:var(--app-font-lg)] font-bold text-[var(--app-muted)]">ID: {{ letterData.id_surat }}</p>
                 </div>
             </div>
 
             <div
-                class="px-8 py-2.5 rounded-[20px] text-[var(--app-text-inverse)] text-[14px] font-bold inline-block text-center min-w-[120px]"
+              class="inline-block min-w-[120px] rounded-[20px] px-8 py-2.5 text-center text-[length:var(--app-font-sm)] font-bold text-[var(--app-text-inverse)]"
                 :style="getStatusStyle(letterData.status)"
             >
                 {{ letterData.status }}
@@ -48,34 +48,34 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-y-10 gap-x-20">
           <div class="space-y-10">
             <div>
-              <p class="text-[14px] font-bold text-[var(--app-text)] mb-1">No. Urut Tabel</p>
-              <p class="text-[16px] text-[var(--app-muted)] font-medium">{{ letterData.nomor_agenda }}</p>
+              <p class="mb-1 text-[length:var(--app-font-sm)] font-bold text-[var(--app-text)]">No. Urut Tabel</p>
+              <p class="text-[length:var(--app-font-md)] font-medium text-[var(--app-muted)]">{{ letterData.nomor_agenda }}</p>
             </div>
             <div>
-              <p class="text-[14px] font-bold text-[var(--app-text)] mb-1">Nomor Surat</p>
-              <p class="text-[16px] text-[var(--app-muted)] font-medium">{{ letterData.nomor_surat }}</p>
+              <p class="mb-1 text-[length:var(--app-font-sm)] font-bold text-[var(--app-text)]">Nomor Surat</p>
+              <p class="text-[length:var(--app-font-md)] font-medium text-[var(--app-muted)]">{{ letterData.nomor_surat }}</p>
             </div>
           </div>
 
           <div class="space-y-10">
             <div>
-              <p class="text-[14px] font-bold text-[var(--app-text)] mb-1">Pengirim</p>
-              <p class="text-[16px] text-[var(--app-muted)] font-medium">{{ letterData.pengirim }}</p>
+              <p class="mb-1 text-[length:var(--app-font-sm)] font-bold text-[var(--app-text)]">Pengirim</p>
+              <p class="text-[length:var(--app-font-md)] font-medium text-[var(--app-muted)]">{{ letterData.pengirim }}</p>
             </div>
             <div>
-              <p class="text-[14px] font-bold text-[var(--app-text)] mb-1">Tanggal Terima</p>
-              <p class="text-[16px] text-[var(--app-muted)] font-medium">{{ letterData.tanggal_terima }}</p>
+              <p class="mb-1 text-[length:var(--app-font-sm)] font-bold text-[var(--app-text)]">Tanggal Terima</p>
+              <p class="text-[length:var(--app-font-md)] font-medium text-[var(--app-muted)]">{{ letterData.tanggal_terima }}</p>
             </div>
           </div>
 
           <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-20">
              <div>
-                <p class="text-[14px] font-bold text-[var(--app-text)] mb-1">Perihal</p>
-                <p class="text-[16px] text-[var(--app-muted)] font-medium">{{ letterData.perihal_detail }}</p>
+                <p class="mb-1 text-[length:var(--app-font-sm)] font-bold text-[var(--app-text)]">Perihal</p>
+                <p class="text-[length:var(--app-font-md)] font-medium text-[var(--app-muted)]">{{ letterData.perihal_detail }}</p>
              </div>
              <div>
-                <p class="text-[14px] font-bold text-[var(--app-text)] mb-1">Klasifikasi Surat</p>
-                <p class="text-[16px] text-[var(--app-muted)] font-medium">{{ letterData.klasifikasi }}</p>
+                <p class="mb-1 text-[length:var(--app-font-sm)] font-bold text-[var(--app-text)]">Klasifikasi Surat</p>
+                <p class="text-[length:var(--app-font-md)] font-medium text-[var(--app-muted)]">{{ letterData.klasifikasi }}</p>
              </div>
           </div>
         </div>

@@ -11,6 +11,13 @@ export interface UserProfile {
   alamat: string | null
   tanggal_lahir: string | null
   role: string
+  linked_children: Array<{
+    id_siswa: number
+    nisn: string
+    nis: string
+    nama: string
+    kelas: string | null
+  }>
   role_label: string
   status_akun: string
   status_verifikasi: string

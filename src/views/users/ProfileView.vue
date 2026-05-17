@@ -10,6 +10,7 @@ import VModal from '@/components/common/VModal.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import { useProfileStore } from '@/stores/profile'
 import { useAuthStore } from '@/stores/users/auth'
+import { useStudentStore } from '@/stores/students'
 import api from '@/plugins/axios'
 import {
   BadgeCheck,
@@ -31,7 +32,49 @@ import {
 const router = useRouter()
 const profileStore = useProfileStore()
 const authStore = useAuthStore()
+const studentStore = useStudentStore()
 const profile = computed(() => profileStore.profile)
+
+// Linked children — fetched separately because profile API may not
+// include them reliably; mirrors the approach used in EditParentModal.
+interface LinkedChild {
+  id_siswa: number
+  nisn: string
+  nis: string
+  nama: string
+  kelas: string | null
+}
+const linkedChildren = ref<LinkedChild[]>([])
+const isFetchingChildren = ref(false)
+
+const fetchLinkedChildren = async () => {
+  const parentId = profile.value?.id
+  if (!parentId) return
+
+  isFetchingChildren.value = true
+  try {
+    const res = await api.get('/api/siswa/', { params: { parent_id: parentId } })
+    const raw = res.data
+    // Handle both {data: [...]} and [...] shapes
+    linkedChildren.value = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : []
+  } catch {
+    linkedChildren.value = []
+  } finally {
+    isFetchingChildren.value = false
+  }
+}
+
+const removeChild = async (id_siswa: number) => {
+  try {
+    await studentStore.assignParent(id_siswa, null)
+    // Optimistic UI update then re-fetch to confirm
+    linkedChildren.value = linkedChildren.value.filter((c) => c.id_siswa !== id_siswa)
+    await fetchLinkedChildren()
+  } catch {
+    // Re-fetch to restore accurate state if the call failed
+    await fetchLinkedChildren()
+  }
+}
 
 const showEditModal = ref(false)
 const isSaving = ref(false)
@@ -280,8 +323,9 @@ const cancelAvatarUpload = () => {
   }
 }
 
-onMounted(() => {
-  profileStore.fetchProfile()
+onMounted(async () => {
+  await profileStore.fetchProfile()
+  await fetchLinkedChildren()
 })
 </script>
 
@@ -600,6 +644,39 @@ onMounted(() => {
                     {{ profile.status_verifikasi }}
                   </p>
                 </div>
+              </div>
+
+              <div
+                v-if="profile.role === 'WALI_MURID'"
+                class="mt-4 overflow-hidden rounded-2xl border border-[var(--app-card-border)] bg-[var(--app-card)] p-4"
+              >
+                <div class="mb-3 flex items-center gap-2.5">
+                  <div
+                    class="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--app-soft-card)] text-[var(--app-accent)]"
+                  >
+                    <GraduationCap class="h-4.5 w-4.5" />
+                  </div>
+                  <h2 class="text-[length:var(--app-section-title-font)] font-bold text-[var(--app-accent)]">Anak Terhubung</h2>
+                </div>
+
+                <div v-if="isFetchingChildren" class="text-[length:var(--app-font-xs)] text-[var(--app-muted)]">
+                  Memuat data...
+                </div>
+
+                <div v-else-if="linkedChildren.length" class="flex flex-wrap gap-2">
+                  <VChip
+                    v-for="child in linkedChildren"
+                    :key="child.id_siswa"
+                    :label="`${child.nama} (${child.nisn})`"
+                    variant="primary"
+                    :removable="false"
+                    @remove="removeChild(child.id_siswa)"
+                  />
+                </div>
+
+                <p v-else class="text-[length:var(--app-font-xs)] text-[var(--app-muted)]">
+                  Belum ada anak yang terhubung ke akun ini.
+                </p>
               </div>
 
               <div class="mt-4 flex justify-end">
