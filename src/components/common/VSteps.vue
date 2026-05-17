@@ -1,57 +1,3 @@
-<template>
-  <div class="w-full font-sans flex items-start overflow-x-auto pb-4 custom-scrollbar">
-    <template v-for="(step, index) in steps" :key="index">
-      <div class="flex flex-col items-center w-[120px] flex-shrink-0">
-        <div class="h-[77px] flex flex-col justify-between items-center z-10">
-          <div
-            class="w-[40px] h-[40px] rounded-[50px] shadow-[0px_4px_4px_rgba(0,0,0,0.25)_inset] bg-[var(--app-input-border)] relative flex items-center justify-center"
-          >
-            <div
-              class="w-[28px] h-[28px] rounded-full bg-[radial-gradient(77.91%_77.91%_at_50%_100%,var(--app-accent)_4.91%,var(--app-accent-2))] flex items-center justify-center text-[var(--app-text-inverse)] shadow-sm"
-            >
-              <CheckIcon
-                v-if="step.status === 'completed'"
-                class="w-[18px] h-[18px]"
-                stroke-width="3"
-              />
-
-              <div
-                v-else-if="step.status === 'current'"
-                class="w-[12px] h-[12px] rounded-full border-[2.5px] border-[var(--app-card)]"
-              ></div>
-
-              <span v-else class="text-[14px] font-bold leading-none">{{ index + 1 }}</span>
-            </div>
-          </div>
-
-          <div
-            class="px-[14px] py-[2px] rounded-[20px] bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] text-[var(--app-text-inverse)] text-[12px] font-semibold shadow-sm"
-          >
-            {{ step.label }}
-          </div>
-        </div>
-
-        <div class="flex flex-col items-center text-center gap-1 mt-3 px-2">
-          <span class="text-[12px] font-semibold text-[var(--app-text)]">{{ step.timestamp || '-' }}</span>
-          <span class="text-[12px] text-[var(--app-muted)] font-medium">{{ step.subtitle || '-' }}</span>
-        </div>
-      </div>
-
-      <div
-        v-if="index < steps.length - 1"
-        class="flex-1 h-[12px] mt-[33px] mx-2 bg-[var(--app-input-border)] rounded-[8px] overflow-hidden flex-shrink-0 min-w-[40px] z-0"
-      >
-        <div
-          :class="[
-            'h-full rounded-[8px] bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))] transition-all duration-700 ease-in-out',
-            step.status === 'completed' ? 'w-full' : step.status === 'current' ? 'w-[35%]' : 'w-0',
-          ]"
-        ></div>
-      </div>
-    </template>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { CheckIcon } from 'lucide-vue-next'
 
@@ -70,12 +16,123 @@ defineProps({
 })
 </script>
 
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  height: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--app-border);
-  border-radius: 10px;
-}
-</style>
+<template>
+  <div
+    class="
+      flex w-full items-start overflow-x-auto pb-4
+      font-[var(--font-sans)] text-[var(--app-text)]
+      [&::-webkit-scrollbar]:h-[6px]
+      [&::-webkit-scrollbar-track]:bg-transparent
+      [&::-webkit-scrollbar-thumb]:rounded-[10px]
+      [&::-webkit-scrollbar-thumb]:bg-[var(--app-border)]
+      [&::-webkit-scrollbar-thumb:hover]:bg-[var(--app-muted)]
+    "
+  >
+    <template
+      v-for="(step, index) in steps"
+      :key="index"
+    >
+      <div class="flex w-[120px] shrink-0 flex-col items-center">
+        <div
+          class="
+            z-10 flex h-[77px] flex-col items-center justify-between
+          "
+        >
+          <div
+            class="
+              relative flex h-10 w-10 items-center justify-center
+              rounded-[50px] bg-[var(--app-input-border)]
+              shadow-[0_4px_4px_rgba(0,0,0,0.25)_inset]
+            "
+          >
+            <div
+              class="
+                flex h-7 w-7 items-center justify-center rounded-full
+                text-[var(--app-text-inverse)]
+                shadow-[0_1px_2px_rgba(0,0,0,0.12)]
+                [background:var(--gradient-brand-deep)]
+              "
+            >
+              <CheckIcon
+                v-if="step.status === 'completed'"
+                class="h-[18px] w-[18px] text-[var(--app-text-inverse)]"
+                stroke-width="3"
+              />
+
+              <div
+                v-else-if="step.status === 'current'"
+                class="
+                  h-3 w-3 rounded-full border-[2.5px]
+                  border-[var(--app-card)]
+                "
+              ></div>
+
+              <span
+                v-else
+                class="
+                  text-[length:var(--app-font-sm)]
+                  font-bold leading-none text-[var(--app-text-inverse)]
+                "
+              >
+                {{ index + 1 }}
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="
+              whitespace-nowrap rounded-[20px] px-[14px] py-0.5
+              text-center text-[length:var(--app-chip-font)]
+              font-semibold leading-[1.2] text-[var(--app-text-inverse)]
+              shadow-[0_1px_2px_rgba(0,0,0,0.12)]
+              [background:var(--gradient-brand)]
+            "
+          >
+            {{ step.label }}
+          </div>
+        </div>
+
+        <div
+          class="
+            mt-3 flex flex-col items-center gap-1 px-2 text-center
+          "
+        >
+          <span
+            class="
+              text-[length:var(--app-font-xs)]
+              font-semibold leading-[1.3] text-[var(--app-text)]
+            "
+          >
+            {{ step.timestamp || '-' }}
+          </span>
+
+          <span
+            class="
+              text-[length:var(--app-font-xs)]
+              font-medium leading-[1.3] text-[var(--app-muted)]
+            "
+          >
+            {{ step.subtitle || '-' }}
+          </span>
+        </div>
+      </div>
+
+      <div
+        v-if="index < steps.length - 1"
+        class="
+          z-0 mt-[33px] mx-2 flex h-3 min-w-10 flex-1 shrink-0
+          overflow-hidden rounded-[8px] bg-[var(--app-input-border)]
+        "
+      >
+        <div
+          :class="[
+            'h-full rounded-[8px] transition-[width] duration-700 ease-in-out [background:var(--gradient-brand)]',
+            step.status === 'completed' ? 'w-full' : '',
+            step.status === 'current' ? 'w-[35%]' : '',
+            step.status !== 'completed' && step.status !== 'current' ? 'w-0' : '',
+          ]"
+        ></div>
+      </div>
+    </template>
+  </div>
+</template>

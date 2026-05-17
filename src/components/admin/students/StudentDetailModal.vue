@@ -127,7 +127,10 @@ const detailItems = computed(() => {
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+        class="
+          fixed inset-0 z-[100] flex items-center justify-center
+          bg-black/40 p-3 backdrop-blur-sm
+        "
         @click.self="closeModal"
       >
         <transition
@@ -140,49 +143,117 @@ const detailItems = computed(() => {
         >
           <div
             v-if="isOpen"
-            class="student-detail-panel relative flex max-h-[calc(100vh-2rem)] w-full max-w-[720px] flex-col"
+            class="
+              relative flex max-h-[calc(100dvh-32px)] w-full max-w-[640px]
+              flex-col overflow-hidden rounded-[20px] border-[0.5px]
+              border-[var(--app-modal-border)] bg-[var(--app-modal-bg)]
+              px-6 py-5 font-[var(--font-sans)] text-[var(--app-modal-text)]
+              shadow-[0_-2px_4px_rgba(0,0,0,0.2),0_2px_4px_rgba(255,255,255,0.4)]
+              backdrop-blur-[10px]
+              max-[640px]:px-4 max-[640px]:py-4
+            "
           >
-            <div class="flex flex-col gap-5 min-h-0">
+            <div class="flex min-h-0 flex-col gap-4">
               <div class="flex justify-end">
-                <button type="button" class="student-detail-close" @click="closeModal">
-                  <X class="h-5 w-5" />
+                <button
+                  type="button"
+                  aria-label="Tutup modal"
+                  class="
+                    inline-flex items-center justify-center
+                    text-[var(--app-modal-text)]
+                    transition-opacity duration-200 ease-in-out
+                    hover:opacity-70
+                    focus:outline-none focus-visible:outline focus-visible:outline-2
+                    focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                  "
+                  @click="closeModal"
+                >
+                  <X class="h-4 w-4" />
                 </button>
               </div>
 
-              <div class="flex flex-col items-center gap-3 text-center">
+              <div class="flex flex-col items-center gap-2 text-center">
                 <div
-                  class="student-avatar flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border"
+                  class="
+                    flex h-[58px] w-[58px] items-center justify-center
+                    rounded-full border border-[var(--app-border)]
+                    bg-[var(--app-soft-card)] text-[var(--app-accent)]
+                  "
                 >
-                  <UserRound class="h-[2rem] w-[2rem]" />
+                  <UserRound class="h-7 w-7" />
                 </div>
 
                 <div>
-                  <h2 class="student-detail-title text-[1.7rem] font-bold leading-[120%]">
+                  <h2
+                    class="
+                      m-0 text-[length:var(--app-card-title-font)]
+                      font-bold leading-[1.2] text-[var(--app-modal-text)]
+                    "
+                  >
                     Detail Siswa
                   </h2>
 
-                  <p class="student-detail-subtitle mt-1 text-[1rem] leading-[150%]">
+                  <p
+                    class="
+                      mt-1 mb-0 text-[length:var(--app-font-sm)]
+                      leading-[1.5] text-[var(--app-muted)]
+                    "
+                  >
                     Informasi lengkap data siswa
                   </p>
                 </div>
               </div>
 
-              <div v-if="student" class="flex-1 overflow-y-auto pr-1">
-                <div class="mb-4 rounded-2xl border p-4 student-main-card">
-                  <p class="text-[0.85rem] font-semibold student-detail-muted">Nama Lengkap</p>
+              <div
+                v-if="student"
+                class="min-h-0 flex-1 overflow-y-auto pr-1"
+              >
+                <div
+                  class="
+                    mb-3 rounded-[16px] border border-[var(--app-card-border)]
+                    bg-[var(--app-card)] p-4 text-[var(--app-text)]
+                  "
+                >
+                  <p
+                    class="
+                      m-0 text-[length:var(--app-font-xs)]
+                      font-semibold leading-[1.4] text-[var(--app-muted)]
+                    "
+                  >
+                    Nama Lengkap
+                  </p>
 
                   <div class="mt-1 flex items-center justify-between gap-3">
-                    <p class="text-[1.25rem] font-bold student-detail-title">
+                    <p
+                      class="
+                        m-0 text-[length:var(--app-font-lg)]
+                        font-bold leading-[1.3] text-[var(--app-modal-text)]
+                      "
+                    >
                       {{ student.nama || '-' }}
                     </p>
 
                     <button
                       type="button"
-                      class="copy-button"
+                      aria-label="Salin nama lengkap"
+                      class="
+                        inline-flex h-8 w-8 shrink-0 items-center justify-center
+                        rounded-full text-[var(--app-muted)]
+                        transition-colors duration-200 ease-in-out
+                        hover:bg-[var(--app-soft-card)] hover:text-[var(--app-accent)]
+                        focus:outline-none focus-visible:outline focus-visible:outline-2
+                        focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                      "
                       @click="copyValue('nama', student.nama)"
                     >
-                      <Check v-if="copiedField === 'nama'" class="h-4 w-4" />
-                      <Copy v-else class="h-4 w-4" />
+                      <Check
+                        v-if="copiedField === 'nama'"
+                        class="h-4 w-4"
+                      />
+                      <Copy
+                        v-else
+                        class="h-4 w-4"
+                      />
                     </button>
                   </div>
                 </div>
@@ -191,16 +262,30 @@ const detailItems = computed(() => {
                   <div
                     v-for="item in detailItems"
                     :key="item.key"
-                    class="student-detail-item rounded-2xl border p-4"
+                    class="
+                      rounded-[16px] border border-[var(--app-card-border)]
+                      bg-[var(--app-card)] p-4 text-[var(--app-text)]
+                    "
                     :class="{ 'md:col-span-2': item.wide }"
                   >
                     <div class="flex items-start justify-between gap-3">
                       <div class="min-w-0">
-                        <p class="text-[0.85rem] font-semibold student-detail-muted">
+                        <p
+                          class="
+                            m-0 text-[length:var(--app-font-xs)]
+                            font-semibold leading-[1.4] text-[var(--app-muted)]
+                          "
+                        >
                           {{ item.label }}
                         </p>
 
-                        <p class="mt-1 break-words text-[1rem] font-semibold student-detail-value">
+                        <p
+                          class="
+                            mt-1 mb-0 break-words
+                            text-[length:var(--app-font-sm)]
+                            font-semibold leading-[1.5] text-[var(--app-heading)]
+                          "
+                        >
                           {{ item.value }}
                         </p>
                       </div>
@@ -208,23 +293,47 @@ const detailItems = computed(() => {
                       <button
                         v-if="item.copyable && item.value !== '-'"
                         type="button"
-                        class="copy-button"
+                        :aria-label="`Salin ${item.label}`"
+                        class="
+                          inline-flex h-8 w-8 shrink-0 items-center justify-center
+                          rounded-full text-[var(--app-muted)]
+                          transition-colors duration-200 ease-in-out
+                          hover:bg-[var(--app-soft-card)] hover:text-[var(--app-accent)]
+                          focus:outline-none focus-visible:outline focus-visible:outline-2
+                          focus-visible:outline-offset-2 focus-visible:outline-[var(--app-accent)]
+                        "
                         @click="copyValue(item.key, item.value)"
                       >
-                        <Check v-if="copiedField === item.key" class="h-4 w-4" />
-                        <Copy v-else class="h-4 w-4" />
+                        <Check
+                          v-if="copiedField === item.key"
+                          class="h-4 w-4"
+                        />
+                        <Copy
+                          v-else
+                          class="h-4 w-4"
+                        />
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div v-else class="py-8 text-center text-[1rem] text-[var(--app-muted)]">
+              <div
+                v-else
+                class="
+                  py-8 text-center text-[length:var(--app-font-sm)]
+                  leading-[1.5] text-[var(--app-muted)]
+                "
+              >
                 Data siswa tidak ditemukan.
               </div>
 
               <div class="flex justify-end">
-                <VButton variant="primary" class="!w-[132px]" @click="closeModal">
+                <VButton
+                  variant="primary"
+                  class="min-w-[92px]"
+                  @click="closeModal"
+                >
                   Tutup
                 </VButton>
               </div>
@@ -235,72 +344,3 @@ const detailItems = computed(() => {
     </transition>
   </Teleport>
 </template>
-
-<style scoped>
-.student-detail-panel {
-  overflow: hidden;
-  border: 0.5px solid var(--app-modal-border);
-  border-radius: 24px;
-  background: var(--app-modal-bg);
-  color: var(--app-modal-text);
-  padding: 28px 32px;
-  box-shadow:
-    0px -2px 4px rgba(0, 0, 0, 0.2),
-    0px 2px 4px rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-}
-
-.student-detail-close {
-  color: var(--app-modal-text);
-  transition: opacity 0.2s ease;
-}
-
-.student-detail-close:hover {
-  opacity: 0.7;
-}
-
-.student-detail-title {
-  color: var(--app-modal-text);
-}
-
-.student-detail-subtitle,
-.student-detail-muted {
-  color: var(--app-muted);
-}
-
-.student-main-card,
-.student-detail-item {
-  background: var(--app-card);
-  border-color: var(--app-card-border);
-  color: var(--app-text);
-}
-
-.student-avatar {
-  background: var(--app-soft-card);
-  border-color: var(--app-border);
-  color: var(--app-accent);
-}
-
-.student-detail-value {
-  color: var(--app-heading);
-}
-
-.copy-button {
-  display: inline-flex;
-  height: 2rem;
-  width: 2rem;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  color: var(--app-muted);
-  transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
-}
-
-.copy-button:hover {
-  background: var(--app-soft-card);
-  color: var(--app-accent);
-}
-</style>

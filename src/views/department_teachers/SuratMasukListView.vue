@@ -7,6 +7,7 @@ import { useSuratMasukStore } from '@/stores/surat-masuk'
 
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
+import VCard from '@/components/common/VCard.vue'
 import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
@@ -27,6 +28,7 @@ const canDeleteArsip = computed(() => !isKepsek.value)
 
 const getCurrentUserId = () => {
   const rawUser = JSON.parse(localStorage.getItem('user') || 'null') as { id?: number } | null
+
   if (typeof rawUser?.id === 'number') {
     return rawUser.id
   }
@@ -34,6 +36,7 @@ const getCurrentUserId = () => {
   const rawUserData = JSON.parse(localStorage.getItem('user_data') || 'null') as {
     id?: number
   } | null
+
   if (typeof rawUserData?.id === 'number') {
     return rawUserData.id
   }
@@ -92,18 +95,18 @@ const statusOptions = [
 ]
 
 const tableColumns = [
-  { key: 'nomor_surat', label: 'No. Surat' },
-  { key: 'tanggal_terima', label: 'Tgl Terima' },
-  { key: 'pengirim', label: 'Instansi Pengirim' },
-  { key: 'perihal', label: 'Perihal' },
-  { key: 'status', label: 'Status' },
-  { key: 'aksi', label: 'Aksi' },
+  { key: 'nomor_surat', label: 'No. Surat', align: 'center' as const },
+  { key: 'tanggal_terima', label: 'Tgl Terima', align: 'center' as const },
+  { key: 'pengirim', label: 'Instansi Pengirim', align: 'center' as const },
+  { key: 'perihal', label: 'Perihal', align: 'center' as const },
+  { key: 'status', label: 'Status', align: 'center' as const },
+  { key: 'aksi', label: 'Aksi', align: 'center' as const },
 ]
 
 const fetchSurat = async (page = 1) => {
   try {
     await suratMasukStore.fetchSuratMasukList({
-      page: page,
+      page,
       search: filters.search,
       start_date: filters.start_date,
       end_date: filters.end_date,
@@ -116,6 +119,7 @@ const fetchSurat = async (page = 1) => {
 
 const formatDate = (dateString: string) => {
   if (!dateString) return '-'
+
   return new Date(dateString).toLocaleDateString('id-ID', {
     year: 'numeric',
     month: 'short',
@@ -126,12 +130,14 @@ const formatDate = (dateString: string) => {
 const formatStatus = (status: string) => {
   if (status === 'diajukan') return 'Diajukan'
   if (status === 'menunggu_verifikasi_kepsek') return 'Menunggu Verifikasi'
+
   return status
 }
 
 const getChipVariant = (status: string) => {
   if (status === 'diajukan') return 'secondary'
   if (status === 'menunggu_verifikasi_kepsek') return 'primary'
+
   return 'tertiary'
 }
 
@@ -145,7 +151,6 @@ const goToDetail = (id: number) => {
   } else if (isKepsek.value) {
     router.push(`/kepsek/surat-masuk/${id}`)
   } else {
-    // Default buat Guru Bidang (Department Teachers)
     router.push(`/department-teachers/surat-masuk/${id}`)
   }
 }
@@ -179,6 +184,7 @@ const handleDeleteConfirmed = async () => {
       typeof error === 'object' && error !== null
         ? (error as { response?: { data?: { error?: string } } })
         : undefined
+
     const msg = payload?.response?.data?.error || 'Gagal menghapus surat.'
     showAlert('error', msg, 'Gagal')
   }
@@ -195,112 +201,199 @@ onMounted(() => {
       <SIMPSidebar />
     </template>
 
-    <div
-      class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans"
+    <main
+      class="
+        flex min-h-screen w-full flex-col gap-6
+        bg-[var(--app-bg)] p-8
+        font-[var(--font-sans)] text-[var(--app-text)]
+        max-[768px]:px-4
+      "
     >
-      <section class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <section
+        class="
+          flex items-start justify-between gap-4
+          max-[768px]:flex-col
+        "
+      >
         <div>
-          <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
+          <h1
+            class="
+              m-0 text-[length:var(--app-page-title-font)]
+              font-extrabold leading-[1.2] text-[var(--app-heading)]
+            "
+          >
             Arsip Surat Masuk
           </h1>
-          <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[var(--app-muted)]">
+
+          <p
+            class="
+              mt-1 mb-0 text-[length:var(--app-page-subtitle-font)]
+              leading-[1.4] text-[var(--app-muted)]
+            "
+          >
             Kelola dan pantau seluruh daftar surat masuk kedinasan.
           </p>
         </div>
       </section>
 
-      <div class="bg-[var(--app-card)] border border-[var(--app-border)] rounded-[24px] p-6 shadow-sm">
-        <div class="flex flex-wrap items-end gap-4 w-full">
-          <div class="flex-[3] min-w-[280px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]">Pencarian</label>
+      <VCard
+        padding-class="p-6"
+        class="relative z-30 overflow-visible"
+      >
+        <div class="flex w-full flex-col gap-5">
+          <div
+            class="
+              grid w-full grid-cols-[minmax(0,1fr)_auto]
+              items-end gap-4
+              max-[768px]:grid-cols-1
+            "
+          >
+            <div class="flex min-w-0 flex-col gap-2">
+              <label
+                class="
+                  text-[length:var(--app-input-label-font)]
+                  font-semibold leading-[1.2] text-[var(--app-heading)]
+                "
+              >
+                Pencarian
+              </label>
+
+              <VInputField
+                v-model="filters.search"
+                state="search"
+                placeholder="Cari no surat, perihal..."
+                @keyup.enter="fetchSurat(1)"
+              />
+            </div>
+
+            <div class="flex justify-end max-[768px]:justify-stretch">
+              <VButton
+                variant="primary"
+                size="sm"
+                class="h-[40px] min-w-[112px] max-[768px]:w-full"
+                @click="fetchSurat(1)"
+              >
+                <template #leftIcon>
+                  <SearchIcon class="h-4 w-4" />
+                </template>
+
+                Cari
+              </VButton>
+            </div>
+          </div>
+
+          <div
+            class="
+              grid w-full grid-cols-3 gap-4
+              max-[900px]:grid-cols-1
+            "
+          >
             <VInputField
-              v-model="filters.search"
-              state="search"
-              placeholder="Cari no surat, perihal..."
-              @keyup.enter="fetchSurat(1)"
+              v-model="filters.start_date"
+              type="date"
+              label="Dari Tanggal"
             />
-          </div>
 
-          <div class="flex-[1.5] min-w-[150px]">
-            <VInputField type="date" v-model="filters.start_date" label="Dari Tanggal" />
-          </div>
-
-          <div class="flex-[1.5] min-w-[150px]">
-            <VInputField type="date" v-model="filters.end_date" label="Sampai Tanggal" />
-          </div>
-
-          <div class="flex-[2] min-w-[180px] flex flex-col gap-2">
-            <label class="text-[16px] font-semibold leading-[120%] text-[var(--app-heading)]"
-              >Status Surat</label
-            >
-            <VDropdown
-              v-model="filters.status"
-              :options="statusOptions"
-              placeholder="Semua Status"
+            <VInputField
+              v-model="filters.end_date"
+              type="date"
+              label="Sampai Tanggal"
             />
-          </div>
 
-          <div class="flex-[1] min-w-[120px]">
-            <button
-              @click="fetchSurat(1)"
-              class="w-full h-[56px] rounded-[12px] bg-[var(--app-success)] hover:bg-[var(--app-success-dark)] text-white font-semibold transition-colors flex items-center justify-center gap-2"
-            >
-              <SearchIcon class="w-5 h-5" /> Cari
-            </button>
+            <div class="relative z-30 flex flex-col gap-2">
+              <label
+                class="
+                  text-[length:var(--app-input-label-font)]
+                  font-semibold leading-[1.2] text-[var(--app-heading)]
+                "
+              >
+                Status Surat
+              </label>
+
+              <VDropdown
+                v-model="filters.status"
+                :options="statusOptions"
+                placeholder="Semua Status"
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </VCard>
 
-      <div class="w-full bg-[var(--app-card)] border border-[var(--app-border)] rounded-[24px] shadow-sm overflow-hidden">
+      <div class="relative z-10">
         <VTable
           :columns="tableColumns"
           :rows="suratMasukStore.suratList"
-          :isLoading="suratMasukStore.loadingList"
-          class="w-full table-fixed break-words"
+          :is-loading="suratMasukStore.loadingList"
         >
           <template #cell-nomor_surat="{ row }">
-            <span class="font-semibold text-[var(--app-heading)]">
+            <span
+              class="
+                text-[length:var(--app-table-cell-font)]
+                font-semibold leading-[1.35] text-[var(--app-heading)]
+              "
+            >
               {{ row.nomor_surat_sistem || row.nomor_surat_pengirim || '-' }}
             </span>
           </template>
 
           <template #cell-tanggal_terima="{ value }">
-            <span class="whitespace-nowrap text-[var(--app-muted)]">{{ formatDate(value) }}</span>
+            <span
+              class="
+                whitespace-nowrap text-[length:var(--app-table-cell-font)]
+                leading-[1.35] text-[var(--app-muted)]
+              "
+            >
+              {{ formatDate(value) }}
+            </span>
           </template>
 
           <template #cell-pengirim="{ row }">
-            <span class="text-[var(--app-text)] line-clamp-2" :title="row.pengirim?.nama_instansi">
+            <span
+              class="
+                line-clamp-2 text-[length:var(--app-table-cell-font)]
+                leading-[1.35] text-[var(--app-text)]
+              "
+              :title="row.pengirim?.nama_instansi"
+            >
               {{ row.pengirim?.nama_instansi || '-' }}
             </span>
           </template>
 
           <template #cell-perihal="{ value }">
-            <span class="text-[var(--app-text)] line-clamp-2" :title="value">{{ value }}</span>
+            <span
+              class="
+                line-clamp-2 text-[length:var(--app-table-cell-font)]
+                leading-[1.35] text-[var(--app-text)]
+              "
+              :title="value"
+            >
+              {{ value || '-' }}
+            </span>
           </template>
 
           <template #cell-status="{ value }">
             <VChip
               :label="formatStatus(value)"
               :variant="getChipVariant(value)"
-              class="whitespace-nowrap"
             />
           </template>
 
           <template #cell-aksi="{ row }">
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex flex-wrap items-center justify-center gap-2">
               <VButton
                 variant="secondary"
+                size="sm"
                 @click="goToDetail(row.id_surat_masuk)"
-                class="!px-3 !py-1.5 !text-[13px] !rounded-[10px] !bg-white"
               >
                 Detail
               </VButton>
 
               <VButton
-                variant="login"
-                @click="confirmDelete(row.id_surat_masuk)"
+                variant="primary"
+                size="sm"
                 :disabled="!canDeleteRow(row)"
-                class="!px-3 !py-1.5 !text-[13px] !rounded-[10px] !bg-[var(--app-danger-light)] !text-[var(--app-danger)] !border-none hover:!bg-[var(--app-danger-lighter)]"
+                @click="confirmDelete(row.id_surat_masuk)"
               >
                 Hapus
               </VButton>
@@ -309,11 +402,14 @@ onMounted(() => {
         </VTable>
       </div>
 
-      <div class="w-full flex justify-end" v-if="suratMasukStore.pagination.total_halaman > 1">
+      <div
+        v-if="suratMasukStore.pagination.total_halaman > 1"
+        class="flex w-full justify-end"
+      >
         <VPagination
-          :currentPage="suratMasukStore.pagination.halaman_saat_ini"
-          :totalPages="suratMasukStore.pagination.total_halaman"
-          :siblingCount="1"
+          :current-page="suratMasukStore.pagination.halaman_saat_ini"
+          :total-pages="suratMasukStore.pagination.total_halaman"
+          :sibling-count="1"
           @page-change="handlePageChange"
         />
       </div>
@@ -327,6 +423,6 @@ onMounted(() => {
         :loading="suratMasukStore.deleting"
         @confirm="handleDeleteConfirmed"
       />
-    </div>
+    </main>
   </DashboardLayout>
 </template>

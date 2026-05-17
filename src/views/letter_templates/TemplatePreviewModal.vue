@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { X, Download } from 'lucide-vue-next'
+import { Download } from 'lucide-vue-next'
 import type { LetterTemplateItem } from '@/stores/letter_templates'
+
+import VModal from '@/components/common/VModal.vue'
+import VCard from '@/components/common/VCard.vue'
+import VButton from '@/components/common/VButton.vue'
+import VChip from '@/components/common/VChip.vue'
+import VAlert from '@/components/common/VAlert.vue'
 
 const props = defineProps<{
   isOpen: boolean
@@ -15,10 +21,6 @@ const emit = defineEmits<{
 
 const isDownloading = ref(false)
 const downloadError = ref('')
-
-function closeModal() {
-  emit('update:isOpen', false)
-}
 
 function formatJenis(jenis?: string) {
   if (jenis === 'KEAGAMAAN') return 'Keagamaan'
@@ -85,7 +87,7 @@ async function handleDownloadTemplate() {
               Authorization: `Bearer ${token}`,
             }
           : {},
-      }
+      },
     )
 
     if (!response.ok) {
@@ -122,142 +124,241 @@ async function handleDownloadTemplate() {
 </script>
 
 <template>
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 z-[999] flex items-center justify-center bg-black/35 px-4 py-6"
+  <VModal
+    :isOpen="isOpen"
+    title="Detail Template"
+    description="Informasi template surat"
+    maxWidthClass="max-w-[720px]"
+    :buttons="[]"
+    @update:isOpen="emit('update:isOpen', $event)"
   >
     <div
-      class="max-h-[90vh] w-full max-w-[720px] overflow-hidden rounded-[28px] bg-[var(--app-card)] shadow-2xl"
+      class="
+        max-h-[70vh] overflow-y-auto pr-1
+        font-[var(--font-sans)] text-[var(--app-text)]
+      "
     >
-      <div class="flex items-center justify-between border-b border-[var(--app-card-border)] px-6 py-5">
-        <div>
-          <h2 class="text-[24px] font-bold text-[var(--app-heading)]">Detail Template</h2>
-          <p class="mt-1 text-[14px] text-[var(--app-muted)]">
-            Informasi template surat
-          </p>
-        </div>
-
-        <button
-          type="button"
-          class="rounded-full p-2 text-[var(--app-muted)] transition hover:bg-[var(--app-soft-card)] hover:text-[var(--app-text)]"
-          @click="closeModal"
-        >
-          <X class="h-5 w-5" />
-        </button>
-      </div>
-
-      <div v-if="isLoading" class="px-6 py-10 text-center text-[var(--app-muted)]">
+      <div
+        v-if="isLoading"
+        class="
+          px-6 py-10 text-center
+          text-[length:var(--app-font-sm)]
+          leading-[1.5] text-[var(--app-muted)]
+        "
+      >
         Memuat detail template...
       </div>
 
       <div
         v-else-if="template"
-        class="max-h-[calc(90vh-96px)] overflow-y-auto bg-[var(--app-soft-card)] p-7"
+        class="flex flex-col gap-4"
       >
-        <div class="flex flex-col gap-5">
-          <span
-            class="inline-flex w-fit rounded-full bg-[var(--app-accent)] px-4 py-1 text-[13px] font-medium text-[var(--app-text-inverse)]"
+        <div class="flex flex-wrap items-center gap-2">
+          <VChip
+            :label="formatJenis(template.jenis)"
+            variant="primary"
+          />
+
+          <VChip
+            :label="template.is_active ? 'Aktif' : 'Nonaktif'"
+            :variant="template.is_active ? 'primary' : 'tertiary'"
+          />
+
+          <VChip
+            :label="template.template_mode"
+            variant="tertiary"
+          />
+        </div>
+
+        <div>
+          <h3
+            class="
+              m-0 text-[length:var(--app-section-title-font)]
+              font-bold leading-[1.2] text-[var(--app-heading)]
+            "
           >
-            {{ formatJenis(template.jenis) }}
-          </span>
+            {{ template.nama_template }}
+          </h3>
+        </div>
 
-          <div>
-            <h3 class="text-[26px] font-bold leading-[120%] text-[var(--app-heading)]">
-              {{ template.nama_template }}
-            </h3>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-3">
-              <p class="text-[12px] text-[var(--app-muted)]">Status</p>
-              <p class="mt-1 font-semibold text-[var(--app-text)]">
-                {{ template.is_active ? 'Aktif' : 'Nonaktif' }}
-              </p>
-            </div>
-
-            <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-3">
-              <p class="text-[12px] text-[var(--app-muted)]">Mode</p>
-              <p class="mt-1 font-semibold text-[var(--app-text)]">
-                {{ template.template_mode }}
-              </p>
-            </div>
-          </div>
-
-          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
-            <p class="text-[12px] text-[var(--app-muted)]">Tanggal dibuat</p>
-            <p class="mt-1 text-[var(--app-text)]">{{ formatDateTime(template.created_at) }}</p>
-          </div>
-
-          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
-            <p class="text-[12px] text-[var(--app-muted)]">Terakhir diperbarui</p>
-            <p class="mt-1 text-[var(--app-text)]">{{ formatDateTime(template.updated_at || template.created_at) }}</p>
-          </div>
-
-          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
-            <p class="text-[12px] text-[var(--app-muted)]">Dibuat oleh</p>
-            <p class="mt-1 text-[var(--app-text)]">{{ template.created_by_name || '-' }}</p>
-          </div>
-
-          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
-            <p class="text-[12px] text-[var(--app-muted)]">Role Akses</p>
-            <div class="mt-2 flex flex-wrap gap-2">
-              <span
-                v-for="role in template.allowed_roles || []"
-                :key="role"
-                class="rounded-full bg-[var(--app-chip-primary)] px-3 py-1 text-[12px] font-medium text-[var(--app-accent)]"
-              >
-                {{ formatRoleLabel(role) }}
-              </span>
-              <span v-if="!template.allowed_roles || template.allowed_roles.length === 0" class="text-[var(--app-text)]">
-                -
-              </span>
-            </div>
-          </div>
-
-          <div class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
-            <p class="text-[12px] text-[var(--app-muted)]">Variabel Terdeteksi</p>
-            <div class="mt-2 flex flex-wrap gap-2">
-              <span
-                v-for="variable in template.parsed_variables || []"
-                :key="variable"
-                class="rounded-full bg-[var(--app-soft-card)] px-3 py-1 text-[12px] font-medium text-[var(--app-text)]"
-              >
-                {{ formatPlaceholder(variable) }}
-              </span>
-              <span v-if="!template.parsed_variables || template.parsed_variables.length === 0" class="text-[var(--app-text)]">
-                Tidak ada variabel terdeteksi.
-              </span>
-            </div>
-          </div>
-
-          <div v-if="template.preview_text" class="rounded-[18px] bg-[var(--app-card)] px-4 py-4">
-            <p class="text-[12px] text-[var(--app-muted)]">Preview Template</p>
-            <div class="mt-2 whitespace-pre-line text-[14px] leading-[160%] text-[var(--app-text)]">
-              {{ template.preview_text }}
-            </div>
-          </div>
-
-          <div v-if="downloadError" class="rounded-[18px] bg-[var(--app-danger-bg)] px-4 py-3 text-[13px] text-[var(--app-danger)]">
-            {{ downloadError }}
-          </div>
-
-          <div class="flex justify-end">
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 rounded-full bg-[var(--app-accent-2)] px-4 py-2 text-[14px] font-semibold text-[var(--app-text-inverse)] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-              :disabled="!canDownload || isDownloading"
-              @click="handleDownloadTemplate"
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <VCard padding-class="px-4 py-3">
+            <p
+              class="
+                m-0 text-[length:var(--app-font-xs)]
+                leading-[1.4] text-[var(--app-muted)]
+              "
             >
-              <Download class="h-4 w-4" />
-              {{ isDownloading ? 'Mengunduh...' : 'Unduh Template' }}
-            </button>
+              Tanggal dibuat
+            </p>
+
+            <p
+              class="
+                mt-1 mb-0 text-[length:var(--app-font-sm)]
+                font-semibold leading-[1.45] text-[var(--app-text)]
+              "
+            >
+              {{ formatDateTime(template.created_at) }}
+            </p>
+          </VCard>
+
+          <VCard padding-class="px-4 py-3">
+            <p
+              class="
+                m-0 text-[length:var(--app-font-xs)]
+                leading-[1.4] text-[var(--app-muted)]
+              "
+            >
+              Terakhir diperbarui
+            </p>
+
+            <p
+              class="
+                mt-1 mb-0 text-[length:var(--app-font-sm)]
+                font-semibold leading-[1.45] text-[var(--app-text)]
+              "
+            >
+              {{ formatDateTime(template.updated_at || template.created_at) }}
+            </p>
+          </VCard>
+        </div>
+
+        <VCard padding-class="px-4 py-3">
+          <p
+            class="
+              m-0 text-[length:var(--app-font-xs)]
+              leading-[1.4] text-[var(--app-muted)]
+            "
+          >
+            Dibuat oleh
+          </p>
+
+          <p
+            class="
+              mt-1 mb-0 text-[length:var(--app-font-sm)]
+              font-semibold leading-[1.45] text-[var(--app-text)]
+            "
+          >
+            {{ template.created_by_name || '-' }}
+          </p>
+        </VCard>
+
+        <VCard padding-class="px-4 py-3">
+          <p
+            class="
+              m-0 text-[length:var(--app-font-xs)]
+              leading-[1.4] text-[var(--app-muted)]
+            "
+          >
+            Role Akses
+          </p>
+
+          <div class="mt-2 flex flex-wrap gap-2">
+            <VChip
+              v-for="role in template.allowed_roles || []"
+              :key="role"
+              :label="formatRoleLabel(role)"
+              variant="secondary"
+            />
+
+            <span
+              v-if="!template.allowed_roles || template.allowed_roles.length === 0"
+              class="
+                text-[length:var(--app-font-sm)]
+                leading-[1.45] text-[var(--app-text)]
+              "
+            >
+              -
+            </span>
           </div>
+        </VCard>
+
+        <VCard padding-class="px-4 py-3">
+          <p
+            class="
+              m-0 text-[length:var(--app-font-xs)]
+              leading-[1.4] text-[var(--app-muted)]
+            "
+          >
+            Variabel Terdeteksi
+          </p>
+
+          <div class="mt-2 flex flex-wrap gap-2">
+            <VChip
+              v-for="variable in template.parsed_variables || []"
+              :key="variable"
+              :label="formatPlaceholder(variable)"
+              variant="tertiary"
+            />
+
+            <span
+              v-if="!template.parsed_variables || template.parsed_variables.length === 0"
+              class="
+                text-[length:var(--app-font-sm)]
+                leading-[1.45] text-[var(--app-text)]
+              "
+            >
+              Tidak ada variabel terdeteksi.
+            </span>
+          </div>
+        </VCard>
+
+        <VCard
+          v-if="template.preview_text"
+          padding-class="px-4 py-3"
+        >
+          <p
+            class="
+              m-0 text-[length:var(--app-font-xs)]
+              leading-[1.4] text-[var(--app-muted)]
+            "
+          >
+            Preview Template
+          </p>
+
+          <div
+            class="
+              mt-2 whitespace-pre-line text-[length:var(--app-font-sm)]
+              leading-[1.6] text-[var(--app-text)]
+            "
+          >
+            {{ template.preview_text }}
+          </div>
+        </VCard>
+
+        <VAlert
+          v-if="downloadError"
+          type="error"
+          title="Gagal"
+          :message="downloadError"
+          @close="downloadError = ''"
+        />
+
+        <div class="flex justify-end">
+          <VButton
+            variant="primary"
+            :disabled="!canDownload || isDownloading"
+            @click="handleDownloadTemplate"
+          >
+            <template #leftIcon>
+              <Download class="h-4 w-4" />
+            </template>
+
+            {{ isDownloading ? 'Mengunduh...' : 'Unduh Template' }}
+          </VButton>
         </div>
       </div>
 
-      <div v-else class="px-6 py-10 text-center text-[var(--app-muted)]">
+      <div
+        v-else
+        class="
+          px-6 py-10 text-center
+          text-[length:var(--app-font-sm)]
+          leading-[1.5] text-[var(--app-muted)]
+        "
+      >
         Data template tidak tersedia.
       </div>
     </div>
-  </div>
+  </VModal>
 </template>

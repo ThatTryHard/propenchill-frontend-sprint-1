@@ -1,63 +1,47 @@
-<template>
-  <div class="flex flex-col gap-2 w-full font-sans">
-    <label v-if="label" :class="['text-[16px] font-semibold leading-[120%]', labelStyles]">
-      {{ label }}
-    </label>
-
-    <div :class="['relative w-full rounded-[12px]', wrapperStyles]">
-      <textarea
-        :value="modelValue"
-        @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        :placeholder="placeholder"
-        :disabled="disabled"
-        :rows="rows"
-        :class="[
-          'w-full px-[19px] py-[14px] text-[16px] leading-[150%] focus:outline-none transition-all duration-200 resize-y',
-          'rounded-[10px] text-[var(--app-text)] placeholder-[var(--app-muted)]',
-          actualState === 'error' || actualState === 'success' || disabled
-            ? 'pr-[53px]'
-            : 'pr-[19px]',
-          inputStyles,
-        ]"
-      />
-
-      <div class="absolute right-[19px] top-[14px] flex items-start">
-        <XCircleIcon v-if="actualState === 'error'" class="w-[24px] h-[24px] text-[var(--app-danger)]" />
-        <CheckCircle2Icon
-          v-else-if="actualState === 'success'"
-          class="w-[24px] h-[24px] text-[var(--app-success)]"
-        />
-        <LockIcon v-else-if="disabled" class="w-[24px] h-[24px] text-[var(--app-muted)]" />
-      </div>
-    </div>
-
-    <div v-if="message" :class="['text-[12px] font-light leading-[150%]', messageStyles]">
-      {{ message }}
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { XCircleIcon, CheckCircle2Icon, LockIcon } from 'lucide-vue-next'
 
-const props = defineProps({
-  modelValue: [String, Number],
-  label: String,
-  placeholder: String,
-  disabled: Boolean,
-  state: { type: String, default: 'default' },
-  message: String,
-  rows: { type: Number, default: 4 },
-})
+type TextareaState = 'default' | 'error' | 'success'
 
-defineEmits(['update:modelValue'])
+const props = withDefaults(
+  defineProps<{
+    modelValue?: string | number
+    label?: string
+    placeholder?: string
+    disabled?: boolean
+    state?: TextareaState
+    message?: string
+    rows?: number
+  }>(),
+  {
+    modelValue: '',
+    label: '',
+    placeholder: '',
+    disabled: false,
+    state: 'default',
+    message: '',
+    rows: 4,
+  },
+)
+
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string): void
+}>()
 
 const isFocused = ref(false)
-const handleFocus = () => (isFocused.value = true)
-const handleBlur = () => (isFocused.value = false)
+
+const handleFocus = () => {
+  isFocused.value = true
+}
+
+const handleBlur = () => {
+  isFocused.value = false
+}
+
+const handleInput = (event: Event) => {
+  emit('update:modelValue', (event.target as HTMLTextAreaElement).value)
+}
 
 const actualState = computed(() => {
   if (props.disabled) return 'disabled'
@@ -67,50 +51,198 @@ const actualState = computed(() => {
   return 'default'
 })
 
-const labelStyles = computed(() => {
-  if (actualState.value === 'disabled') return 'text-[var(--app-muted)]'
-  if (actualState.value === 'error') {
-    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
-  }
-  if (actualState.value === 'success') {
-    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
-  }
-  return 'text-[var(--app-text)]'
+const rootClass = computed(() => {
+  return `v-textarea-field--${actualState.value}`
 })
 
-const messageStyles = computed(() => {
-  if (actualState.value === 'error') {
-    return 'bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))] bg-clip-text text-transparent'
-  }
-  if (actualState.value === 'success') {
-    return 'bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))] bg-clip-text text-transparent'
-  }
-  return 'hidden'
+const shouldShowRightIcon = computed(() => {
+  return actualState.value === 'error' || actualState.value === 'success' || props.disabled
 })
 
-const wrapperStyles = computed(() => {
-  const base = 'p-[2px]'
-
-  if (actualState.value === 'active') {
-    return `${base} bg-[linear-gradient(90.74deg,var(--app-accent),var(--app-accent-2))]`
-  }
-  if (actualState.value === 'error') {
-    return `${base} bg-[linear-gradient(91.01deg,var(--app-danger),var(--app-danger-dark))]`
-  }
-  if (actualState.value === 'success') {
-    return `${base} bg-[linear-gradient(91.01deg,var(--app-success),var(--app-success-dark))]`
-  }
-
-  return `${base} bg-[var(--app-input-border)]`
+const shouldShowMessage = computed(() => {
+  return Boolean(props.message) && ['error', 'success'].includes(actualState.value)
 })
 
-const inputStyles = computed(() => {
-  const base = 'bg-[var(--app-card)]'
+const fieldClass = computed(() => {
+  return [
+    'v-textarea-field',
+    rootClass.value,
+    'flex w-full flex-col gap-2',
+    'font-[var(--font-sans)] text-[var(--app-text)]',
+    actualState.value === 'disabled' ? 'text-[var(--app-input-placeholder)]' : '',
+  ]
+})
+
+const labelClass = computed(() => {
+  const baseClass = [
+    'v-textarea-label',
+    'w-full font-semibold leading-[1.2]',
+    'text-[length:var(--app-input-label-font)]',
+  ]
+
+  if (actualState.value === 'error') {
+    return [
+      ...baseClass,
+      'app-gradient-text-error',
+    ]
+  }
+
+  if (actualState.value === 'success') {
+    return [
+      ...baseClass,
+      'app-gradient-text-success',
+    ]
+  }
 
   if (actualState.value === 'disabled') {
-    return `${base} cursor-not-allowed bg-[var(--app-input-bg)]`
+    return [
+      ...baseClass,
+      'text-[var(--app-input-placeholder)]',
+    ]
   }
 
-  return base
+  return [
+    ...baseClass,
+    'text-[var(--app-text)]',
+  ]
+})
+
+const wrapperClass = computed(() => {
+  const baseClass = [
+    'v-textarea-wrapper',
+    'relative box-border w-full rounded-[12px] p-0.5',
+    'transition-[background,opacity] duration-200 ease-in-out',
+  ]
+
+  if (actualState.value === 'active') {
+    return [
+      ...baseClass,
+      '[background:var(--gradient-brand)]',
+    ]
+  }
+
+  if (actualState.value === 'error') {
+    return [
+      ...baseClass,
+      '[background:var(--gradient-error)]',
+    ]
+  }
+
+  if (actualState.value === 'success') {
+    return [
+      ...baseClass,
+      '[background:var(--gradient-success)]',
+    ]
+  }
+
+  return [
+    ...baseClass,
+    'bg-[var(--app-input-border)]',
+  ]
+})
+
+const textareaClass = computed(() => {
+  const baseClass = [
+    'v-textarea',
+    'box-border w-full min-h-[120px] resize-y rounded-[10px] border-0',
+    'px-[19px] py-[14px]',
+    'bg-[var(--app-input-bg)] text-[var(--app-text)]',
+    'font-[var(--font-sans)] text-[length:var(--app-input-font)] font-normal leading-[1.5]',
+    'transition-colors duration-200 ease-in-out',
+    'focus:outline-none',
+    'placeholder:text-[var(--app-input-placeholder)] placeholder:opacity-100',
+    'disabled:cursor-not-allowed',
+    shouldShowRightIcon.value ? 'pr-[53px]' : '',
+  ]
+
+  if (actualState.value === 'disabled') {
+    return [
+      ...baseClass,
+      'bg-[var(--app-input-disabled-bg)] text-[var(--app-muted)]',
+    ]
+  }
+
+  return baseClass
+})
+
+const rightIconClass = computed(() => {
+  return [
+    'v-textarea-right-icon',
+    'absolute right-[19px] top-[14px] z-[2] flex items-start',
+  ]
+})
+
+const messageClass = computed(() => {
+  const baseClass = [
+    'v-textarea-message',
+    'w-full text-[length:var(--app-input-helper-font)] font-light leading-[1.5]',
+  ]
+
+  if (actualState.value === 'error') {
+    return [
+      ...baseClass,
+      'app-gradient-text-error',
+    ]
+  }
+
+  if (actualState.value === 'success') {
+    return [
+      ...baseClass,
+      'app-gradient-text-success',
+    ]
+  }
+
+  return baseClass
 })
 </script>
+
+<template>
+  <div :class="fieldClass">
+    <label
+      v-if="label"
+      :class="labelClass"
+    >
+      {{ label }}
+    </label>
+
+    <div :class="wrapperClass">
+      <textarea
+        :value="modelValue ?? ''"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :rows="rows"
+        :class="textareaClass"
+        @input="handleInput"
+        @focus="handleFocus"
+        @blur="handleBlur"
+      />
+
+      <div
+        v-if="shouldShowRightIcon"
+        :class="rightIconClass"
+      >
+        <XCircleIcon
+          v-if="actualState === 'error'"
+          class="v-textarea-icon v-textarea-icon-error h-6 w-6 text-[var(--app-danger)]"
+        />
+
+        <CheckCircle2Icon
+          v-else-if="actualState === 'success'"
+          class="v-textarea-icon v-textarea-icon-success h-6 w-6 text-[var(--app-success)]"
+        />
+
+        <LockIcon
+          v-else-if="disabled"
+          class="v-textarea-icon v-textarea-icon-disabled h-6 w-6 text-[var(--app-muted)]"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="shouldShowMessage"
+      :class="messageClass"
+    >
+      {{ message }}
+    </div>
+  </div>
+</template>

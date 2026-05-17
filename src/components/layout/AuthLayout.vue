@@ -1,15 +1,39 @@
 <template>
-  <div class="relative w-full min-h-screen overflow-hidden">
+  <main
+    class="
+      relative h-[100dvh] min-h-[100dvh] w-full overflow-hidden
+      bg-[var(--app-bg)] text-[var(--app-text)]
+      font-[var(--font-sans)]
+    "
+  >
     <div
-      class="absolute top-[286.79px] left-[calc(50%-683.87px)] w-[290.9px] h-[290.9px] rounded-full shrink-0 origin-top-left -rotate-[113.5deg] blur-[105.18px] bg-[linear-gradient(180deg,rgba(108,175,133,0.3)_23.08%,rgba(220,174,132,0.3))] pointer-events-none"
-    />
+      aria-hidden="true"
+      class="
+        pointer-events-none absolute h-[290px] w-[290px] rounded-full
+        blur-[105px]
+        [background:var(--app-public-blob,linear-gradient(180deg,rgba(108,175,133,0.3)_23.08%,rgba(220,174,132,0.3)))]
+        left-[calc(50%-684px)] top-[28%] rotate-[-113.5deg]
+        max-[768px]:left-[-140px] max-[768px]:top-[16%]
+      "
+    ></div>
 
     <div
-      class="absolute top-[1163.79px] left-[calc(50%+569.13px)] w-[290.9px] h-[290.9px] rounded-full shrink-0 origin-top-left -rotate-[113.5deg] blur-[105.18px] bg-[linear-gradient(180deg,rgba(108,175,133,0.3)_23.08%,rgba(220,174,132,0.3))] pointer-events-none"
-    />
+      aria-hidden="true"
+      class="
+        pointer-events-none absolute h-[290px] w-[290px] rounded-full
+        blur-[105px]
+        [background:var(--app-public-blob,linear-gradient(180deg,rgba(108,175,133,0.3)_23.08%,rgba(220,174,132,0.3)))]
+        bottom-[-120px] right-[calc(50%-860px)] rotate-[-113.5deg]
+        max-[768px]:bottom-[-160px] max-[768px]:right-[-140px]
+      "
+    ></div>
 
-    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
+    <section
+      class="
+        relative z-10 h-full min-h-0 w-full
+      "
+    >
       <router-view />
-    </div>
-  </div>
+    </section>
+  </main>
 </template>

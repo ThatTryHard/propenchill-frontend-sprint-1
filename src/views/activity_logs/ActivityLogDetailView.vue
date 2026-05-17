@@ -1,169 +1,3 @@
-<template>
-  <DashboardLayout>
-    <template #sidebar>
-      <SIMPSidebar />
-    </template>
-
-    <div
-      class="w-full min-h-screen bg-[var(--app-bg)] p-8 max-[768px]:px-4 flex flex-col gap-6 font-sans"
-    >
-      <section class="flex flex-col gap-4">
-        <div class="flex items-center gap-3">
-          <VActionButton variant="secondary" @click="goBack">Kembali</VActionButton>
-          <div>
-            <h1 class="m-0 text-[28px] leading-[120%] font-extrabold text-[var(--app-heading)]">
-              Detail Informasi Surat
-            </h1>
-            <p class="mt-1 mb-0 text-[16px] leading-[140%] text-[var(--app-subtext)]">
-              Berikut detail informasi surat
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div
-        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
-      >
-        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-          <div>
-            <div class="flex items-center gap-3">
-              <div
-                class="w-12 h-12 rounded-[12px] bg-gradient-to-r from-[var(--app-accent)] to-[var(--app-accent-2)] flex items-center justify-center text-[var(--app-text-inverse)] font-bold"
-              >
-                SM
-              </div>
-              <div>
-                <h2 class="m-0 text-[20px] font-bold text-[var(--app-text)]">
-                  {{ suratInfo.title }}
-                </h2>
-                <p class="m-0 text-[14px] text-[var(--app-subtext)]">ID: {{ suratInfo.id }}</p>
-              </div>
-            </div>
-          </div>
-          <VChip :label="suratInfo.status" :variant="statusChipVariant" />
-        </div>
-
-        <div
-          class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-[14px] text-[var(--app-subtext)]"
-        >
-          <div v-for="field in suratInfo.fields" :key="field.label">
-            <p class="m-0 text-[var(--app-muted)] font-semibold">{{ field.label }}</p>
-            <p class="m-0 text-[16px] font-semibold text-[var(--app-heading)]">{{ field.value }}</p>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
-      >
-        <h3 class="m-0 text-[20px] font-bold text-[var(--app-text)]">Ringkasan Log</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
-          <div>
-            <p class="m-0 text-[var(--app-muted)] font-semibold">Total Aktivitas</p>
-            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">{{ summary.total }}</p>
-          </div>
-          <div>
-            <p class="m-0 text-[var(--app-muted)] font-semibold">Durasi Proses</p>
-            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">
-              {{ summary.duration }}
-            </p>
-          </div>
-          <div>
-            <p class="m-0 text-[var(--app-muted)] font-semibold">Pengguna Terlibat</p>
-            <p class="m-0 text-[24px] font-extrabold text-[var(--app-text)]">
-              {{ summary.uniqueUsers }}
-            </p>
-          </div>
-        </div>
-        <div v-if="summary.longestStage" class="mt-4 text-[14px] text-[var(--app-subtext)]">
-          Tahap paling lama: <strong>{{ summary.longestStage }}</strong>
-        </div>
-      </div>
-
-      <div
-        class="bg-[var(--app-card)] border border-[var(--app-card-border)] rounded-[24px] p-6 shadow-sm"
-      >
-        <div class="flex items-center justify-between">
-          <h3 class="m-0 text-[20px] font-bold text-[var(--app-text)]">
-            Timeline Aktivitas Real-Time
-          </h3>
-        </div>
-
-        <div v-if="logsStore.detailLoading" class="py-10 text-center text-[var(--app-subtext)]">
-          Memuat timeline...
-        </div>
-
-        <div
-          v-else-if="timelineItems.length === 0"
-          class="py-10 text-center text-[var(--app-subtext)]"
-        >
-          Belum ada aktivitas yang tercatat.
-        </div>
-
-        <div v-else class="mt-6 flex flex-col gap-6">
-          <div v-for="(item, index) in timelineItems" :key="item.id" class="flex gap-6">
-            <div class="flex flex-col items-center">
-              <div
-                class="w-12 h-12 rounded-full bg-[var(--app-soft-card)] border-2 border-[var(--app-accent)] flex items-center justify-center text-[var(--app-accent)] font-bold"
-              >
-                {{ index + 1 }}
-              </div>
-              <div
-                v-if="index < timelineItems.length - 1"
-                class="w-[6px] flex-1 bg-gradient-to-b from-[var(--app-accent)] to-[var(--app-accent-2)] rounded-full mt-2"
-              ></div>
-            </div>
-
-            <VCard class="flex-1" paddingClass="p-6">
-              <div class="flex flex-col gap-3">
-                <div class="flex items-start justify-between gap-4">
-                  <div>
-                    <h4 class="m-0 text-[18px] font-bold text-[var(--app-text)]">
-                      {{ item.title || getActionLabel(item) }}
-                    </h4>
-                    <p class="m-0 text-[13px] text-[var(--app-muted)]">
-                      {{ formatDateTime(item.created_at) }}
-                    </p>
-                  </div>
-                  <VChip :label="formatStatus(item)" :variant="getStatusVariant(item)" />
-                </div>
-
-                <div class="flex items-center gap-3 text-[13px] text-[var(--app-subtext)]">
-                  <div
-                    class="w-8 h-8 rounded-full bg-[var(--app-soft-card)] flex items-center justify-center text-[12px] font-semibold"
-                  >
-                    {{ getInitials(item.actor_name) }}
-                  </div>
-                  <div>
-                    <p class="m-0 text-[14px] font-semibold text-[var(--app-text)]">
-                      {{ item.actor_name || 'Sistem' }}
-                    </p>
-                    <p class="m-0 text-[12px] text-[var(--app-muted)]">
-                      {{ item.actor_role || '-' }}
-                    </p>
-                  </div>
-                </div>
-
-                <div class="text-[14px] text-[var(--app-subtext)]">
-                  {{ item.description || getActionDetail(item) }}
-                </div>
-
-                <div
-                  v-if="noteText(item)"
-                  class="bg-[var(--app-input-muted-bg)] rounded-[16px] p-4 text-[13px] text-[var(--app-subtext)]"
-                >
-                  <div class="font-semibold text-[var(--app-muted)] mb-1">Catatan:</div>
-                  <div>{{ noteText(item) }}</div>
-                </div>
-              </div>
-            </VCard>
-          </div>
-        </div>
-      </div>
-    </div>
-  </DashboardLayout>
-</template>
-
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -191,19 +25,85 @@ const suratInfo = ref({
   fields: [] as Array<{ label: string; value: string }>,
 })
 
-const statusChipVariant = computed(() => {
-  const status = suratInfo.value.status.toLowerCase()
-  if (['verified', 'disetujui', 'selesai'].includes(status)) return 'deep'
-  // include deleted as a red/secondary accent
-  if (['rejected', 'ditolak', 'dihapus', 'terhapus'].includes(status)) return 'secondary'
-  if (['pending', 'diproses'].includes(status)) return 'primary'
-  return 'tertiary'
-})
-
 const suratType = computed(() => String(route.params.surat_type || ''))
 const suratId = computed(() => Number(route.params.surat_id || 0))
-
 const timelineItems = computed(() => logsStore.timeline)
+
+const suratAvatarText = computed(() => {
+  return suratType.value === 'surat_masuk' ? 'SM' : 'SK'
+})
+
+const normalizeStatus = (value?: string) => {
+  return String(value || '').toLowerCase().trim()
+}
+
+const statusIncludes = (status: string, keywords: string[]) => {
+  return keywords.some((keyword) => status.includes(keyword))
+}
+
+const getChipVariantByStatus = (statusValue: string) => {
+  const status = normalizeStatus(statusValue)
+
+  if (
+    statusIncludes(status, [
+      'dibatalkan',
+      'cancelled',
+      'canceled',
+      'ditolak',
+      'rejected',
+    ])
+  ) {
+    return 'danger' as const
+  }
+
+  if (
+    statusIncludes(status, [
+      'dihapus',
+      'terhapus',
+      'deleted',
+    ])
+  ) {
+    return 'deleted' as const
+  }
+
+  if (
+    statusIncludes(status, [
+      'verified',
+      'terverifikasi',
+      'disetujui',
+      'approved',
+      'selesai',
+    ])
+  ) {
+    return 'deep' as const
+  }
+
+  if (
+    statusIncludes(status, [
+      'menunggu',
+      'pending',
+      'diproses',
+      'verifikasi',
+    ])
+  ) {
+    return 'warning' as const
+  }
+
+  if (
+    statusIncludes(status, [
+      'diajukan',
+      'submitted',
+    ])
+  ) {
+    return 'tertiary' as const
+  }
+
+  return 'tertiary' as const
+}
+
+const statusChipVariant = computed(() => {
+  return getChipVariantByStatus(suratInfo.value.status)
+})
 
 const summary = computed(() => {
   const items = logsStore.timeline
@@ -211,9 +111,11 @@ const summary = computed(() => {
   const uniqueUsers = new Set(items.map((item) => item.actor_name || '')).size
 
   let duration = '-'
+
   if (items.length > 1) {
     const start = new Date(items[0]?.created_at || 0).getTime()
     const end = new Date(items[items.length - 1]?.created_at || 0).getTime()
+
     if (!Number.isNaN(start) && !Number.isNaN(end) && end >= start) {
       duration = formatDuration(end - start)
     }
@@ -248,8 +150,11 @@ const formatDuration = (ms: number) => {
 
 const formatDateTime = (value?: string) => {
   if (!value) return '-'
+
   const date = new Date(value)
+
   if (Number.isNaN(date.getTime())) return '-'
+
   return date.toLocaleString('id-ID', {
     day: '2-digit',
     month: '2-digit',
@@ -261,11 +166,13 @@ const formatDateTime = (value?: string) => {
 
 const getActionLabel = (log: ActivityLogItem) => {
   const action = String(log.action || '')
+
   if (action === 'created') return 'Pengajuan dibuat'
   if (action === 'revision_created') return 'Revisi diajukan'
   if (action === 'status_changed') return 'Status berubah'
   if (action === 'disposition_added') return 'Disposisi ditambahkan'
   if (action === 'deleted') return 'Dokumen dihapus'
+
   return action || '-'
 }
 
@@ -273,62 +180,71 @@ const getActionDetail = (log: ActivityLogItem) => {
   if (log.action === 'status_changed') {
     const fromStatus = log.status_from || '-'
     const toStatus = log.status_to || '-'
+
     return `Status berubah dari ${fromStatus} ke ${toStatus}.`
   }
+
   if (log.action === 'revision_created') {
     const revisionId = log.metadata?.revision_of_id
+
     return revisionId ? `Revisi dibuat dari surat #${revisionId}.` : 'Revisi dibuat.'
   }
+
   if (log.action === 'disposition_added') {
     const target = log.metadata?.target_role
+
     return target ? `Disposisi ditujukan ke ${target}.` : 'Disposisi ditambahkan.'
   }
+
   if (log.action === 'deleted') {
     return 'Dokumen persuratan dihapus.'
   }
+
   return String(log.metadata?.catatan || '-')
 }
 
 const formatStatus = (log: ActivityLogItem) => {
-  // If this log entry denotes deletion, show explicit 'dihapus' label
   if (log.action === 'deleted') return 'dihapus'
 
   return String(log.status_to || log.status_from || '-').trim() || '-'
 }
 
 const getStatusVariant = (log: ActivityLogItem) => {
-  // Deleted entries should be highlighted with red/secondary
-  if (log.action === 'deleted') return 'secondary'
+  if (log.action === 'deleted') {
+    return 'deleted' as const
+  }
 
-  const status = String(log.status_to || log.status_from || '').toLowerCase()
-  if (['verified', 'disetujui', 'selesai'].includes(status)) return 'deep'
-  if (['rejected', 'ditolak'].includes(status)) return 'secondary'
-  if (['pending', 'diproses'].includes(status)) return 'primary'
-  return 'tertiary'
+  return getChipVariantByStatus(formatStatus(log))
 }
 
 const getInitials = (name?: string | null) => {
   if (!name) return 'S'
+
   const parts = name.split(' ').filter(Boolean)
   const initials = parts.slice(0, 2).map((part) => part[0]?.toUpperCase())
+
   return initials.join('') || 'S'
 }
 
 const noteText = (log: ActivityLogItem) => {
   if (log.action === 'disposition_added') {
     const instruksi = log.metadata?.instruksi
+
     if (instruksi) return String(instruksi)
   }
 
   if (log.action === 'status_changed') {
     const statusTo = String(log.status_to || '').toLowerCase()
+
     if (['rejected', 'ditolak'].includes(statusTo)) {
       const catatan = log.metadata?.catatan
+
       if (catatan) return String(catatan)
     }
   }
 
   const catatan = log.metadata?.catatan
+
   if (catatan) return String(catatan)
 
   return ''
@@ -351,6 +267,7 @@ const buildSuratInfo = (payload: Record<string, any>, type: SuratType) => {
         { label: 'Perihal', value: payload.perihal || '-' },
       ],
     }
+
     return
   }
 
@@ -370,8 +287,11 @@ const buildSuratInfo = (payload: Record<string, any>, type: SuratType) => {
 
 const formatDate = (value?: string) => {
   if (!value) return '-'
+
   const date = new Date(value)
+
   if (Number.isNaN(date.getTime())) return '-'
+
   return date.toLocaleDateString('id-ID', {
     day: '2-digit',
     month: 'short',
@@ -381,9 +301,11 @@ const formatDate = (value?: string) => {
 
 const applyTimelineHeader = (type: SuratType, id: number) => {
   const header = logsStore.timelineHeader
+
   if (!header) return false
 
   const title = header.perihal || (type === 'surat_masuk' ? 'Surat Masuk' : 'Surat Keluar')
+
   suratInfo.value = {
     id: String(id || '-'),
     title,
@@ -405,45 +327,54 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
       const response = await api.get(`/api/surat-masuk/${id}/`, {
         params: { include_deleted: 1 },
       })
+
       const payload = response.data?.data || response.data || {}
+
       buildSuratInfo(payload, type)
       return
     }
 
     const response = await api.get(`/api/letters/requests/${id}`)
     const payload = response.data?.data || response.data || {}
+
     buildSuratInfo(payload, type)
   } catch (error) {
     const status = (error as any)?.response?.status
+
     if (status === 404) {
       if (applyTimelineHeader(type, id)) {
         return
       }
 
-      // Try to recover details from timeline/activity log metadata (snapshot)
       try {
         if (!logsStore.timeline || logsStore.timeline.length === 0) {
-          // ensure timeline is loaded
           await logsStore.fetchTimeline(type, id)
         }
 
-        // Look for a metadata snapshot or payload in any timeline item
         let foundPayload: Record<string, any> | null = null
+
         for (const entry of logsStore.timeline) {
-          const m = entry.metadata || {}
-          if (m.snapshot && typeof m.snapshot === 'object') {
-            foundPayload = m.snapshot as Record<string, any>
+          const metadata = entry.metadata || {}
+
+          if (metadata.snapshot && typeof metadata.snapshot === 'object') {
+            foundPayload = metadata.snapshot as Record<string, any>
             break
           }
-          if (m.payload && typeof m.payload === 'object') {
-            foundPayload = m.payload as Record<string, any>
+
+          if (metadata.payload && typeof metadata.payload === 'object') {
+            foundPayload = metadata.payload as Record<string, any>
             break
           }
-          // some integrations may inline fields directly in metadata
-          if (Object.keys(m).length > 0) {
-            const keys = Object.keys(m).map((k) => k.toLowerCase())
-            if (keys.includes('perihal') || keys.includes('nomor_surat') || keys.includes('id_surat_masuk')) {
-              foundPayload = m as Record<string, any>
+
+          if (Object.keys(metadata).length > 0) {
+            const keys = Object.keys(metadata).map((key) => key.toLowerCase())
+
+            if (
+              keys.includes('perihal') ||
+              keys.includes('nomor_surat') ||
+              keys.includes('id_surat_masuk')
+            ) {
+              foundPayload = metadata as Record<string, any>
               break
             }
           }
@@ -453,8 +384,8 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
           buildSuratInfo(foundPayload, type)
           return
         }
-      } catch (e) {
-        // ignore — fall through to deleted sentinel below
+      } catch {
+        // fallback ke sentinel dokumen dihapus
       }
 
       suratInfo.value = {
@@ -462,9 +393,13 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
         title: 'Dokumen Dihapus',
         status: 'dihapus',
         fields: [
-          { label: 'Info', value: 'Detail surat tidak tersedia karena dokumen telah dihapus.' },
+          {
+            label: 'Info',
+            value: 'Detail surat tidak tersedia karena dokumen telah dihapus.',
+          },
         ],
       }
+
       return
     }
 
@@ -474,6 +409,7 @@ const fetchSuratInfo = async (type: SuratType, id: number) => {
 
 const loadDetail = async () => {
   const type = suratType.value as SuratType
+
   if (!type || !suratId.value) {
     showAlert('error', 'Parameter surat tidak valid.', 'Error')
     return
@@ -489,14 +425,17 @@ const loadDetail = async () => {
 
 const goBack = () => {
   const role = String(authStore.role || '').toUpperCase()
+
   if (role === 'ADMIN') {
     router.push('/admin/activity-logs')
     return
   }
+
   if (role === 'KEPSEK') {
     router.push('/kepsek/activity-logs')
     return
   }
+
   router.push('/status')
 }
 
@@ -504,3 +443,597 @@ watch([suratType, suratId], loadDetail)
 
 onMounted(loadDetail)
 </script>
+
+<template>
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
+
+    <main class="activity-detail-page">
+      <section class="activity-detail-header">
+        <VActionButton variant="secondary" @click="goBack">
+          Kembali
+        </VActionButton>
+
+        <div class="activity-detail-heading-group">
+          <h1 class="activity-detail-title">
+            Detail Informasi Surat
+          </h1>
+
+          <p class="activity-detail-subtitle">
+            Berikut detail informasi surat dan riwayat aktivitasnya.
+          </p>
+        </div>
+      </section>
+
+      <VCard class="activity-detail-card">
+        <div class="letter-overview">
+          <div class="letter-main-info">
+            <div class="letter-avatar">
+              {{ suratAvatarText }}
+            </div>
+
+            <div class="letter-title-group">
+              <h2 class="letter-title">
+                {{ suratInfo.title }}
+              </h2>
+
+              <p class="letter-id">
+                ID: {{ suratInfo.id }}
+              </p>
+            </div>
+          </div>
+
+          <VChip
+            :label="suratInfo.status"
+            :variant="statusChipVariant"
+          />
+        </div>
+
+        <div class="letter-field-grid">
+          <div
+            v-for="field in suratInfo.fields"
+            :key="field.label"
+            class="letter-field-item"
+          >
+            <p class="letter-field-label">
+              {{ field.label }}
+            </p>
+
+            <p class="letter-field-value">
+              {{ field.value }}
+            </p>
+          </div>
+        </div>
+      </VCard>
+
+      <VCard class="activity-detail-card">
+        <h3 class="activity-section-title">
+          Ringkasan Log
+        </h3>
+
+        <div class="summary-grid">
+          <div class="summary-item">
+            <p class="summary-label">
+              Total Aktivitas
+            </p>
+
+            <p class="summary-value">
+              {{ summary.total }}
+            </p>
+          </div>
+
+          <div class="summary-item">
+            <p class="summary-label">
+              Durasi Proses
+            </p>
+
+            <p class="summary-value">
+              {{ summary.duration }}
+            </p>
+          </div>
+
+          <div class="summary-item">
+            <p class="summary-label">
+              Pengguna Terlibat
+            </p>
+
+            <p class="summary-value">
+              {{ summary.uniqueUsers }}
+            </p>
+          </div>
+        </div>
+
+        <p
+          v-if="summary.longestStage"
+          class="summary-note"
+        >
+          Tahap paling lama:
+          <strong>{{ summary.longestStage }}</strong>
+        </p>
+      </VCard>
+
+      <VCard class="activity-detail-card">
+        <div class="timeline-header">
+          <h3 class="activity-section-title">
+            Timeline Aktivitas Real-Time
+          </h3>
+        </div>
+
+        <div
+          v-if="logsStore.detailLoading"
+          class="timeline-state"
+        >
+          Memuat timeline...
+        </div>
+
+        <div
+          v-else-if="timelineItems.length === 0"
+          class="timeline-state"
+        >
+          Belum ada aktivitas yang tercatat.
+        </div>
+
+        <div
+          v-else
+          class="timeline-list"
+        >
+          <div
+            v-for="(item, index) in timelineItems"
+            :key="item.id"
+            class="timeline-item"
+          >
+            <div class="timeline-marker-column">
+              <div class="timeline-marker">
+                {{ index + 1 }}
+              </div>
+
+              <div
+                v-if="index < timelineItems.length - 1"
+                class="timeline-line"
+              ></div>
+            </div>
+
+            <VCard class="timeline-content-card">
+              <div class="timeline-content">
+                <div class="timeline-top">
+                  <div class="timeline-title-group">
+                    <h4 class="timeline-title">
+                      {{ item.title || getActionLabel(item) }}
+                    </h4>
+
+                    <p class="timeline-time">
+                      {{ formatDateTime(item.created_at) }}
+                    </p>
+                  </div>
+
+                  <VChip
+                    :label="formatStatus(item)"
+                    :variant="getStatusVariant(item)"
+                  />
+                </div>
+
+                <div class="timeline-actor">
+                  <div class="timeline-actor-avatar">
+                    {{ getInitials(item.actor_name) }}
+                  </div>
+
+                  <div class="timeline-actor-info">
+                    <p class="timeline-actor-name">
+                      {{ item.actor_name || 'Sistem' }}
+                    </p>
+
+                    <p class="timeline-actor-role">
+                      {{ item.actor_role || '-' }}
+                    </p>
+                  </div>
+                </div>
+
+                <p class="timeline-description">
+                  {{ item.description || getActionDetail(item) }}
+                </p>
+
+                <div
+                  v-if="noteText(item)"
+                  class="timeline-note"
+                >
+                  <p class="timeline-note-label">
+                    Catatan:
+                  </p>
+
+                  <p class="timeline-note-text">
+                    {{ noteText(item) }}
+                  </p>
+                </div>
+              </div>
+            </VCard>
+          </div>
+        </div>
+      </VCard>
+    </main>
+  </DashboardLayout>
+</template>
+
+<style scoped>
+.activity-detail-page {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--app-bg);
+  color: var(--app-text);
+  font-family: var(--font-sans);
+  padding: 32px;
+}
+
+.activity-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.activity-detail-heading-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activity-detail-title {
+  margin: 0;
+  color: var(--app-heading);
+  font-size: var(--app-page-title-font);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.activity-detail-subtitle {
+  margin: 0;
+  color: var(--app-subtext);
+  font-size: var(--app-page-subtitle-font);
+  line-height: 1.4;
+}
+
+.activity-detail-card {
+  border-color: var(--app-card-border);
+  background: var(--app-card);
+  color: var(--app-text);
+  box-shadow: var(--app-card-shadow);
+}
+
+.letter-overview {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.letter-main-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.letter-avatar {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(90.74deg, var(--app-accent), var(--app-accent-2));
+  color: var(--app-text-inverse);
+  font-size: var(--app-font-sm);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.letter-title-group {
+  min-width: 0;
+}
+
+.letter-title {
+  margin: 0;
+  color: var(--app-heading);
+  font-size: var(--app-section-title-font);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.letter-id {
+  margin: 2px 0 0;
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  line-height: 1.4;
+}
+
+.letter-field-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.letter-field-item {
+  min-width: 0;
+}
+
+.letter-field-label,
+.letter-field-value,
+.summary-label,
+.summary-value,
+.summary-note,
+.timeline-time,
+.timeline-actor-name,
+.timeline-actor-role,
+.timeline-description,
+.timeline-note-label,
+.timeline-note-text {
+  margin: 0;
+}
+
+.letter-field-label {
+  color: var(--app-muted);
+  font-size: var(--app-font-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.letter-field-value {
+  margin-top: 2px;
+  color: var(--app-heading);
+  font-size: var(--app-font-base);
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.activity-section-title {
+  margin: 0;
+  color: var(--app-heading);
+  font-size: var(--app-section-title-font);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.summary-item {
+  min-width: 0;
+}
+
+.summary-label {
+  color: var(--app-muted);
+  font-size: var(--app-font-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.summary-value {
+  margin-top: 4px;
+  color: var(--app-heading);
+  font-size: var(--app-font-xl);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.summary-note {
+  margin-top: 16px;
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  line-height: 1.5;
+}
+
+.summary-note strong {
+  color: var(--app-heading);
+  font-weight: 700;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.timeline-state {
+  padding: 40px 16px;
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 24px;
+}
+
+.timeline-marker-column {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timeline-marker {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--app-accent);
+  border-radius: 999px;
+  background: var(--app-soft-card);
+  color: var(--app-accent);
+  font-size: var(--app-font-sm);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.timeline-line {
+  width: 6px;
+  flex: 1;
+  min-height: 32px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--app-accent), var(--app-accent-2));
+}
+
+.timeline-content-card {
+  flex: 1;
+  min-width: 0;
+  border-color: var(--app-card-border);
+  background: var(--app-card);
+}
+
+.timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.timeline-title-group {
+  min-width: 0;
+}
+
+.timeline-title {
+  margin: 0;
+  color: var(--app-heading);
+  font-size: var(--app-card-title-font);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.timeline-time {
+  margin-top: 2px;
+  color: var(--app-muted);
+  font-size: var(--app-font-xs);
+  line-height: 1.4;
+}
+
+.timeline-actor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--app-subtext);
+}
+
+.timeline-actor-avatar {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--app-soft-card);
+  color: var(--app-heading);
+  font-size: var(--app-font-xs);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.timeline-actor-name {
+  color: var(--app-heading);
+  font-size: var(--app-font-sm);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.timeline-actor-role {
+  color: var(--app-muted);
+  font-size: var(--app-font-xs);
+  line-height: 1.35;
+}
+
+.timeline-description {
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  line-height: 1.55;
+}
+
+.timeline-note {
+  border-radius: 16px;
+  background: var(--app-input-muted-bg);
+  color: var(--app-subtext);
+  padding: 16px;
+}
+
+.timeline-note-label {
+  color: var(--app-muted);
+  font-size: var(--app-font-xs);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.timeline-note-text {
+  margin-top: 4px;
+  color: var(--app-subtext);
+  font-size: var(--app-font-sm);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .activity-detail-page {
+    padding: 24px;
+  }
+
+  .letter-field-grid,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .activity-detail-page {
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .activity-detail-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .letter-overview,
+  .timeline-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .timeline-item {
+    gap: 14px;
+  }
+
+  .timeline-marker {
+    width: 40px;
+    height: 40px;
+  }
+
+  .timeline-line {
+    width: 4px;
+  }
+}
+</style>

@@ -31,72 +31,77 @@
         />
       </div>
 
-      <div v-if="step === 2" class="w-full">
-        <div
-          class="max-h-[250px] overflow-y-auto rounded-xl border border-[var(--app-card-border)] bg-[var(--app-card)] text-left shadow-sm"
-        >
-          <table class="w-full whitespace-nowrap text-[0.85rem] text-[var(--app-text)]">
-            <thead
-              class="sticky top-0 border-b border-[var(--app-card-border)] bg-[var(--app-table-head-bg)] text-[var(--app-accent)]"
-            >
-              <tr>
-                <th
-                  v-for="(header, index) in previewHeaders"
-                  :key="index"
-                  class="px-3 py-2 text-left font-semibold"
-                >
-                  {{ header }}
-                </th>
-              </tr>
-            </thead>
-
-            <tbody class="divide-y divide-[var(--app-card-border)]">
-              <tr
-                v-for="(row, rowIndex) in previewRows"
-                :key="rowIndex"
-                class="transition-colors hover:bg-[var(--app-table-row-hover)]"
-              >
-                <td v-for="(col, colIndex) in previewHeaders" :key="colIndex" class="px-3 py-2">
-                  {{ row[col] || '-' }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div
+        v-if="step === 2"
+        class="w-full"
+      >
+        <div class="max-h-[250px] overflow-y-auto rounded-[14px]">
+          <VTable
+            :columns="previewColumns"
+            :rows="previewRows"
+            empty-message="Belum ada data preview."
+          />
         </div>
 
-        <p class="mt-2 text-[0.78rem] italic text-[var(--app-muted)]">
+        <p
+          class="
+            mt-2 mb-0 text-[length:var(--app-font-xs)]
+            italic leading-[1.4] text-[var(--app-muted)]
+          "
+        >
           *Hanya menampilkan maksimal 5 baris pertama
         </p>
       </div>
 
-      <div v-if="importErrors.length > 0" class="mt-2 w-full">
+      <div
+        v-if="importErrors.length > 0"
+        class="mt-2 w-full"
+      >
         <div
-          class="rounded-t-lg border border-b-0 border-[var(--app-danger-border)] bg-[var(--app-danger-bg)] p-2"
+          class="
+            rounded-t-[10px] border border-b-0
+            border-[var(--app-danger-border)]
+            bg-[var(--app-danger-bg)] p-2
+          "
         >
-          <h3 class="text-[0.85rem] font-bold text-[var(--app-danger)]">
+          <h3
+            class="
+              m-0 text-[length:var(--app-font-xs)]
+              font-bold leading-[1.4] text-[var(--app-danger)]
+            "
+          >
             ⚠️ {{ importErrors.length }} error pada baris Excel:
           </h3>
         </div>
 
-        <div
-          class="max-h-32 overflow-y-auto rounded-b-lg border border-[var(--app-danger-border)] bg-[var(--app-card)] text-left"
-        >
-          <table class="w-full text-[0.85rem] text-[var(--app-text)]">
-            <tbody class="divide-y divide-[var(--app-card-border)]">
-              <tr
-                v-for="(err, idx) in importErrors"
-                :key="idx"
-                class="transition-colors hover:bg-[var(--app-table-row-hover)]"
+        <div class="max-h-32 overflow-y-auto rounded-b-[10px]">
+          <VTable
+            :columns="errorColumns"
+            :rows="importErrorRows"
+            empty-message="Tidak ada error import."
+          >
+            <template #cell-rowNumber="{ value }">
+              <span
+                class="
+                  text-[length:var(--app-table-cell-font)]
+                  font-bold leading-[1.35] text-[var(--app-danger)]
+                "
               >
-                <td class="w-16 px-2 py-1 font-bold text-[var(--app-danger)]">
-                  #{{ err.row - 1 }}
-                </td>
-                <td class="px-2 py-1">
-                  {{ err.message }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                {{ value }}
+              </span>
+            </template>
+
+            <template #cell-message="{ value }">
+              <span
+                class="
+                  text-[length:var(--app-table-cell-font)]
+                  leading-[1.35] text-[var(--app-subtext)]
+                "
+              >
+                {{ value }}
+              </span>
+            </template>
+          </VTable>
         </div>
       </div>
     </div>
@@ -110,22 +115,72 @@ import { useStudentStore } from '@/stores/students'
 import VModal from '@/components/common/VModal.vue'
 import VInputFile from '@/components/common/VInputFile.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import VTable from '@/components/common/VTable.vue'
 
-const props = defineProps({ isOpen: Boolean })
+type AlertType = 'success' | 'error' | 'warning' | 'information'
+
+interface ImportErrorItem {
+  row: number
+  message: string
+}
+
+defineProps({
+  isOpen: Boolean,
+})
+
 const emit = defineEmits(['update:isOpen', 'imported'])
 const studentStore = useStudentStore()
 
 const step = ref(1)
 const selectedFile = ref<File | null>(null)
 const isLoading = ref(false)
-const importErrors = ref<any[]>([])
+const importErrors = ref<ImportErrorItem[]>([])
 
 const previewHeaders = ref<string[]>([])
-const previewRows = ref<any[]>([])
+const previewRows = ref<Record<string, unknown>[]>([])
 
-const alert = ref({ show: false, type: 'information', message: '' })
+const alert = ref<{
+  show: boolean
+  type: AlertType
+  message: string
+}>({
+  show: false,
+  type: 'information',
+  message: '',
+})
 
-const showAlert = (type: string, message: string) => {
+const previewColumns = computed(() =>
+  previewHeaders.value.map((header) => ({
+    key: header,
+    label: header,
+    align: 'left' as const,
+    nowrap: true,
+  })),
+)
+
+const errorColumns = [
+  {
+    key: 'rowNumber',
+    label: 'Baris',
+    align: 'left' as const,
+    nowrap: true,
+  },
+  {
+    key: 'message',
+    label: 'Pesan Error',
+    align: 'left' as const,
+    nowrap: false,
+  },
+]
+
+const importErrorRows = computed(() =>
+  importErrors.value.map((error) => ({
+    rowNumber: `#${error.row - 1}`,
+    message: error.message || '-',
+  })),
+)
+
+const showAlert = (type: AlertType, message: string) => {
   alert.value = { show: true, type, message }
 
   setTimeout(() => {
@@ -167,16 +222,23 @@ const generatePreview = async (file: File) => {
         return
       }
 
-      const json = xlsx.utils.sheet_to_json(worksheet)
+      const json = xlsx.utils.sheet_to_json<Record<string, unknown>>(worksheet)
 
       if (json.length > 0) {
-        previewHeaders.value = Object.keys(json[0] as object)
+        const firstRow = json[0]
+
+        if (!firstRow) {
+          showAlert('error', 'File Excel tidak memiliki data yang valid.')
+          return
+        }
+
+        previewHeaders.value = Object.keys(firstRow)
         previewRows.value = json.slice(0, 5)
         step.value = 2
       } else {
         showAlert('error', 'File Excel kosong!')
       }
-    } catch (error) {
+    } catch {
       showAlert('error', 'Gagal membaca isi file Excel.')
     }
   }

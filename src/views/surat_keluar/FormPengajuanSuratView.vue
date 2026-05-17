@@ -1,77 +1,3 @@
-<template>
-  <DashboardLayout>
-    <template #sidebar>
-      <SIMPSidebar />
-    </template>
-
-    <div class="layout-bg min-h-full">
-      <div class="main-content-wrapper">
-        <div class="header-section mb-10">
-          <div class="title-group">
-            <h1 class="text-[24px] md:text-[28px] font-bold leading-[120%] text-[var(--app-heading)]">
-              Form Pengajuan Surat Keluar
-            </h1>
-            <p class="text-[13px] md:text-[14px] leading-[145%] text-[var(--app-muted)] mt-1">
-              Lengkapi form di bawah ini untuk mengajukan surat
-            </p>
-          </div>
-        </div>
-
-        <form @submit.prevent="handleSubmit" class="flex flex-col gap-6 w-full">
-          <VInputField label="Pengaju Surat" :model-value="authStore.user?.nama || '-'" disabled />
-
-          <div v-if="isWaliMurid" class="flex flex-col gap-2">
-            <label class="hifi-label">Nama Siswa (Anak)</label>
-            <VDropdown
-              v-model="formData.id_siswa"
-              :options="siswaOptions"
-              placeholder="Pilih nama anak Anda..."
-            />
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            <div class="flex flex-col gap-2">
-              <label class="hifi-label">Jenis Surat</label>
-              <VDropdown
-                v-model="formData.id_template"
-                :options="templateOptions"
-                placeholder="Pilih Jenis Surat..."
-              />
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <label class="hifi-label">Klasifikasi Surat</label>
-              <VDropdown
-                v-model="formData.klasifikasi"
-                :options="klasifikasiOptions"
-                placeholder="Pilih Klasifikasi..."
-              />
-            </div>
-          </div>
-
-          <div
-            v-if="dynamicFields.length > 0"
-            class="flex flex-col gap-6 mt-2 border-t pt-6 border-dashed border-[var(--app-border)]"
-          >
-            <h3 class="font-bold text-[var(--app-accent)]">Informasi Tambahan Surat</h3>
-            <div v-for="field in dynamicFields" :key="field" class="flex flex-col gap-2">
-              <VInputField
-                v-model="dynamicData[field]"
-                :label="formatLabel(field)"
-                :placeholder="'Masukkan ' + formatLabel(field).toLowerCase()"
-              />
-            </div>
-          </div>
-
-          <VButton class="hifi-btn-submit mt-4" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Mengirim...' : 'Ajukan Surat' }}
-          </VButton>
-        </form>
-      </div>
-    </div>
-  </DashboardLayout>
-</template>
-
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -95,12 +21,14 @@ interface Siswa {
   id_siswa: number
   nama: string
 }
+
 interface TemplateSurat {
   id_template: number
   nama_template: string
   parsed_variables: string[]
   allowed_roles: string[]
 }
+
 interface DynamicFormData {
   [key: string]: string
 }
@@ -157,6 +85,7 @@ const handleSubmit = async () => {
   }
 
   isSubmitting.value = true
+
   try {
     const payload = {
       template: Number(formData.id_template),
@@ -171,6 +100,7 @@ const handleSubmit = async () => {
     router.push('/surat-keluar/riwayat')
   } catch (error: unknown) {
     const apiError = error as AxiosError
+
     if (apiError.response?.status === 400) {
       suratKeluarStore.triggerAlert('Gagal', 'Cek kembali isian form Anda.', 'error')
     }
@@ -187,8 +117,10 @@ watch(
 
     if (newId) {
       const selected = listTemplate.value.find((t) => Number(t.id_template) === Number(newId))
+
       if (selected && selected.parsed_variables) {
         dynamicFields.value = selected.parsed_variables
+
         selected.parsed_variables.forEach((field) => {
           dynamicData[field] = ''
         })
@@ -224,98 +156,149 @@ const fetchInitialData = async () => {
 onMounted(fetchInitialData)
 </script>
 
-<style scoped>
-.main-content-wrapper {
-  padding: 40px 60px;
-  max-width: 1440px;
-}
+<template>
+  <DashboardLayout>
+    <template #sidebar>
+      <SIMPSidebar />
+    </template>
 
-.layout-bg {
-  background: var(--app-bg);
-  color: var(--app-text);
-}
+    <main
+      class="
+        min-h-full bg-[var(--app-bg)] px-[60px] py-10
+        font-[var(--font-sans)] text-[var(--app-text)]
+        max-[900px]:px-6 max-[900px]:py-7
+        max-[640px]:px-4
+      "
+    >
+      <div class="flex max-w-[1440px] flex-col">
+        <header class="mb-10">
+          <div class="min-w-0">
+            <h1
+              class="
+                m-0 text-[length:var(--app-page-title-font)]
+                font-bold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              Form Pengajuan Surat Keluar
+            </h1>
 
-.hifi-label {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--app-heading);
-}
+            <p
+              class="
+                mt-1 mb-0 text-[length:var(--app-page-subtitle-font)]
+                font-medium leading-[1.45] text-[var(--app-muted)]
+              "
+            >
+              Lengkapi form di bawah ini untuk mengajukan surat
+            </p>
+          </div>
+        </header>
 
-.hifi-input-readonly {
-  width: 100%;
-  border-radius: 12px;
-  background-color: var(--app-input-disabled-bg);
-  border: 1.5px solid var(--app-input-border);
-  padding: 14px 16px;
-  font-weight: 600;
-  color: var(--app-muted);
-  cursor: not-allowed;
-}
+        <form
+          class="flex w-full flex-col gap-6"
+          @submit.prevent="handleSubmit"
+        >
+          <VInputField
+            label="Pengaju Surat"
+            :model-value="authStore.user?.nama || '-'"
+            disabled
+          />
 
-.hifi-input-white,
-.hifi-select-white {
-  width: 100%;
-  border-radius: 12px;
-  background-color: var(--app-input-bg);
-  border: 1.5px solid var(--app-input-border);
-  padding: 14px 16px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--app-text);
-  outline: none;
-}
+          <div
+            v-if="isWaliMurid"
+            class="flex flex-col gap-2"
+          >
+            <label
+              class="
+                text-[length:var(--app-input-label-font)]
+                font-semibold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              Nama Siswa (Anak)
+            </label>
 
-.hifi-input-white:focus {
-  border-color: var(--app-input-focus-border);
-}
+            <VDropdown
+              v-model="formData.id_siswa"
+              :options="siswaOptions"
+              placeholder="Pilih nama anak Anda..."
+            />
+          </div>
 
-.hifi-select-gradient {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 12px;
-  color: var(--app-text-inverse);
-  font-weight: 700;
-  padding: 0 16px;
-  appearance: none;
-  cursor: pointer;
-  background: var(--app-accent);
-  z-index: 10;
-}
+          <div class="grid w-full grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="flex flex-col gap-2">
+              <label
+                class="
+                  text-[length:var(--app-input-label-font)]
+                  font-semibold leading-[1.2] text-[var(--app-heading)]
+                "
+              >
+                Jenis Surat
+              </label>
 
-.hifi-chevron {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--app-muted);
-  pointer-events: none;
-}
+              <VDropdown
+                v-model="formData.id_template"
+                :options="templateOptions"
+                placeholder="Pilih Jenis Surat..."
+              />
+            </div>
 
-.hifi-chevron-white {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--app-text-inverse);
-  pointer-events: none;
-  z-index: 20;
-}
+            <div class="flex flex-col gap-2">
+              <label
+                class="
+                  text-[length:var(--app-input-label-font)]
+                  font-semibold leading-[1.2] text-[var(--app-heading)]
+                "
+              >
+                Klasifikasi Surat
+              </label>
 
-.hifi-btn-submit {
-  width: 100%;
-  height: 56px;
-  border-radius: 20px;
-  color: var(--app-text-inverse);
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  background: var(--app-accent);
-  transition: transform 0.1s;
-}
+              <VDropdown
+                v-model="formData.klasifikasi"
+                :options="klasifikasiOptions"
+                placeholder="Pilih Klasifikasi..."
+              />
+            </div>
+          </div>
 
-.hifi-btn-submit:active {
-  transform: scale(0.98);
-}
-</style>
+          <section
+            v-if="dynamicFields.length > 0"
+            class="
+              mt-2 flex flex-col gap-6 border-t border-dashed
+              border-[var(--app-border)] pt-6
+            "
+          >
+            <h2
+              class="
+                m-0 text-[length:var(--app-section-title-font)]
+                font-bold leading-[1.2] text-[var(--app-accent)]
+              "
+            >
+              Informasi Tambahan Surat
+            </h2>
+
+            <div
+              v-for="field in dynamicFields"
+              :key="field"
+              class="flex flex-col gap-2"
+            >
+              <VInputField
+                v-model="dynamicData[field]"
+                :label="formatLabel(field)"
+                :placeholder="'Masukkan ' + formatLabel(field).toLowerCase()"
+              />
+            </div>
+          </section>
+
+          <VButton
+            type="submit"
+            variant="primary"
+            size="lg"
+            class="mt-4 w-full"
+            :disabled="isSubmitting"
+          >
+            {{ isSubmitting ? 'Mengirim...' : 'Ajukan Surat' }}
+          </VButton>
+        </form>
+      </div>
+    </main>
+  </DashboardLayout>
+</template>

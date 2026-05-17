@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
-import { Edit, X } from 'lucide-vue-next'
-import { useParentStore } from '@/stores/parents'
-import { parseFieldErrors } from '@/lib/fieldErrors'
-import VButton from '@/components/common/VButton.vue'
+import { reactive, ref, watch } from 'vue'
+import { useParentStore, validateParentForm } from '@/stores/parents'
+
+import VModal from '@/components/common/VModal.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VTextareaField from '@/components/common/VTextareaField.vue'
+import VButton from '@/components/common/VButton.vue'
+import VAlert from '@/components/common/VAlert.vue'
+
+type AlertType = 'success' | 'error' | 'warning' | 'information'
 
 const props = defineProps<{
   isOpen: boolean
@@ -31,77 +34,76 @@ const errors = reactive({
   nama: '',
   email: '',
   no_hp: '',
-  alamat: '',
 })
 
-const submitError = ref('')
-const isSubmitting = ref(false)
+const alert = reactive({
+  visible: false,
+  type: 'error' as AlertType,
+  title: '',
+  message: '',
+})
+
 const isFetching = ref(false)
+const isLoading = ref(false)
 
 const toDateInputValue = (value: string | null | undefined): string => {
   if (!value) return ''
-  if (!value.includes('T')) return value
-  const [dateOnly] = value.split('T')
-  return dateOnly || ''
-}
 
-const closeModal = () => {
-  emit('update:isOpen', false)
+  return (value.includes('T') ? value.split('T')[0] : value) || ''
 }
 
 const resetErrors = () => {
   errors.nama = ''
   errors.email = ''
   errors.no_hp = ''
-  errors.alamat = ''
-  submitError.value = ''
 }
 
-const validateForm = () => {
-  resetErrors()
-  let isValid = true
-
-  if (!form.nama.trim()) {
-    errors.nama = 'Nama wajib diisi!'
-    isValid = false
-  }
-
-  if (!form.email.trim()) {
-    errors.email = 'Email wajib diisi!'
-    isValid = false
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Format email tidak valid!'
-    isValid = false
-  }
-
-  if (!form.no_hp.trim()) {
-    errors.no_hp = 'Nomor HP wajib diisi!'
-    isValid = false
-  } else if (!/^(\+62|62|0)8[1-9][0-9]{7,11}$/.test(form.no_hp)) {
-    errors.no_hp =
-      'Format nomor HP tidak valid. Gunakan format Indonesia (contoh: 08123456789 atau +628123456789).'
-    isValid = false
-  }
-
-  return isValid
+const resetAlert = () => {
+  alert.visible = false
+  alert.type = 'error'
+  alert.title = ''
+  alert.message = ''
 }
 
-const loadParentData = async () => {
+const resetForm = () => {
+  form.nama = ''
+  form.email = ''
+  form.no_hp = ''
+  form.tanggal_lahir = ''
+  form.alamat = ''
+}
+
+const handleModalVisibilityChange = (value: boolean) => {
+  if (!value && isLoading.value) return
+
+  emit('update:isOpen', value)
+
+  if (!value) {
+    resetErrors()
+    resetAlert()
+  }
+}
+
+const loadParent = async () => {
   if (!props.parentId) return
 
-  resetErrors()
   isFetching.value = true
+  resetErrors()
+  resetAlert()
 
   try {
-    const parent = await store.fetchParentById(props.parentId)
+    const parent = await store.fetchParentById(String(props.parentId))
 
     form.nama = parent.nama || ''
     form.email = parent.email || ''
-    form.no_hp = parent.no_hp || parent.no_hp || ''
+    form.no_hp = parent.no_hp || ''
     form.tanggal_lahir = toDateInputValue(parent.tanggal_lahir)
     form.alamat = parent.alamat || ''
   } catch (error) {
-    submitError.value = (error as Error).message
+    alert.visible = true
+    alert.type = 'error'
+    alert.title = 'Gagal Memuat Data'
+    alert.message = (error as Error).message || 'Data wali murid gagal dimuat.'
   } finally {
     isFetching.value = false
   }
@@ -109,27 +111,68 @@ const loadParentData = async () => {
 
 watch(
   () => props.isOpen,
-  async (isOpen) => {
-    if (!isOpen) return
-    await loadParentData()
+  (isOpen) => {
+    if (isOpen) {
+      loadParent()
+      return
+    }
+
+    resetForm()
+    resetErrors()
+    resetAlert()
   },
 )
 
 watch(
   () => props.parentId,
-  async () => {
-    if (!props.isOpen) return
-    await loadParentData()
+  () => {
+    if (props.isOpen) {
+      loadParent()
+    }
   },
 )
 
-const isSubmitDisabled = computed(() => isSubmitting.value || isFetching.value)
+watch(
+  () => form.nama,
+  () => {
+    errors.nama = ''
+  },
+)
+
+watch(
+  () => form.email,
+  () => {
+    errors.email = ''
+  },
+)
+
+watch(
+  () => form.no_hp,
+  () => {
+    errors.no_hp = ''
+  },
+)
+
+const validateForm = () => {
+  const result = validateParentForm(form)
+
+  errors.nama = result.nama || ''
+  errors.email = result.email || ''
+  errors.no_hp = result.no_hp || ''
+
+  return Object.keys(result).length === 0
+}
+
+const closeModal = () => {
+  handleModalVisibilityChange(false)
+}
 
 const handleSubmit = async () => {
-  if (!props.parentId || !validateForm()) return
+  if (!props.parentId || isLoading.value) return
+  if (!validateForm()) return
 
-  isSubmitting.value = true
-  submitError.value = ''
+  isLoading.value = true
+  resetAlert()
 
   try {
     const body: Record<string, string> = {
@@ -138,182 +181,228 @@ const handleSubmit = async () => {
       no_hp: form.no_hp.trim(),
     }
 
-    if (form.tanggal_lahir) body.tanggal_lahir = form.tanggal_lahir
-    if (form.alamat.trim()) body.alamat = form.alamat.trim()
+    if (form.tanggal_lahir) {
+      body.tanggal_lahir = form.tanggal_lahir
+    }
 
-    const data = await store.updateParent(props.parentId, body)
+    if (form.alamat.trim()) {
+      body.alamat = form.alamat.trim()
+    }
+
+    const data = await store.updateParent(String(props.parentId), body)
 
     emit('updated', data.message || 'Data wali murid berhasil diperbarui.')
-    closeModal()
+    emit('update:isOpen', false)
   } catch (error) {
-    const parsed = parseFieldErrors(error, {
-      nama: ['nama', 'name'],
-      email: ['email'],
-      no_hp: ['no_hp', 'nomor_hp', 'nomor hp', 'phone'],
-      alamat: ['alamat', 'address'],
-    })
-
-    errors.nama = parsed.fieldErrors.nama || ''
-    errors.email = parsed.fieldErrors.email || ''
-    errors.no_hp = parsed.fieldErrors.no_hp || ''
-    errors.alamat = parsed.fieldErrors.alamat || ''
-    submitError.value = parsed.generalError
+    alert.visible = true
+    alert.type = 'error'
+    alert.title = 'Gagal Memperbarui Data'
+    alert.message = (error as Error).message || 'Data wali murid gagal diperbarui.'
   } finally {
-    isSubmitting.value = false
+    isLoading.value = false
   }
 }
 </script>
 
 <template>
-  <Teleport to="body">
-    <transition
-      enter-active-class="transition duration-300 ease-out"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
-      leave-active-class="transition duration-200 ease-in"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
-    >
+  <VModal
+    :is-open="isOpen"
+    title="Edit Wali Murid"
+    max-width-class="max-w-[460px]"
+    :buttons="[]"
+    @update:is-open="handleModalVisibilityChange"
+  >
+    <div class="parent-modal-body">
       <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
-        @click.self="closeModal"
+        v-if="isFetching"
+        class="parent-modal-loading"
       >
-        <transition
-          enter-active-class="transition duration-300 ease-out"
-          enter-from-class="opacity-0 scale-95 translate-y-4"
-          enter-to-class="opacity-100 scale-100 translate-y-0"
-          leave-active-class="transition duration-200 ease-in"
-          leave-from-class="opacity-100 scale-100 translate-y-0"
-          leave-to-class="opacity-0 scale-95 translate-y-4"
-        >
-          <div v-if="isOpen" class="parent-modal relative w-full max-w-[720px]">
-            <div class="flex flex-col gap-5">
-              <div class="flex justify-end">
-                <button type="button" class="modal-close-button" @click="closeModal">
-                  <X class="h-5 w-5" />
-                </button>
-              </div>
-
-              <div class="flex flex-col items-center gap-2 text-center">
-                <Edit class="h-12 w-12 text-[var(--app-accent)]" />
-                <b class="modal-title text-[1.7rem] leading-[120%]">Edit Wali Murid</b>
-              </div>
-
-              <div
-                v-if="isFetching"
-                class="py-8 text-center text-[1rem] text-[var(--app-muted)]"
-              >
-                Memuat data...
-              </div>
-
-              <div v-else class="flex flex-col gap-4">
-                <VInputField
-                  v-model="form.nama"
-                  label="Nama Lengkap"
-                  type="text"
-                  placeholder="Masukkan nama lengkap"
-                  :disabled="isSubmitting"
-                  :state="errors.nama ? 'error' : 'default'"
-                  :message="errors.nama"
-                />
-
-                <VInputField
-                  v-model="form.email"
-                  label="Email"
-                  type="email"
-                  placeholder="nama@email.com"
-                  :disabled="isSubmitting"
-                  :state="errors.email ? 'error' : 'default'"
-                  :message="errors.email"
-                />
-
-                <VInputField
-                  v-model="form.no_hp"
-                  label="Nomor HP"
-                  type="text"
-                  placeholder="08123456789"
-                  :disabled="isSubmitting"
-                  :state="errors.no_hp ? 'error' : 'default'"
-                  :message="errors.no_hp"
-                />
-
-                <VInputField
-                  v-model="form.tanggal_lahir"
-                  label="Tanggal Lahir"
-                  type="date"
-                  placeholder="Pilih tanggal lahir"
-                  :disabled="isSubmitting"
-                />
-
-                <VTextareaField
-                  v-model="form.alamat"
-                  label="Alamat"
-                  placeholder="Masukkan alamat"
-                  :rows="3"
-                  :disabled="isSubmitting"
-                  :state="errors.alamat ? 'error' : 'default'"
-                  :message="errors.alamat"
-                />
-
-                <p v-if="submitError" class="text-[0.93rem] font-medium text-[var(--app-danger)]">
-                  {{ submitError }}
-                </p>
-              </div>
-
-              <div class="flex items-center justify-end gap-2">
-                <VButton
-                  variant="secondary"
-                  class="!w-[132px]"
-                  :disabled="isSubmitDisabled"
-                  @click="closeModal"
-                >
-                  Batal
-                </VButton>
-
-                <VButton
-                  variant="primary"
-                  class="!w-[132px]"
-                  :disabled="isSubmitDisabled"
-                  @click="handleSubmit"
-                >
-                  {{ isSubmitting ? 'Menyimpan...' : 'Simpan' }}
-                </VButton>
-              </div>
-            </div>
-          </div>
-        </transition>
+        Memuat data...
       </div>
-    </transition>
-  </Teleport>
+
+      <form
+        v-else
+        class="parent-modal-form"
+        @submit.prevent="handleSubmit"
+      >
+        <VAlert
+          v-if="alert.visible"
+          :visible="alert.visible"
+          :type="alert.type"
+          :title="alert.title"
+          :message="alert.message"
+          class="parent-modal-alert"
+          @close="alert.visible = false"
+        />
+
+        <VInputField
+          v-model="form.nama"
+          label="Nama Lengkap"
+          placeholder="Masukkan nama lengkap"
+          :disabled="isLoading"
+          :state="errors.nama ? 'error' : 'default'"
+          :message="errors.nama"
+        />
+
+        <VInputField
+          v-model="form.email"
+          label="Email"
+          type="email"
+          placeholder="Masukkan email"
+          :disabled="isLoading"
+          :state="errors.email ? 'error' : 'default'"
+          :message="errors.email"
+        />
+
+        <VInputField
+          v-model="form.no_hp"
+          label="Nomor HP"
+          placeholder="Masukkan nomor HP"
+          :disabled="isLoading"
+          :state="errors.no_hp ? 'error' : 'default'"
+          :message="errors.no_hp"
+        />
+
+        <VInputField
+          v-model="form.tanggal_lahir"
+          label="Tanggal Lahir"
+          type="date"
+          :disabled="isLoading"
+        />
+
+        <VTextareaField
+          v-model="form.alamat"
+          label="Alamat"
+          placeholder="Masukkan alamat"
+          :disabled="isLoading"
+          :rows="2"
+        />
+
+        <div class="parent-modal-actions">
+          <VButton
+            type="button"
+            variant="secondary"
+            class="parent-modal-button"
+            :disabled="isLoading"
+            @click="closeModal"
+          >
+            Batal
+          </VButton>
+
+          <VButton
+            type="submit"
+            variant="primary"
+            class="parent-modal-button"
+            :disabled="isLoading"
+          >
+            {{ isLoading ? 'Menyimpan...' : 'Simpan' }}
+          </VButton>
+        </div>
+      </form>
+    </div>
+  </VModal>
 </template>
 
 <style scoped>
-.parent-modal {
-  overflow: visible;
-  border: 0.5px solid var(--app-modal-border);
-  border-radius: 24px;
-  background: var(--app-modal-bg);
-  color: var(--app-modal-text);
-  padding: 28px 32px;
-  box-shadow:
-    0px -2px 4px rgba(0, 0, 0, 0.2),
-    0px 2px 4px rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
+.parent-modal-body {
+  width: 100%;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  padding: 0 2px 2px;
+  color: var(--app-text);
+  font-family: var(--font-sans);
+  text-align: left;
 }
 
-.modal-close-button {
-  color: var(--app-modal-text);
-  transition:
-    opacity 0.2s ease,
-    color 0.2s ease;
+.parent-modal-body::-webkit-scrollbar {
+  width: 6px;
 }
 
-.modal-close-button:hover {
-  opacity: 0.7;
+.parent-modal-body::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.modal-title {
-  color: var(--app-modal-text);
+.parent-modal-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--app-border);
+}
+
+.parent-modal-subtitle {
+  margin: -2px 0 12px;
+  color: var(--app-subtext);
+  font-size: var(--app-modal-desc-font);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.parent-modal-loading {
+  padding: 28px 12px;
+  color: var(--app-muted);
+  font-size: var(--app-font-sm);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.parent-modal-form {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.parent-modal-alert {
+  margin-bottom: 2px;
+}
+
+.parent-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.parent-modal-button {
+  min-width: 108px;
+  min-height: 38px;
+}
+
+.parent-modal :deep(.flex.flex-col.gap-2) {
+  gap: 5px;
+}
+
+.parent-modal :deep(label) {
+  font-size: var(--app-input-label-font);
+  line-height: 1.2;
+}
+
+.parent-modal :deep(input) {
+  min-height: 38px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-size: var(--app-input-font);
+}
+
+.parent-modal :deep(textarea) {
+  min-height: 70px;
+  max-height: 100px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: var(--app-input-font);
+  resize: vertical;
+}
+
+@media (max-width: 640px) {
+  .parent-modal-body {
+    max-height: calc(100vh - 150px);
+  }
+
+  .parent-modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .parent-modal-button {
+    width: 100%;
+    min-width: 0;
+  }
 }
 </style>

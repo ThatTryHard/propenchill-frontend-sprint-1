@@ -19,6 +19,7 @@ import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VButton from '@/components/common/VButton.vue'
 import VCard from '@/components/common/VCard.vue'
+import StatCard from '@/components/common/StatCard.vue'
 import VTable from '@/components/common/VTable.vue'
 import VPagination from '@/components/common/VPagination.vue'
 import VInputField from '@/components/common/VInputField.vue'
@@ -75,7 +76,7 @@ const loadStudents = async () => {
     currentPage.value,
     limit.value,
     combinedQuery.value,
-    kelas.value
+    kelas.value,
   )
 }
 
@@ -154,22 +155,22 @@ const totalStaf = computed(() => studentStore.summary.total_staff)
 const tableColumns = computed(() => {
   if (selectedDataType.value === 'Staf') {
     return [
-      { key: 'nomor', label: 'Nomor' },
-      { key: 'nama', label: 'Nama' },
-      { key: 'email', label: 'Email' },
-      { key: 'kelas', label: 'Kelas' },
-      { key: 'aksi', label: 'Aksi' },
+      { key: 'nomor', label: 'Nomor', align: 'center' as const },
+      { key: 'nama', label: 'Nama', align: 'center' as const },
+      { key: 'email', label: 'Email', align: 'center' as const },
+      { key: 'kelas', label: 'Kelas', align: 'center' as const },
+      { key: 'aksi', label: 'Aksi', align: 'center' as const },
     ]
   }
 
   return [
-    { key: 'nomor', label: 'Nomor' },
-    { key: 'nama', label: 'Nama' },
-    { key: 'nisn', label: 'NISN' },
-    { key: 'nis', label: 'NIS' },
-    { key: 'email', label: 'Email' },
-    { key: 'kelas', label: 'Kelas' },
-    { key: 'aksi', label: 'Aksi' },
+    { key: 'nomor', label: 'Nomor', align: 'center' as const },
+    { key: 'nama', label: 'Nama', align: 'center' as const },
+    { key: 'nisn', label: 'NISN', align: 'center' as const },
+    { key: 'nis', label: 'NIS', align: 'center' as const },
+    { key: 'email', label: 'Email', align: 'center' as const },
+    { key: 'kelas', label: 'Kelas', align: 'center' as const },
+    { key: 'aksi', label: 'Aksi', align: 'center' as const },
   ]
 })
 
@@ -211,282 +212,395 @@ onMounted(async () => {
       <SIMPSidebar />
     </template>
 
-    <div
-      class="w-full max-w-[1180px] mx-auto px-10 py-8 flex flex-col gap-6 max-[768px]:px-4 bg-[var(--app-bg)] text-[var(--app-text)]"
+    <main
+      class="
+        min-h-full bg-[var(--app-bg)] px-10 py-6
+        font-[var(--font-sans)] text-[var(--app-text)]
+        max-[768px]:px-4
+      "
     >
-      <section class="flex items-start justify-between gap-8 max-[1200px]:flex-col max-[1200px]:items-start">
-        <div class="flex flex-col gap-2">
-          <h1 class="m-0 text-[32px] leading-[120%] font-extrabold text-[var(--app-heading)]">
-            Manajemen Siswa dan Staf
-          </h1>
-          <p class="m-0 text-[20px] leading-[120%] text-[var(--app-muted)]">
-            Lihat dan kelola Siswa dan Staf
-          </p>
-        </div>
+      <div class="mx-auto flex w-full max-w-[1180px] flex-col gap-4">
+        <section
+          class="
+            flex items-start justify-between gap-6
+            max-[900px]:flex-col max-[900px]:items-start
+          "
+        >
+          <div class="flex flex-col gap-2">
+            <h1
+              class="
+                m-0 text-[length:var(--app-page-title-font)]
+                font-extrabold leading-[1.2] text-[var(--app-heading)]
+              "
+            >
+              Manajemen Siswa dan Staf
+            </h1>
 
-        <div class="flex flex-col gap-4 w-[320px] max-[1200px]:w-full">
-          <div class="flex flex-col gap-4 w-full max-[1200px]:flex-row max-[640px]:flex-col">
+            <p
+              class="
+                m-0 text-[length:var(--app-page-subtitle-font)]
+                leading-[1.2] text-[var(--app-muted)]
+              "
+            >
+              Lihat dan kelola Siswa dan Staf
+            </p>
+          </div>
+
+          <div
+            class="
+              flex shrink-0 items-center justify-end gap-3
+              max-[900px]:w-full max-[900px]:justify-start
+              max-[640px]:flex-col max-[640px]:items-stretch
+            "
+          >
             <VButton
               variant="primary"
-              class="!h-[48px] !rounded-[20px] !text-[16px] !font-semibold"
               @click="openCreateModal"
             >
-              <template #leftIcon><Plus :size="18" /></template>
+              <template #leftIcon>
+                <Plus :size="18" />
+              </template>
+
               Tambah Data Siswa
             </VButton>
 
             <VButton
               variant="secondary"
-              class="!h-[48px] !rounded-[20px] !text-[16px] !font-semibold"
               @click="openStaffModal"
             >
-              <template #leftIcon><Plus :size="18" /></template>
+              <template #leftIcon>
+                <Plus :size="18" />
+              </template>
+
               Tambah Data Staf
             </VButton>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="grid grid-cols-3 gap-5 max-[1200px]:grid-cols-1">
-        <VCard paddingClass="p-0">
-          <div class="relative h-[186px] overflow-hidden rounded-[28px]">
-            <div class="absolute top-[48px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
-              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-heading)]">
-                Total Data
-              </b>
-              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-accent)]">
-                {{ totalData }}
-              </b>
-            </div>
-            <img
-              :src="databaseIcon"
-              alt="Database Icon"
-              class="absolute left-[-14px] bottom-[-6px] w-[100px] h-[100px] object-contain z-[1]"
-            />
-          </div>
-        </VCard>
+        <section class="grid grid-cols-3 gap-4 max-[768px]:grid-cols-1">
+          <StatCard
+            title="Total Data"
+            :value="totalData"
+            :icon-src="databaseIcon"
+            icon-alt="Database Icon"
+          />
 
-        <VCard paddingClass="p-0">
-          <div class="relative h-[186px] overflow-hidden rounded-[28px]">
-            <div class="absolute top-[34px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
-              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-heading)]">
-                Siswa
-              </b>
-              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-accent)]">
-                {{ totalSiswa }}
-              </b>
-            </div>
-            <img
-              :src="studentIcon"
-              alt="Student Icon"
-              class="absolute left-[-14px] bottom-[-6px] w-[100px] h-[100px] object-contain z-[1]"
-            />
-          </div>
-        </VCard>
+          <StatCard
+            title="Siswa"
+            :value="totalSiswa"
+            :icon-src="studentIcon"
+            icon-alt="Student Icon"
+          />
 
-        <VCard paddingClass="p-0">
-          <div class="relative h-[186px] overflow-hidden rounded-[28px]">
-            <div class="absolute top-[34px] left-1/2 -translate-x-1/2 w-[218px] flex flex-col items-center gap-[14px] z-[2]">
-              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-heading)]">
-                Staf
-              </b>
-              <b class="w-full text-center text-[32px] leading-[120%] text-[var(--app-accent)]">
-                {{ totalStaf }}
-              </b>
-            </div>
-            <img
-              :src="staffIcon"
-              alt="Staff Icon"
-              class="absolute left-[-9px] bottom-[-4px] w-[84px] h-[84px] object-contain z-[1]"
-            />
-          </div>
-        </VCard>
-      </section>
+          <StatCard
+            title="Staf"
+            :value="totalStaf"
+            :icon-src="staffIcon"
+            icon-alt="Staff Icon"
+          />
+        </section>
 
-      <VCard paddingClass="px-4 py-[34px]">
-        <div class="flex flex-col gap-5 w-full">
-          <div class="flex items-center justify-between gap-5 max-[1100px]:flex-col max-[1100px]:items-start">
-            <div class="flex items-center gap-[10px]">
-              <Filter class="w-10 h-10 text-[var(--app-heading)]" />
-              <b class="text-[24px] leading-[120%] text-[var(--app-heading)] font-bold">
-                Filter Data
-              </b>
-            </div>
+        <VCard
+          padding-class="p-3"
+          class="w-full"
+        >
+          <div class="flex w-full flex-col gap-3">
+            <div
+              class="
+                flex items-center justify-between gap-4
+                max-[640px]:flex-col max-[640px]:items-start
+              "
+            >
+              <div class="flex items-center gap-2">
+                <Filter class="h-6 w-6 text-[var(--app-heading)]" />
 
-            <div class="w-[254px] max-[1100px]:w-full">
-              <VDropdown
-                v-model="selectedDataType"
-                :options="dataTypeOptions"
-                placeholder="Pilih Data"
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-4 gap-4 items-end max-[1200px]:grid-cols-2 max-[768px]:grid-cols-1">
-            <div class="flex items-center gap-3">
-              <div class="min-w-[72px] text-[20px] leading-[120%] font-semibold text-[var(--app-heading)]">
-                Nama
+                <b
+                  class="
+                    text-[length:var(--app-card-title-font)]
+                    font-bold leading-[1.2] text-[var(--app-heading)]
+                  "
+                >
+                  Filter Data
+                </b>
               </div>
-              <VInputField
-                v-model="namaFilter"
-                placeholder="Masukkan nama"
-                class="flex-1"
-              />
-            </div>
 
-            <div class="flex items-center gap-3">
-              <div class="min-w-[120px] text-[20px] leading-[120%] font-semibold text-[var(--app-heading)]">
-                Nomor Induk
-              </div>
-              <VInputField
-                v-model="nomorInduk"
-                placeholder="NIS / NISN"
-                class="flex-1"
-              />
-            </div>
-
-            <div class="flex items-center gap-3">
-              <div class="min-w-[108px] text-[20px] leading-[120%] font-semibold text-[var(--app-heading)]">
-                Kelas
-              </div>
-              <VInputField
-                v-model="kelas"
-                placeholder="Masukkan kelas"
-                class="flex-1"
-              />
-            </div>
-
-            <div class="flex justify-end max-[768px]:justify-start">
-              <button
+              <VButton
+                variant="tertiary"
+                size="sm"
                 @click="resetFilter"
-                type="button"
-                class="h-[52px] w-[56px] rounded-[12px] border border-[var(--app-card-border)] bg-[var(--app-card)] flex items-center justify-center hover:bg-[var(--app-bg)] transition-colors"
               >
-                <RotateCcw class="w-6 h-6 text-[var(--app-heading)]" />
-              </button>
+                <template #leftIcon>
+                  <RotateCcw :size="16" />
+                </template>
+
+                Reset
+              </VButton>
+            </div>
+
+            <div
+              class="
+                grid grid-cols-2 gap-x-5 gap-y-3
+                max-[900px]:grid-cols-1
+              "
+            >
+              <div
+                class="
+                  grid grid-cols-[80px_280px] items-center gap-3
+                  max-[900px]:grid-cols-[92px_1fr]
+                "
+              >
+                <label
+                  class="
+                    text-[length:var(--app-input-label-font)]
+                    font-semibold leading-[1.2] text-[var(--app-heading)]
+                  "
+                >
+                  Nama
+                </label>
+
+                <VInputField
+                  v-model="namaFilter"
+                  placeholder="Masukkan nama"
+                />
+              </div>
+
+              <div
+                class="
+                  grid grid-cols-[110px_280px] items-center gap-3
+                  max-[900px]:grid-cols-[120px_1fr]
+                "
+              >
+                <label
+                  class="
+                    text-[length:var(--app-input-label-font)]
+                    font-semibold leading-[1.2] text-[var(--app-heading)]
+                  "
+                >
+                  Nomor Induk
+                </label>
+
+                <VInputField
+                  v-model="nomorInduk"
+                  placeholder="NIS / NISN"
+                />
+              </div>
+
+              <div
+                class="
+                  grid grid-cols-[80px_280px] items-center gap-3
+                  max-[900px]:grid-cols-[92px_1fr]
+                "
+              >
+                <label
+                  class="
+                    text-[length:var(--app-input-label-font)]
+                    font-semibold leading-[1.2] text-[var(--app-heading)]
+                  "
+                >
+                  Kelas
+                </label>
+
+                <VInputField
+                  v-model="kelas"
+                  placeholder="Masukkan kelas"
+                />
+              </div>
+
+              <div
+                class="
+                  grid grid-cols-[110px_280px] items-center gap-3
+                  max-[900px]:grid-cols-[120px_1fr]
+                "
+              >
+                <label
+                  class="
+                    text-[length:var(--app-input-label-font)]
+                    font-semibold leading-[1.2] text-[var(--app-heading)]
+                  "
+                >
+                  Tipe Data
+                </label>
+
+                <VDropdown
+                  v-model="selectedDataType"
+                  :options="dataTypeOptions"
+                  placeholder="Pilih Data"
+                />
+              </div>
             </div>
           </div>
+        </VCard>
+
+        <VInputField
+          v-model="search"
+          state="search"
+          placeholder="Cari data siswa"
+        />
+
+        <div
+          v-if="studentStore.error && !studentStore.loading && selectedDataType === 'Siswa'"
+          class="
+            rounded-[14px] border border-[var(--app-danger-border)]
+            bg-[var(--app-danger-bg)] px-[26px] py-[22px]
+            text-[length:var(--app-font-sm)] font-semibold
+            text-[var(--app-danger)]
+          "
+        >
+          {{ studentStore.error }}
         </div>
-      </VCard>
 
-      <VInputField
-        v-model="search"
-        state="search"
-        placeholder="Cari data siswa"
-      />
+        <div
+          v-if="selectedDataType === 'Staf'"
+          class="
+            rounded-[14px] border border-[var(--app-card-border)]
+            bg-[var(--app-card)] px-[26px] py-[22px]
+            text-[length:var(--app-font-sm)] font-semibold
+            text-[var(--app-heading)]
+          "
+        >
+          Data staf belum tersedia.
+        </div>
 
-      <div
-        v-if="studentStore.error && !studentStore.loading && selectedDataType === 'Siswa'"
-        class="bg-[var(--app-danger-bg)] rounded-[14px] px-[26px] py-[22px] text-[14px] font-semibold text-[var(--app-danger)] border border-[var(--app-danger-border)]"
-      >
-        {{ studentStore.error }}
-      </div>
+        <div
+          v-else
+          class="flex flex-col gap-4"
+        >
+          <VTable
+            :columns="tableColumns"
+            :rows="tableRows"
+            :is-loading="studentStore.loading"
+          >
+            <template #cell-nomor="{ value }">
+              <span class="text-inherit">
+                {{ value }}
+              </span>
+            </template>
 
-      <div
-        v-if="selectedDataType === 'Staf'"
-        class="bg-[var(--app-card)] rounded-[14px] px-[26px] py-[22px] text-[14px] font-semibold text-[var(--app-heading)] border border-[var(--app-card-border)]"
-      >
-        Data staf belum tersedia.
-      </div>
+            <template #cell-nama="{ value }">
+              <span class="font-medium text-inherit">
+                {{ value }}
+              </span>
+            </template>
 
-      <div v-else class="flex flex-col gap-4">
-        <VTable :columns="tableColumns" :rows="tableRows" :isLoading="studentStore.loading">
-          <template #cell-nomor="{ value }">
-            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
-          </template>
+            <template #cell-nisn="{ value }">
+              <span class="text-inherit">
+                {{ value }}
+              </span>
+            </template>
 
-          <template #cell-nama="{ value }">
-            <div class="text-center text-[14px] text-[var(--app-text)] font-medium">{{ value }}</div>
-          </template>
+            <template #cell-nis="{ value }">
+              <span class="text-inherit">
+                {{ value }}
+              </span>
+            </template>
 
-          <template #cell-nisn="{ value }">
-            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
-          </template>
+            <template #cell-email="{ value }">
+              <span class="break-all text-inherit">
+                {{ value }}
+              </span>
+            </template>
 
-          <template #cell-nis="{ value }">
-            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
-          </template>
+            <template #cell-kelas="{ value }">
+              <span class="text-inherit">
+                {{ value }}
+              </span>
+            </template>
 
-          <template #cell-email="{ value }">
-            <div class="text-center text-[14px] text-[var(--app-text)] break-all">{{ value }}</div>
-          </template>
+            <template #cell-jenis_kelamin_label="{ value }">
+              <span class="text-inherit">
+                {{ value }}
+              </span>
+            </template>
 
-          <template #cell-kelas="{ value }">
-            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
-          </template>
+            <template #cell-aksi="{ row }">
+              <div class="flex justify-center gap-2">
+                <VButton
+                  variant="tertiary"
+                  size="sm"
+                  @click="openDetailModal(row)"
+                >
+                  <template #leftIcon>
+                    <Eye :size="14" />
+                  </template>
 
-          <template #cell-jenis_kelamin_label="{ value }">
-            <div class="text-center text-[14px] text-[var(--app-text)]">{{ value }}</div>
-          </template>
+                  Detail
+                </VButton>
 
-          <template #cell-aksi="{ row }">
-            <div class="flex justify-center gap-2">
+                <VButton
+                  variant="secondary"
+                  size="sm"
+                  @click="openEditModal(row)"
+                >
+                  <template #leftIcon>
+                    <Pencil :size="14" />
+                  </template>
+
+                  Edit
+                </VButton>
+
+                <VButton
+                  variant="primary"
+                  size="sm"
+                  @click="openDeleteModal(row.id_siswa, row.nama)"
+                >
+                  <template #leftIcon>
+                    <Trash2 :size="14" />
+                  </template>
+
+                  Hapus
+                </VButton>
+              </div>
+            </template>
+          </VTable>
+
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+              <div
+                class="
+                  text-[length:var(--app-font-sm)]
+                  font-semibold text-[var(--app-muted)]
+                "
+              >
+                Show All
+              </div>
+
+              <VPagination
+                v-model:currentPage="currentPage"
+                :totalPages="studentStore.pagination.total_halaman"
+                @page-change="loadStudents"
+              />
+            </div>
+
+            <div
+              v-if="isAdmin"
+              class="flex items-center justify-between gap-4 max-[640px]:flex-col"
+            >
               <VButton
                 variant="secondary"
-                class="!h-[26px] !min-w-[66px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
-                @click="openDetailModal(row)"
+                @click="isImportModalOpen = true"
               >
-                <template #leftIcon><Eye :size="12" /></template>
-                Detail
-              </VButton>
+                <template #leftIcon>
+                  <Upload :size="18" />
+                </template>
 
-              <VButton
-                variant="secondary"
-                class="!h-[26px] !min-w-[58px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
-                @click="openEditModal(row)"
-              >
-                <template #leftIcon><Pencil :size="12" /></template>
-                Edit
+                Import
               </VButton>
 
               <VButton
                 variant="primary"
-                class="!h-[26px] !min-w-[64px] !px-[10px] !py-0 !rounded-[8px] !text-[12px] !font-medium"
-                @click="openDeleteModal(row.id_siswa, row.nama)"
+                @click="isExportModalOpen = true"
               >
-                <template #leftIcon><Trash2 :size="12" /></template>
-                Hapus
+                <template #leftIcon>
+                  <Download :size="18" />
+                </template>
+
+                Export
               </VButton>
             </div>
-          </template>
-        </VTable>
-
-        <div class="flex flex-col gap-4">
-          <div class="flex justify-between items-center">
-            <div class="text-[16px] font-semibold text-[var(--app-muted)]">Show All</div>
-
-            <VPagination
-              v-model:currentPage="currentPage"
-              :totalPages="studentStore.pagination.total_halaman"
-              @page-change="loadStudents"
-            />
-          </div>
-
-          <div
-            v-if="isAdmin"
-            class="flex items-center justify-between gap-4 max-[640px]:flex-col"
-          >
-            <VButton
-              variant="secondary"
-              class="!flex-1 !h-[48px] !rounded-[20px] !text-[16px] !font-semibold"
-              @click="isImportModalOpen = true"
-            >
-              <template #leftIcon><Upload :size="18" /></template>
-              Import
-            </VButton>
-
-            <VButton
-              variant="primary"
-              class="!flex-1 !h-[48px] !rounded-[20px] !text-[16px] !font-semibold"
-              @click="isExportModalOpen = true"
-            >
-              <template #leftIcon><Download :size="18" /></template>
-              Export
-            </VButton>
           </div>
         </div>
       </div>
-    </div>
+    </main>
 
     <CreateStudentModal
       :isOpen="isCreateModalOpen"

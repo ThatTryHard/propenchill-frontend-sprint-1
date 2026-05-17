@@ -1,67 +1,3 @@
-<template>
-  <div class="absolute top-8 left-8">
-    <img src="@/assets/Inrab_Logo.png" alt="SMA Insan Rabbany" class="h-16 opacity-80" />
-  </div>
-
-  <div class="flex flex-col items-center mb-10 mt-12">
-    <img src="@/assets/SIMP.png" alt="SIMP Box" class="h-32 mb-6" />
-    <h1 class="text-[28px] font-bold text-[#767E86]">Hello, Welcome Back!</h1>
-  </div>
-
-  <div class="w-full max-w-[600px] flex flex-col gap-3">
-    <VInputField
-      v-model="email"
-      label="Email"
-      type="email"
-      placeholder="nama@sekolah.sch.id"
-      :disabled="isLoading"
-      :state="emailError ? 'error' : 'default'"
-      :message="emailError"
-    />
-
-    <div class="flex flex-col">
-      <VInputField
-        v-model="password"
-        label="Kata Sandi"
-        type="password"
-        placeholder="Masukkan kata sandi"
-        :disabled="isLoading"
-        :state="passwordError ? 'error' : 'default'"
-        :message="passwordError"
-      />
-
-      <div class="flex justify-start mt-1">
-        <button
-          type="button"
-          @click="goToForgotPassword"
-          class="text-[14px] font-semibold text-[#3f9760] hover:text-[#0c4923] hover:underline transition-colors"
-        >
-          Lupa Password?
-        </button>
-      </div>
-    </div>
-
-    <VButton
-      variant="primary"
-      class="mt-4 w-full h-[52px]"
-      @click="handleLogin"
-      :disabled="isLoading"
-    >
-      {{ isLoading ? 'Memproses...' : 'Login' }}
-    </VButton>
-
-    <p class="text-center text-sm text-[#767E86] mt-2">
-      Belum punya akun?
-      <router-link
-        to="/register"
-        class="font-semibold text-[#3f9760] hover:text-[#0c4923] hover:underline transition-colors"
-      >
-        Daftar di sini
-      </router-link>
-    </p>
-  </div>
-</template>
-
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -191,3 +127,157 @@ const handleLogin = async () => {
   }
 }
 </script>
+
+<template>
+  <main
+    class="
+      relative flex h-full min-h-full w-full items-center justify-center
+      overflow-hidden bg-transparent p-6
+      font-[var(--font-sans)] text-[var(--app-text)]
+      [@media(max-height:720px)]:p-[18px]
+      max-[640px]:p-5
+    "
+  >
+    <div
+      class="
+        absolute left-8 top-8 z-[2]
+        max-[640px]:left-5 max-[640px]:top-5
+      "
+    >
+      <img
+        src="@/assets/Inrab_Logo.png"
+        alt="SMA Insan Rabbany"
+        class="
+          h-16 w-auto object-contain opacity-80
+          [@media(max-height:720px)]:h-[52px]
+          max-[640px]:h-12
+        "
+      />
+    </div>
+
+    <section
+      class="
+        flex w-[min(600px,100%)] flex-col items-center
+        max-[640px]:w-full
+      "
+    >
+      <div
+        class="
+          mt-6 mb-10 flex flex-col items-center text-center
+          [@media(max-height:720px)]:mt-2
+          [@media(max-height:720px)]:mb-6
+          max-[640px]:mt-14
+        "
+      >
+        <img
+          src="@/assets/SIMP.png"
+          alt="SIMP Box"
+          class="
+            mb-6 h-32 w-auto object-contain
+            [@media(max-height:720px)]:mb-4
+            [@media(max-height:720px)]:h-24
+          "
+        />
+
+        <h1
+          class="
+            m-0 text-[length:var(--app-font-title)]
+            font-bold leading-[1.2] text-[var(--app-muted)]
+          "
+        >
+          Halo, Selamat Datang!
+        </h1>
+      </div>
+
+      <div class="flex w-full flex-col gap-3">
+        <VInputField
+          v-model="email"
+          label="Email"
+          type="email"
+          placeholder="Masukkan email Anda"
+          :disabled="isLoading"
+          :state="emailError ? 'error' : 'default'"
+          :message="emailError"
+        />
+
+        <div class="flex flex-col">
+          <VInputField
+            v-model="password"
+            label="Kata Sandi"
+            type="password"
+            placeholder="Masukkan kata sandi"
+            :disabled="isLoading"
+            :state="passwordError ? 'error' : 'default'"
+            :message="passwordError"
+          />
+
+          <div class="mt-1 flex justify-start">
+            <button
+              type="button"
+              class="
+                border-0 bg-transparent p-0
+                font-[var(--font-sans)]
+                text-[length:var(--app-font-sm)]
+                font-semibold leading-[1.2]
+                text-[var(--app-accent)]
+                transition-colors duration-200 ease-in-out
+                hover:text-[var(--app-accent-2)]
+                hover:underline
+                focus:outline-none
+                focus-visible:rounded-[6px]
+                focus-visible:outline
+                focus-visible:outline-2
+                focus-visible:outline-offset-[3px]
+                focus-visible:outline-[var(--app-accent)]
+              "
+              @click="goToForgotPassword"
+            >
+              Lupa Password?
+            </button>
+          </div>
+        </div>
+
+        <VButton
+          variant="primary"
+          class="
+            mt-4 min-h-[52px] w-full
+            [@media(max-height:720px)]:mt-3
+            [@media(max-height:720px)]:min-h-[44px]
+          "
+          :disabled="isLoading"
+          @click="handleLogin"
+        >
+          {{ isLoading ? 'Memproses...' : 'Masuk' }}
+        </VButton>
+
+        <p
+          class="
+            mt-2 mb-0 text-center
+            text-[length:var(--app-font-sm)]
+            leading-[1.5] text-[var(--app-muted)]
+          "
+        >
+          Belum punya akun?
+
+          <router-link
+            to="/register"
+            class="
+              font-semibold text-[var(--app-accent)]
+              no-underline transition-colors duration-200 ease-in-out
+              hover:text-[var(--app-accent-2)]
+              hover:underline
+              focus:outline-none
+              focus-visible:rounded-[6px]
+              focus-visible:outline
+              focus-visible:outline-2
+              focus-visible:outline-offset-[3px]
+              focus-visible:outline-[var(--app-accent)]
+            "
+          >
+            Daftar di sini
+          </router-link>
+        </p>
+      </div>
+    </section>
+  </main>
+</template>
