@@ -174,9 +174,11 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
       }
     },
 
-    async fetchSuratDetail(id: number) {
-      this.detailLoading = true
-      this.selectedSurat = null
+    async fetchSuratDetail(id: number, silent = false) {
+      if (!silent) {
+        this.detailLoading = true
+        this.selectedSurat = null
+      }
       try {
         const response = await api.get(`/api/antrean/letters/queue/${id}/`)
         const normalizedDetail = normalizeSurat(response.data?.data || {})
@@ -194,19 +196,25 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
         console.error('Fetch Detail Error:', error)
         throw error
       } finally {
-        this.detailLoading = false
+        if (!silent) {
+          this.detailLoading = false
+        }
       }
     },
 
-    async verifySurat(id: number, decision: VerifyDecision, notes?: string) {
+    async verifySurat(id: number, decision: VerifyDecision, notes?: string, include_signature?: boolean) {
       this.actionLoading = true
       try {
         const surat =
           this.selectedSurat ||
           this.suratList.find((item: SuratAntrean) => item.id_surat === id || item.id_pengajuan === id)
 
-        const payload: Record<string, string> = {
+        const payload: Record<string, string | boolean> = {
           decision,
+        }
+        
+        if (include_signature !== undefined) {
+          payload.include_signature = include_signature
         }
 
         const role = String(localStorage.getItem('user_role') || '').toUpperCase()
@@ -231,7 +239,8 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
         const response = await api.put(`/api/letters/${id}/verify`, payload)
 
         const currentPage = this.pagination.halaman_saat_ini || 1
-        await Promise.allSettled([this.fetchAntreanList(currentPage), this.fetchSuratDetail(id)])
+        await this.fetchAntreanList(currentPage)
+        await this.fetchSuratDetail(id, true)
 
         return response.data
       } catch (error) {
@@ -242,8 +251,8 @@ export const useSuratAntreanStore = defineStore('surat-antrean', {
       }
     },
 
-    async approveSurat(id: number, notes?: string) {
-      return this.verifySurat(id, 'Approve', notes)
+    async approveSurat(id: number, notes?: string, include_signature?: boolean) {
+      return this.verifySurat(id, 'Approve', notes, include_signature)
     },
 
     async rejectSurat(id: number, reason: string) {
