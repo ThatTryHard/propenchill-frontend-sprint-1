@@ -6,6 +6,7 @@ import {
   Folder,
   User,
   Calendar,
+  Download,
 } from 'lucide-vue-next'
 import type { AxiosError } from 'axios'
 
@@ -37,6 +38,7 @@ const rejectNotesError = ref('')
 const surat = computed(() => store.selectedSurat)
 const loading = computed(() => store.detailLoading)
 const actionLoading = computed(() => store.actionLoading)
+const isDownloadingPreview = ref(false)
 
 const requiredLevelOneRole = computed(() => {
   const templateJenis = String(surat.value?.template_jenis || surat.value?.kategori || '').toUpperCase()
@@ -322,18 +324,73 @@ function mapApiError(error: unknown) {
   }
 }
 
-async function handleApprove() {
+async function handleApprove(includeSignature?: boolean) {
   if (!surat.value) return
 
   generalError.value = ''
   successMessage.value = ''
 
   try {
-    const response = await store.approveSurat(surat.value.id_surat)
+    const response = await store.approveSurat(surat.value.id_surat, undefined, includeSignature)
     successMessage.value = String(response?.message || 'Verifikasi surat berhasil diproses.')
   } catch (error) {
     const mapped = mapApiError(error)
     generalError.value = mapped.message
+  }
+}
+
+async function handlePreviewPDF() {
+  if (!surat.value) return
+
+  generalError.value = ''
+  isDownloadingPreview.value = true
+
+  try {
+    const token = localStorage.getItem('access_token')
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+    const response = await fetch(
+      `${baseUrl}/api/letters/requests/${surat.value.id_surat}/preview`,
+      {
+        method: 'GET',
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : {},
+      }
+    )
+
+    if (!response.ok) {
+      let errorMessage = 'Gagal mengunduh preview surat.'
+
+      try {
+        const errorData = await response.json()
+        errorMessage = errorData?.error || errorData?.detail || errorMessage
+      } catch {
+        // ignore
+      }
+
+      throw new Error(errorMessage)
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    const templateName = surat.value.template_nama || 'Template'
+    link.setAttribute('download', `Preview_${templateName}_${surat.value.id_surat}.docx`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+    window.URL.revokeObjectURL(url)
+  } catch (error) {
+    generalError.value =
+      error instanceof Error ? error.message : 'Terjadi kesalahan saat mengunduh preview.'
+  } finally {
+    isDownloadingPreview.value = false
   }
 }
 
@@ -585,6 +642,23 @@ onMounted(async () => {
         </VCard>
 
         <div
+          v-if="isAdmin || isKepsek || isDepartmentTeacher"
+          class="flex justify-end mt-4 mb-2"
+        >
+          <VButton
+            variant="primary"
+            :disabled="isDownloadingPreview"
+            @click="handlePreviewPDF"
+          >
+            <template #leftIcon>
+              <Download class="h-4 w-4" />
+            </template>
+
+            {{ isDownloadingPreview ? 'Mengunduh...' : 'Preview PDF' }}
+          </VButton>
+        </div>
+
+        <div
           v-if="canVerify"
           class="flex items-center justify-center gap-4"
         >
@@ -597,14 +671,34 @@ onMounted(async () => {
             Tolak
           </VButton>
 
-          <VButton
-            variant="primary"
-            class="min-w-[150px]"
-            :disabled="actionLoading"
-            @click="handleApprove"
-          >
-            Setujui
-          </VButton>
+          <template v-if="isKepsek">
+            <VButton
+              variant="primary"
+              class="min-w-[150px]"
+              :disabled="actionLoading"
+              @click="handleApprove(false)"
+            >
+              Setujui tanpa Tanda Tangan
+            </VButton>
+            <VButton
+              variant="primary"
+              class="min-w-[150px]"
+              :disabled="actionLoading"
+              @click="handleApprove(true)"
+            >
+              Setujui dengan Tanda Tangan
+            </VButton>
+          </template>
+          <template v-else>
+            <VButton
+              variant="primary"
+              class="min-w-[150px]"
+              :disabled="actionLoading"
+              @click="handleApprove()"
+            >
+              Setujui
+            </VButton>
+          </template>
         </div>
       </section>
 
