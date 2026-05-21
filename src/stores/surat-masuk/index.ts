@@ -362,5 +362,19 @@ export const useSuratMasukStore = defineStore('surat-masuk', {
         this.submittingDisposisi = false
       }
     },
+
+    async verifySuratMasuk(id: number | string, note: string) {
+      this.submittingDisposisi = true
+      this.error = ''
+      try {
+        const response = await api.post(`/api/surat-masuk/${id}/verify/`, { note })
+        return response.data
+      } catch (error: any) {
+        this.error = error?.response?.data?.error || 'Gagal memverifikasi surat.'
+        throw error
+      } finally {
+        this.submittingDisposisi = false
+      }
+    },
   },
 })

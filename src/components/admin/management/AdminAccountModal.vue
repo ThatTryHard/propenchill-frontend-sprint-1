@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
 import { Edit, PlusCircle } from 'lucide-vue-next'
-import VButton from '@/components/common/VButton.vue'
 import VModal from '@/components/common/VModal.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VDropdown from '@/components/common/VDropdown.vue'

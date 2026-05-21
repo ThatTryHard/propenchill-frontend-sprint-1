@@ -40,12 +40,7 @@ const jenisSuratOptions = [
 const statusOptions = [
   { label: 'Semua Status', value: '' },
   { label: 'Diajukan', value: 'diajukan' },
-  { label: 'Menunggu Verifikasi Kepsek', value: 'menunggu_verifikasi_kepsek' },
-  { label: 'Verified', value: 'verified' },
-  { label: 'Rejected', value: 'rejected' },
-  { label: 'Dibatalkan', value: 'dibatalkan' },
-  { label: 'Dihapus', value: 'dihapus' },
-  { label: 'Menunggu Verifikasi Kepsek', value: 'menunggu_verifikasi_kepsek' },
+  { label: 'Menunggu Verifikasi', value: 'menunggu_verifikasi_kepsek' },
   { label: 'Verified', value: 'verified' },
   { label: 'Rejected', value: 'rejected' },
   { label: 'Dibatalkan', value: 'dibatalkan' },
@@ -53,7 +48,6 @@ const statusOptions = [
 ]
 
 const tableColumns = [
-  { key: 'id', label: 'ID Surat' },
   { key: 'id', label: 'ID Surat' },
   { key: 'waktu', label: 'Waktu' },
   { key: 'nama', label: 'Nama Pengguna' },
@@ -101,8 +95,12 @@ const getActionLabel = (log: ActivityLogItem) => {
 
   if (action === 'created') return 'Pengajuan dibuat'
   if (action === 'revision_created') return 'Revisi diajukan'
-  if (action === 'status_changed') return 'Status berubah'
-  if (action === 'disposition_added') return 'Disposisi ditambahkan'
+  if (action === 'status_changed') {
+    const note = log.metadata?.kepsek_note || log.metadata?.catatan
+
+    return note ? 'Disposisi diverifikasi' : 'Status berubah'
+  }
+  if (action === 'disposition_added') return 'Disposisi ke Kepala Sekolah'
   if (action === 'deleted') return 'Dokumen dihapus'
 
   return action || '-'
@@ -112,8 +110,11 @@ const getActionDetail = (log: ActivityLogItem) => {
   if (log.action === 'status_changed') {
     const fromStatus = log.status_from || '-'
     const toStatus = log.status_to || '-'
+    const note = log.metadata?.kepsek_note || log.metadata?.catatan
 
-    return `${fromStatus} → ${toStatus}`
+    return note
+      ? `Disposisi diverifikasi. Catatan: ${note}`
+      : `${humanizeStatus(fromStatus)} → ${humanizeStatus(toStatus)}`
   }
 
   if (log.action === 'revision_created') {
@@ -125,10 +126,43 @@ const getActionDetail = (log: ActivityLogItem) => {
   if (log.action === 'disposition_added') {
     const target = log.metadata?.target_role
 
-    return target ? `Target: ${target}` : 'Disposisi surat masuk'
+    return target ? `Disposisi ke ${formatRole(String(target))}` : 'Disposisi ke Kepala Sekolah'
   }
 
   return log.metadata?.catatan ? String(log.metadata.catatan) : '-'
+}
+
+const formatRole = (role?: string | null) => {
+  if (!role) return '-'
+
+  const normalizedRole = String(role).trim().toLowerCase().replace(/_/g, ' ')
+
+  if (normalizedRole === 'kepsek') {
+    return 'Kepala Sekolah'
+  }
+
+  return String(role)
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
+const humanizeStatus = (value?: string | null) => {
+  if (!value) return '-'
+
+  const words = String(value)
+    .trim()
+    .replace(/_/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+
+  if (words.length === 0) return '-'
+
+  return words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
 }
 
 const normalizeStatusValue = (raw?: string) => {
@@ -172,27 +206,22 @@ const normalizeStatusValue = (raw?: string) => {
 
 const formatStatus = (log: ActivityLogItem) => {
   if (log.action === 'deleted') return 'Dihapus'
-  const raw = String(log.status_to || log.status_from || '')
-  const normalized = normalizeStatusValue(raw)
-  if (!normalized) return '-'
-  // display in title case
-  return normalized
-    .replace(/_/g, ' ')
-    .split(' ')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-  if (log.action === 'deleted') return 'Dihapus'
 
-  const rawStatus = String(log.status_to || log.status_from || '')
-  const normalizedStatus = normalizeStatusValue(rawStatus)
+  const normalized = normalizeStatusValue(String(log.status_to || log.status_from || ''))
 
-  if (!normalizedStatus) return '-'
+  if (normalized === 'menunggu_verifikasi_kepsek') {
+    return 'Menunggu Verifikasi'
+  }
 
-  return normalizedStatus
-    .replace(/_/g, ' ')
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
+  if (normalized === 'verified') {
+    return 'Verified'
+  }
+
+  if (normalized === 'selesai') {
+    return 'Verified'
+  }
+
+  return humanizeStatus(log.status_to || log.status_from || '-')
 }
 
 const getStatusVariant = (log: ActivityLogItem) => {
@@ -204,7 +233,7 @@ const getStatusVariant = (log: ActivityLogItem) => {
 
   if (status === 'diajukan') return 'tertiary' as const
   if (status === 'menunggu_verifikasi_kepsek') return 'warning' as const
-  if (status === 'verified') return 'deep' as const
+  if (status === 'verified') return 'primary' as const
   if (['rejected', 'dibatalkan'].includes(status)) return 'danger' as const
   if (status === 'dihapus') return 'deleted' as const
 
@@ -454,7 +483,7 @@ onMounted(refreshLogs)
         >
           <template #cell-id="{ row }">
             <span class="activity-logs-id">
-              {{ row.log.surat_id || row.index }}
+              {{ row.log.surat_id || '-' }}
             </span>
           </template>
 
@@ -471,7 +500,7 @@ onMounted(refreshLogs)
               </span>
 
               <span class="activity-logs-secondary-text">
-                {{ row.log.actor_role || '-' }}
+                {{ formatRole(row.log.actor_role) }}
               </span>
             </div>
           </template>

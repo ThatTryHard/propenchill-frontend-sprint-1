@@ -180,6 +180,12 @@ const resolveNotificationPath = (item: ActivityLogItem) => {
   const suratId = String(item.surat_id || '')
   const action = String(item.action || '')
 
+  if (!suratType || !suratId) {
+    if (role === 'ADMIN') return '/admin/activity-logs'
+    if (role === 'KEPSEK') return '/kepsek/activity-logs'
+    return '/status'
+  }
+
   if (action === 'disposition_added' && suratType === 'surat_masuk') {
     if (role === 'ADMIN') return `/admin/surat-masuk/${suratId}`
     if (role === 'KEPSEK') return `/kepsek/surat-masuk/${suratId}`

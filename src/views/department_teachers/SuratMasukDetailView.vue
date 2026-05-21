@@ -8,6 +8,8 @@ import { useSuratMasukStore, type DisposisiPayload } from '@/stores/surat-masuk'
 import DashboardLayout from '@/components/common/DashboardLayout.vue'
 import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import DisposisiModal from '@/components/department_teachers/DisposisiModal.vue'
+import VModal from '@/components/common/VModal.vue'
+import VTextareaField from '@/components/common/VTextareaField.vue'
 import VActionButton from '@/components/common/VActionButton.vue'
 import VButton from '@/components/common/VButton.vue'
 import VCard from '@/components/common/VCard.vue'
@@ -15,7 +17,6 @@ import VChip from '@/components/common/VChip.vue'
 
 import {
   ArrowLeftIcon,
-  Building2Icon,
   FileTextIcon,
   LoaderCircleIcon,
   SendIcon,
@@ -30,6 +31,8 @@ const { showAlert } = useGlobalAlert()
 
 const idSurat = route.params.id as string
 const isDisposisiModalOpen = ref(false)
+const isVerifyModalOpen = ref(false)
+const verifyNote = ref('')
 
 const suratDetail = computed(() => suratMasukStore.suratDetail)
 
@@ -81,7 +84,7 @@ const getStatusVariant = (status?: string) => {
 
   if (['diajukan', 'pending'].includes(normalizedStatus)) return 'tertiary' as const
   if (['didisposisikan', 'disposisi', 'diproses'].includes(normalizedStatus)) return 'warning' as const
-  if (['selesai', 'verified', 'disetujui'].includes(normalizedStatus)) return 'deep' as const
+  if (['selesai', 'verified', 'disetujui'].includes(normalizedStatus)) return 'primary' as const
   if (['ditolak', 'rejected', 'dibatalkan'].includes(normalizedStatus)) return 'danger' as const
 
   return 'primary' as const
@@ -93,7 +96,7 @@ const getSifatVariant = (sifat?: string) => {
   if (normalizedSifat === 'penting') return 'warning' as const
   if (normalizedSifat === 'rahasia') return 'danger' as const
 
-  return 'deep' as const
+  return 'primary' as const
 }
 
 const openFile = () => {
@@ -115,6 +118,28 @@ const handleDisposisiSubmit = async (payload: DisposisiPayload) => {
   }
 }
 
+const canVerifyAsKepsek = computed(() => {
+  const role = authStore.role || ''
+  return role === 'KEPSEK' && suratMasukStore.suratDetail?.status === 'menunggu_verifikasi_kepsek'
+})
+
+const handleVerifySubmit = async () => {
+  if (!verifyNote.value || !verifyNote.value.trim()) {
+    showAlert('warning', 'Catatan verifikasi wajib diisi.', 'Perhatian')
+    return
+  }
+
+  try {
+    await suratMasukStore.verifySuratMasuk(idSurat, verifyNote.value.trim())
+    showAlert('success', 'Surat berhasil diverifikasi dan ditandai selesai.', 'Berhasil')
+    isVerifyModalOpen.value = false
+    verifyNote.value = ''
+    await fetchDetail()
+  } catch {
+    showAlert('error', suratMasukStore.error || 'Gagal memverifikasi surat.', 'Gagal')
+  }
+}
+
 onMounted(() => {
   fetchDetail()
 })
@@ -129,6 +154,7 @@ onMounted(() => {
     <main class="surat-detail-page">
       <VActionButton
         variant="secondary"
+        class="surat-detail-back-button"
         @click="router.back()"
       >
         <ArrowLeftIcon :size="16" />
@@ -184,6 +210,7 @@ onMounted(() => {
               </div>
 
               <VChip
+                class="surat-detail-chip surat-detail-chip--meta"
                 :label="`Pencatat: ${suratDetail.pencatat_nama || '-'}`"
                 variant="primary"
               />
@@ -208,6 +235,7 @@ onMounted(() => {
                 <span class="surat-detail-info-label">Status Surat</span>
 
                 <VChip
+                  class="surat-detail-chip surat-detail-chip--status"
                   :label="formatStatus(suratDetail.status)"
                   :variant="getStatusVariant(suratDetail.status)"
                 />
@@ -265,6 +293,18 @@ onMounted(() => {
                 </template>
 
                 Disposisi Surat
+              </VButton>
+
+              <VButton
+                v-if="canVerifyAsKepsek"
+                variant="primary"
+                @click="isVerifyModalOpen = true"
+              >
+                <template #leftIcon>
+                  <SendIcon :size="18" />
+                </template>
+
+                Verifikasi & Selesai
               </VButton>
             </div>
           </div>
@@ -345,6 +385,7 @@ onMounted(() => {
               </div>
 
               <VChip
+                class="surat-detail-chip surat-detail-chip--status"
                 :label="suratDetail.disposisi_terakhir.sifat"
                 :variant="getSifatVariant(suratDetail.disposisi_terakhir.sifat)"
               />
@@ -375,6 +416,29 @@ onMounted(() => {
       @update:isOpen="isDisposisiModalOpen = $event"
       @submit="handleDisposisiSubmit"
     />
+
+    <VModal
+      :isOpen="isVerifyModalOpen"
+      title="Verifikasi Kepala Sekolah"
+      description="Tambahkan catatan/ arahan singkat sebelum menandai surat sebagai selesai."
+      :buttons="[]"
+      maxWidthClass="max-w-[560px]"
+      @update:isOpen="(val) => { isVerifyModalOpen = val }">
+      <div class="mt-4 flex w-full flex-col gap-5 text-left font-[var(--font-sans)] text-[var(--app-text)]">
+        <VTextareaField
+          :modelValue="verifyNote"
+          label="Catatan / Arahan"
+          placeholder="Tuliskan arahan singkat untuk tindak lanjut..."
+          :rows="5"
+          @update:modelValue="(v) => { verifyNote = v }"
+        />
+
+        <div class="relative z-10 mt-2 flex items-center justify-end gap-3">
+          <VButton variant="secondary" class="min-w-[104px]" @click="isVerifyModalOpen = false">Batal</VButton>
+          <VButton variant="primary" class="min-w-[160px]" @click="handleVerifySubmit">Verifikasi & Selesai</VButton>
+        </div>
+      </div>
+    </VModal>
   </DashboardLayout>
 </template>
 
@@ -383,13 +447,37 @@ onMounted(() => {
   display: flex;
   width: 100%;
   min-height: 100vh;
-  max-width: 1120px;
   flex-direction: column;
+  align-items: stretch;
+  flex: 1;
+  max-width: none;
   gap: 24px;
   background: var(--app-bg);
   color: var(--app-text);
   font-family: var(--font-sans);
   padding: 32px;
+}
+
+.surat-detail-back-button {
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.surat-detail-chip {
+  min-height: 38px;
+  padding: 0 18px;
+  font-size: var(--app-font-sm);
+  font-weight: 800;
+}
+
+.surat-detail-chip--meta {
+  min-height: 42px;
+  padding: 0 20px;
+}
+
+.surat-detail-chip--status {
+  min-height: 40px;
+  padding: 0 18px;
 }
 
 .surat-detail-loading {
@@ -640,6 +728,11 @@ onMounted(() => {
   .surat-detail-page {
     gap: 18px;
     padding: 18px;
+  }
+
+  .surat-detail-back-button {
+    width: 100%;
+    max-width: 320px;
   }
 
   .surat-detail-grid {

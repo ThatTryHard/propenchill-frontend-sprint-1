@@ -519,6 +519,67 @@ button:disabled {
   border-color: var(--app-border);
 }
 
+html:not(.dark) .activity-detail-shell,
+html:not(.dark) .activity-detail-event-card {
+  border: 0;
+  backdrop-filter: blur(14px) saturate(130%);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  box-shadow:
+    0 12px 30px rgba(79, 120, 85, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.85) inset;
+}
+
+html:not(.dark) .activity-detail-shell {
+  background:
+    linear-gradient(180deg, rgba(244, 250, 245, 0.88) 0%, rgba(238, 247, 239, 0.86) 100%);
+}
+
+html:not(.dark) .activity-detail-shell--overview {
+  background:
+    linear-gradient(180deg, rgba(241, 248, 242, 0.9) 0%, rgba(236, 245, 238, 0.88) 100%);
+}
+
+html:not(.dark) .activity-detail-shell--summary {
+  background:
+    linear-gradient(180deg, rgba(245, 250, 246, 0.9) 0%, rgba(240, 247, 241, 0.88) 100%);
+}
+
+html:not(.dark) .activity-detail-shell--timeline {
+  background:
+    linear-gradient(180deg, rgba(242, 249, 243, 0.9) 0%, rgba(236, 245, 238, 0.88) 100%);
+}
+
+html:not(.dark) .activity-detail-event-card {
+  background:
+    linear-gradient(180deg, rgba(238, 247, 240, 0.88) 0%, rgba(217, 252, 225, 0.9) 100%);
+}
+
+.activity-detail-status-chip {
+  display: inline-flex;
+  min-height: 40px;
+  min-width: 180px;
+  justify-content: center;
+  padding: 0 18px;
+  font-size: var(--app-font-sm);
+  font-weight: 800;
+}
+
+.activity-detail-status-chip--done {
+  min-height: 40px;
+  min-width: 180px;
+  padding: 0 18px;
+}
+
+.activity-logs-status-chip {
+  display: inline-flex;
+  min-height: 40px;
+  min-width: 180px;
+  justify-content: center;
+  padding: 0 18px;
+  font-size: var(--app-font-sm);
+  font-weight: 800;
+}
+
 /* GLOBAL TYPOGRAPHY HELPER CLASSES */
 
 .app-text-caption {

@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/plugins/axios'
@@ -68,17 +68,17 @@ const getChipVariantByStatus = (statusValue: string): ChipVariant => {
     return 'deleted'
   }
 
-  if (
-    statusIncludes(status, [
-      'verified',
-      'terverifikasi',
-      'disetujui',
-      'approved',
-      'selesai',
-    ])
-  ) {
-    return 'secondary'
-  }
+    if (
+      statusIncludes(status, [
+        'verified',
+        'terverifikasi',
+        'disetujui',
+        'approved',
+        'selesai',
+      ])
+    ) {
+      return 'primary'
+    }
 
   if (
     statusIncludes(status, [
@@ -105,6 +105,16 @@ const getChipVariantByStatus = (statusValue: string): ChipVariant => {
 
 const statusChipVariant = computed(() => {
   return getChipVariantByStatus(suratInfo.value.status)
+})
+
+const statusChipLabel = computed(() => {
+  const status = String(suratInfo.value.status || '').trim().toLowerCase().replace(/_/g, ' ')
+
+  if (status === 'selesai') {
+    return 'Verified'
+  }
+
+  return humanizeStatus(suratInfo.value.status)
 })
 
 const summary = computed(() => {
@@ -165,13 +175,33 @@ const formatDateTime = (value?: string) => {
   })
 }
 
+const humanizeStatus = (value?: string | null) => {
+  if (!value) return '-'
+
+  const words = String(value)
+    .trim()
+    .replace(/_/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+
+  if (words.length === 0) return '-'
+
+  return words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+}
+
 const getActionLabel = (log: ActivityLogItem) => {
   const action = String(log.action || '')
 
   if (action === 'created') return 'Pengajuan dibuat'
   if (action === 'revision_created') return 'Revisi diajukan'
-  if (action === 'status_changed') return 'Status berubah'
-  if (action === 'disposition_added') return 'Disposisi ditambahkan'
+  if (action === 'status_changed') {
+    const note = log.metadata?.kepsek_note || log.metadata?.catatan
+
+    return note ? 'Disposisi diverifikasi' : 'Status berubah'
+  }
+  if (action === 'disposition_added') return 'Disposisi ke Kepala Sekolah'
   if (action === 'deleted') return 'Dokumen dihapus'
 
   return action || '-'
@@ -181,8 +211,11 @@ const getActionDetail = (log: ActivityLogItem) => {
   if (log.action === 'status_changed') {
     const fromStatus = log.status_from || '-'
     const toStatus = log.status_to || '-'
+    const note = log.metadata?.kepsek_note || log.metadata?.catatan
 
-    return `Status berubah dari ${fromStatus} ke ${toStatus}.`
+    return note
+      ? `Disposisi telah diverifikasi dari ${humanizeStatus(fromStatus)} ke ${humanizeStatus(toStatus)}.`
+      : `Status berubah dari ${humanizeStatus(fromStatus)} ke ${humanizeStatus(toStatus)}.`
   }
 
   if (log.action === 'revision_created') {
@@ -194,7 +227,7 @@ const getActionDetail = (log: ActivityLogItem) => {
   if (log.action === 'disposition_added') {
     const target = log.metadata?.target_role
 
-    return target ? `Disposisi ditujukan ke ${target}.` : 'Disposisi ditambahkan.'
+    return target ? `Disposisi ke ${formatRole(String(target))}.` : 'Disposisi ke Kepala Sekolah.'
   }
 
   if (log.action === 'deleted') {
@@ -207,7 +240,27 @@ const getActionDetail = (log: ActivityLogItem) => {
 const formatStatus = (log: ActivityLogItem) => {
   if (log.action === 'deleted') return 'dihapus'
 
-  return String(log.status_to || log.status_from || '-').trim() || '-'
+  const normalized = String(log.status_to || log.status_from || '').trim().toLowerCase().replace(/_/g, ' ')
+
+  if (normalized === 'menunggu verifikasi kepsek') {
+    return 'Menunggu Verifikasi'
+  }
+
+  if (normalized === 'selesai') {
+    return 'Verified'
+  }
+
+  return humanizeStatus(log.status_to || log.status_from || '-')
+}
+
+const getStatusChipClass = (log: ActivityLogItem) => {
+  const status = String(log.status_to || log.status_from || '').toLowerCase()
+
+  if (status.includes('selesai') || status.includes('verified')) {
+    return 'activity-detail-status-chip activity-detail-status-chip--done'
+  }
+
+  return 'activity-detail-status-chip'
 }
 
 const getStatusVariant = (log: ActivityLogItem): ChipVariant => {
@@ -227,21 +280,34 @@ const getInitials = (name?: string | null) => {
   return initials.join('') || 'S'
 }
 
+const formatRole = (role?: string | null) => {
+  if (!role) return '-'
+
+  const normalizedRole = String(role).trim().toLowerCase().replace(/_/g, ' ')
+
+  if (normalizedRole === 'kepsek') {
+    return 'Kepala Sekolah'
+  }
+
+  return String(role)
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .split(' ')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ')
+}
+
 const noteText = (log: ActivityLogItem) => {
   if (log.action === 'disposition_added') {
-    const instruksi = log.metadata?.instruksi
+    const instruksi = log.metadata?.instruksi || log.metadata?.catatan
 
     if (instruksi) return String(instruksi)
   }
 
   if (log.action === 'status_changed') {
-    const statusTo = String(log.status_to || '').toLowerCase()
+    const kepsekNote = log.metadata?.kepsek_note || log.metadata?.catatan
 
-    if (['rejected', 'ditolak'].includes(statusTo)) {
-      const catatan = log.metadata?.catatan
-
-      if (catatan) return String(catatan)
-    }
+    if (kepsekNote) return String(kepsekNote)
   }
 
   const catatan = log.metadata?.catatan
@@ -463,7 +529,7 @@ onMounted(loadDetail)
       "
     >
 
-      <!-- â”€â”€ Header row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <!--  Header row  -->
       <section
         class="
           flex items-center gap-3
@@ -495,12 +561,9 @@ onMounted(loadDetail)
         </div>
       </section>
 
-      <!-- â”€â”€ Letter overview card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <!--  Letter overview card  -->
       <VCard
-        class="
-          border-[var(--app-card-border)] bg-[var(--app-card)]
-          text-[var(--app-text)] shadow-[var(--app-card-shadow)]
-        "
+        class="activity-detail-shell activity-detail-shell--overview"
       >
         <!-- Avatar + title row -->
         <div
@@ -545,7 +608,7 @@ onMounted(loadDetail)
           </div>
 
           <VChip
-            :label="suratInfo.status"
+            :label="statusChipLabel"
             :variant="statusChipVariant"
           />
         </div>
@@ -584,12 +647,9 @@ onMounted(loadDetail)
         </div>
       </VCard>
 
-      <!-- â”€â”€ Summary card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <!--  Summary card  -->
       <VCard
-        class="
-          border-[var(--app-card-border)] bg-[var(--app-card)]
-          text-[var(--app-text)] shadow-[var(--app-card-shadow)]
-        "
+        class="activity-detail-shell activity-detail-shell--summary"
       >
         <h3
           class="
@@ -678,12 +738,9 @@ onMounted(loadDetail)
         </p>
       </VCard>
 
-      <!-- â”€â”€ Timeline card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <!--  Timeline card  -->
       <VCard
-        class="
-          border-[var(--app-card-border)] bg-[var(--app-card)]
-          text-[var(--app-text)] shadow-[var(--app-card-shadow)]
-        "
+        class="activity-detail-shell activity-detail-shell--timeline"
       >
         <!-- Timeline section title -->
         <div class="flex items-center justify-between">
@@ -757,6 +814,7 @@ onMounted(loadDetail)
             <!-- Event card -->
             <VCard
               class="
+                activity-detail-event-card
                 min-w-0 flex-1
                 border-[var(--app-card-border)] bg-[var(--app-card)]
               "
@@ -791,6 +849,7 @@ onMounted(loadDetail)
                   </div>
 
                   <VChip
+                    :class="getStatusChipClass(item)"
                     :label="formatStatus(item)"
                     :variant="getStatusVariant(item)"
                   />
@@ -824,7 +883,7 @@ onMounted(loadDetail)
                         leading-[1.35] text-[var(--app-muted)]
                       "
                     >
-                      {{ item.actor_role || '-' }}
+                      {{ formatRole(item.actor_role) }}
                     </p>
                   </div>
                 </div>
