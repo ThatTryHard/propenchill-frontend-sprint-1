@@ -136,6 +136,7 @@ import VButton from '@/components/common/VButton.vue'
 import VInputField from '@/components/common/VInputField.vue'
 import VModal from '@/components/common/VModal.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import type { AlertType } from '@/composables/useGlobalAlert'
 
 const store = useParentStore()
 const router = useRouter()
@@ -147,7 +148,7 @@ const errors = reactive({ nama: '', email: '', no_hp: '' })
 const isFetching = ref(true)
 const isLoading = ref(false)
 
-const alert = reactive({ visible: false, type: 'error' as string, title: '', message: '' })
+const alert: { visible: boolean; type: AlertType; title: string; message: string } = reactive({ visible: false, type: 'error', title: '', message: '' })
 const updateModal = reactive({ show: false })
 const deleteModal = reactive({ show: false, loading: false })
 

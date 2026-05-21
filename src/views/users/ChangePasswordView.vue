@@ -6,6 +6,7 @@ import SIMPSidebar from '@/components/layout/SIMPSidebar.vue'
 import VCard from '@/components/common/VCard.vue'
 import VButton from '@/components/common/VButton.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import type { AlertType } from '@/composables/useGlobalAlert'
 import { useAuthStore } from '@/stores/users/auth'
 import {
   ArrowLeft,
@@ -38,7 +39,7 @@ const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 const isSubmitting = ref(false)
 
-const alert = reactive({
+const alert: { visible: boolean; type: AlertType; title: string; message: string } = reactive({
   visible: false,
   type: 'success',
   title: '',
@@ -49,7 +50,7 @@ const syncThemeMode = () => {
   isDarkMode.value = document.documentElement.classList.contains('dark')
 }
 
-const showAlert = (type: string, message: string, title = '') => {
+const showAlert = (type: AlertType, message: string, title = '') => {
   alert.visible = true
   alert.type = type
   alert.title = title

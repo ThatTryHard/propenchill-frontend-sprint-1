@@ -6,6 +6,7 @@ import VCard from '@/components/common/VCard.vue'
 import VButton from '@/components/common/VButton.vue'
 import VDropdown from '@/components/common/VDropdown.vue'
 import VAlert from '@/components/common/VAlert.vue'
+import type { AlertType } from '@/composables/useGlobalAlert'
 import VTab from '@/components/common/VTab.vue'
 import { useSettingsPreferenceStore } from '@/stores/settingsPreference'
 import type { ThemePreference, TextSizePreference } from '@/stores/settingsPreference'
@@ -15,12 +16,10 @@ import {
   Laptop,
   Eye,
   FileText,
-  Lock,
   Mail,
   Monitor,
   RotateCcw,
   Save,
-  ShieldCheck,
   XCircle,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/users/auth'
@@ -59,7 +58,7 @@ const form = reactive<{
   notify_letter_status: true,
 })
 
-const alert = reactive({
+const alert: { visible: boolean; type: AlertType; title: string; message: string } = reactive({
   visible: false,
   type: 'success',
   title: '',
@@ -115,7 +114,7 @@ const syncFormWithPreference = () => {
   form.notify_letter_status = preference.value.notify_letter_status
 }
 
-const showAlert = (type: string, message: string, title = '') => {
+const showAlert = (type: AlertType, message: string, title = '') => {
   alert.visible = true
   alert.type = type
   alert.title = title
@@ -191,7 +190,7 @@ const formatTimeAgo = (dateStr: string) => {
   return `${days} hari yang lalu`
 }
 
-const formatDeviceName = (userAgent?: string) => {
+const formatDeviceName = (userAgent?: string | null) => {
   if (!userAgent) return 'Perangkat Tidak Dikenal'
 
   let os = 'Unknown OS'
@@ -211,12 +210,20 @@ const formatDeviceName = (userAgent?: string) => {
   return `${os} \u2013 ${browser}`
 }
 
+type ConnectedDeviceSession = {
+  id: number
+  user_agent?: string | null
+  is_current?: boolean
+  last_active?: string | null
+  ip_address?: string | null
+}
+
 // Security data
 const securityData = reactive({
   recoveryEmail: '',
   loadingRecoveryEmail: false,
   activeSessionsCount: 0,
-  sessions: [] as any[],
+  sessions: [] as ConnectedDeviceSession[],
   loadingSessions: false,
 })
 
@@ -242,8 +249,8 @@ const fetchSecurityData = async () => {
       const recoveryData = await recoveryResponse.json()
       securityData.recoveryEmail = recoveryData.recovery_email || ''
     }
-  } catch (error) {
-    console.error('Failed to fetch recovery email:', error)
+  } catch {
+    console.error('Failed to fetch recovery email')
   } finally {
     securityData.loadingRecoveryEmail = false
   }
@@ -260,8 +267,8 @@ const fetchSecurityData = async () => {
       securityData.activeSessionsCount = devicesData.active_sessions_count || 0
       securityData.sessions = devicesData.sessions || []
     }
-  } catch (error) {
-    console.error('Failed to fetch sessions:', error)
+  } catch {
+    console.error('Failed to fetch sessions')
   } finally {
     securityData.loadingSessions = false
   }
@@ -306,13 +313,9 @@ const saveRecoveryEmail = async () => {
     } else {
       recoveryEmailErrors.email = data.error || 'Gagal menyimpan email pemulihan.'
     }
-  } catch (error) {
+  } catch {
     showAlert('error', 'Terjadi kesalahan. Silakan coba lagi.', 'Gagal')
   }
-}
-
-const openDevicesModal = () => {
-  showDevicesModal.value = true
 }
 
 const closeDevicesModal = () => {
@@ -331,11 +334,11 @@ const logoutSession = async (sessionId: number) => {
     })
 
     if (response.ok) {
-      securityData.sessions = securityData.sessions.filter((s: any) => s.id !== sessionId)
+      securityData.sessions = securityData.sessions.filter((session) => session.id !== sessionId)
       securityData.activeSessionsCount--
       showAlert('success', 'Perangkat berhasil dilogout.', 'Berhasil')
     }
-  } catch (error) {
+  } catch {
     showAlert('error', 'Gagal melogout perangkat.', 'Gagal')
   }
 }

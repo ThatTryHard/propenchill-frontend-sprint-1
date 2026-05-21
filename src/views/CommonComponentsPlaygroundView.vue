@@ -314,7 +314,7 @@ const showAlert = (type: 'success' | 'error' | 'warning' | 'information') => {
         <VChip label="Secondary" variant="secondary" />
         <VChip label="Tertiary" variant="tertiary" />
         <VChip label="Warning" variant="warning" />
-        <VChip label="Deep" variant="deep">
+        <VChip label="Deep" variant="secondary">
           <template #icon>
             <InfoIcon :size="16" />
           </template>
