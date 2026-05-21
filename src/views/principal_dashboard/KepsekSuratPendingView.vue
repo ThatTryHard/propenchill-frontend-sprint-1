@@ -252,16 +252,14 @@ const filteredRows = computed(() => {
 
   if (filterDurasi.value) {
     const today = new Date()
-    today.setHours(0, 0, 0, 0)
 
     result = result.filter((row) => {
       if (!row.tanggal_diterima) return false
 
       const rowDate = new Date(row.tanggal_diterima)
-      rowDate.setHours(0, 0, 0, 0)
 
       const diffTime = today.getTime() - rowDate.getTime()
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      const diffDays = diffTime / (1000 * 60 * 60 * 24)
 
       if (filterDurasi.value === '< 3 Hari') return diffDays < 3
       if (filterDurasi.value === '3 - 7 Hari') return diffDays >= 3 && diffDays <= 7
