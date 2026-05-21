@@ -279,6 +279,7 @@ const matchesSearch = (log: ActivityLogItem, query: string) => {
   const haystack = [
     log.actor_name,
     log.actor_role,
+    formatRole(log.actor_role),
     log.action,
     getActionLabel(log),
     getActionDetail(log),
